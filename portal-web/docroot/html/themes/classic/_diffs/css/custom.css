@@ -44,6 +44,8 @@ hr, .separator {
 #banner {
 	background: none;
 	height: auto;
+	margin-top: 1.4em;
+	position: relative;
 }
 
 .site-title .site-name {
@@ -57,6 +59,14 @@ hr, .separator {
 	padding: 7px 17px 7px 40px;
 	position: relative;
 	text-shadow: 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.page-template .site-title .site-name {
+	background-image: url(../images/common/page_template.png);
+}
+
+.site-template .site-title .site-name {
+	background-image: url(../images/common/site_template.png);
 }
 
 .company-site .site-title .site-name {
@@ -94,7 +104,7 @@ hr, .separator {
 	padding: 5px 5px 5px 25px;
 	position: absolute;
 	right: 0;
-	top: 1.4em;
+	top: -1.2em;
 }
 
 .ie6 #banner {

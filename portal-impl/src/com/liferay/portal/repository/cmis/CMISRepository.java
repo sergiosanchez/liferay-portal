@@ -41,6 +41,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.TransientValue;
 import com.liferay.portal.kernel.util.Validator;
@@ -311,7 +312,7 @@ public class CMISRepository extends BaseCmisRepository {
 		try {
 			Session session = getSession();
 
-			Document document = getCmisDocument(session, fileEntryId);
+			Document document = getDocument(session, fileEntryId);
 
 			validateTitle(session, destFolderId, document.getName());
 
@@ -345,7 +346,7 @@ public class CMISRepository extends BaseCmisRepository {
 		try {
 			Session session = getSession();
 
-			Document document = getCmisDocument(session, fileEntryId);
+			Document document = getDocument(session, fileEntryId);
 
 			deleteMappedFileEntry(document);
 
@@ -396,26 +397,7 @@ public class CMISRepository extends BaseCmisRepository {
 
 		List<FileEntry> fileEntries = getFileEntries(folderId);
 
-		if (obc != null) {
-			if (obc instanceof RepositoryModelCreateDateComparator ||
-				obc instanceof RepositoryModelModifiedDateComparator ||
-				obc instanceof RepositoryModelSizeComparator) {
-
-				fileEntries = ListUtil.sort(fileEntries, obc);
-			}
-			else if (obc instanceof RepositoryModelNameComparator) {
-				if (!obc.isAscending()) {
-					fileEntries = ListUtil.sort(fileEntries, obc);
-				}
-			}
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS)) {
-			return fileEntries;
-		}
-		else {
-			return ListUtil.subList(fileEntries, start, end);
-		}
+		return subList(fileEntries, start, end, obc);
 	}
 
 	public List<FileEntry> getFileEntries(
@@ -423,6 +405,35 @@ public class CMISRepository extends BaseCmisRepository {
 		OrderByComparator obc) {
 
 		return new ArrayList<FileEntry>();
+	}
+
+	public List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int start, int end,
+			OrderByComparator obc)
+		throws PortalException, SystemException {
+
+		Map<Long, List<FileEntry>> fileEntriesCache = _fileEntriesCache.get();
+
+		List<FileEntry> fileEntries = fileEntriesCache.get(folderId);
+
+		if ((fileEntries == null) || (mimeTypes != null)) {
+			fileEntries = new ArrayList<FileEntry>();
+
+			List<String> documentIds = getDocumentIds(
+				getSession(), folderId, mimeTypes);
+
+			for (String documentId : documentIds) {
+				FileEntry fileEntry = toFileEntry(documentId);
+
+				fileEntries.add(fileEntry);
+			}
+
+			if (mimeTypes == null) {
+				fileEntriesCache.put(folderId, fileEntries);
+			}
+		}
+
+		return subList(fileEntries, start, end, obc);
 	}
 
 	public int getFileEntriesCount(long folderId) throws SystemException {
@@ -437,13 +448,23 @@ public class CMISRepository extends BaseCmisRepository {
 		return fileEntries.size();
 	}
 
+	public int getFileEntriesCount(long folderId, String[] mimeTypes)
+		throws PortalException, SystemException {
+
+		Session session = getSession();
+
+		List<String> documentIds = getDocumentIds(session, folderId, mimeTypes);
+
+		return documentIds.size();
+	}
+
 	public FileEntry getFileEntry(long fileEntryId)
 		throws PortalException, SystemException {
 
 		try {
 			Session session = getSession();
 
-			Document document = getCmisDocument(session, fileEntryId);
+			Document document = getDocument(session, fileEntryId);
 
 			return toFileEntry(document);
 		}
@@ -481,6 +502,9 @@ public class CMISRepository extends BaseCmisRepository {
 				"No CMIS file entry with {folderId=" + folderId + ", title=" +
 					title + "}",
 				confe);
+		}
+		catch (PortalException pe) {
+			throw pe;
 		}
 		catch (SystemException se) {
 			throw se;
@@ -591,6 +615,9 @@ public class CMISRepository extends BaseCmisRepository {
 					", title=" + title + "}",
 				confe);
 		}
+		catch (PortalException pe) {
+			throw pe;
+		}
 		catch (SystemException se) {
 			throw se;
 		}
@@ -608,29 +635,11 @@ public class CMISRepository extends BaseCmisRepository {
 	public List<Folder> getFolders(
 			long parentFolderId, boolean includeMountfolders, int start,
 			int end, OrderByComparator obc)
-		throws SystemException {
+		throws PortalException, SystemException {
 
 		List<Folder> folders = getFolders(parentFolderId);
 
-		if (obc != null) {
-			if (obc instanceof RepositoryModelCreateDateComparator ||
-				obc instanceof RepositoryModelModifiedDateComparator) {
-
-				folders = ListUtil.sort(folders, obc);
-			}
-			else if (obc instanceof RepositoryModelNameComparator) {
-				if (!obc.isAscending()) {
-					folders = ListUtil.sort(folders, obc);
-				}
-			}
-		}
-
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS)) {
-			return folders;
-		}
-		else {
-			return ListUtil.subList(folders, start, end);
-		}
+		return subList(folders, start, end, obc);
 	}
 
 	@Override
@@ -640,28 +649,36 @@ public class CMISRepository extends BaseCmisRepository {
 
 		List<Object> foldersAndFileEntries = getFoldersAndFileEntries(folderId);
 
-		if (obc != null) {
-			if (obc instanceof RepositoryModelCreateDateComparator ||
-				obc instanceof RepositoryModelModifiedDateComparator ||
-				obc instanceof RepositoryModelSizeComparator) {
+		return subList(foldersAndFileEntries, start, end, obc);
+	}
 
-				foldersAndFileEntries = ListUtil.sort(
-					foldersAndFileEntries, obc);
-			}
-			else if (obc instanceof RepositoryModelNameComparator) {
-				if (!obc.isAscending()) {
-					foldersAndFileEntries = ListUtil.sort(
-						foldersAndFileEntries, obc);
-				}
+	@Override
+	public List<Object> getFoldersAndFileEntries(
+			long folderId, String[] mimeTypes, int start, int end,
+			OrderByComparator obc)
+		throws PortalException, SystemException {
+
+		Map<Long, List<Object>> foldersAndFileEntriesCache =
+			_foldersAndFileEntriesCache.get();
+
+		List<Object> foldersAndFileEntries = foldersAndFileEntriesCache.get(
+			folderId);
+
+		if ((foldersAndFileEntries == null) || (mimeTypes != null)) {
+			foldersAndFileEntries = new ArrayList<Object>(getFolders(folderId));
+
+			List<FileEntry> fileEntries = getFileEntries(
+				folderId, mimeTypes, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				null);
+
+			foldersAndFileEntries.addAll(fileEntries);
+
+			if (mimeTypes == null) {
+				foldersAndFileEntriesCache.put(folderId, foldersAndFileEntries);
 			}
 		}
 
-		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS)) {
-			return foldersAndFileEntries;
-		}
-		else {
-			return ListUtil.subList(foldersAndFileEntries, start, end);
-		}
+		return subList(foldersAndFileEntries, start, end, obc);
 	}
 
 	@Override
@@ -673,8 +690,30 @@ public class CMISRepository extends BaseCmisRepository {
 		return foldersAndFileEntries.size();
 	}
 
+	@Override
+	public int getFoldersAndFileEntriesCount(long folderId, String[] mimeTypes)
+		throws PortalException, SystemException {
+
+		if ((mimeTypes != null) && mimeTypes.length > 0) {
+			List<Folder> folders = getFolders(folderId);
+
+			Session session = getSession();
+
+			List<String> documentIds = getDocumentIds(
+				session, folderId, mimeTypes);
+
+			return folders.size() + documentIds.size();
+		}
+		else {
+			List<Object> foldersAndFileEntries =
+				getFoldersAndFileEntries(folderId);
+
+			return foldersAndFileEntries.size();
+		}
+	}
+
 	public int getFoldersCount(long parentFolderId, boolean includeMountfolders)
-		throws SystemException {
+		throws PortalException, SystemException {
 
 		List<Folder> folders = getFolders(parentFolderId);
 
@@ -917,7 +956,7 @@ public class CMISRepository extends BaseCmisRepository {
 
 			String newFolderObjectId = toFolderId(session, newFolderId);
 
-			Document document = getCmisDocument(session, fileEntryId);
+			Document document = getDocument(session, fileEntryId);
 
 			validateTitle(session, newFolderId, document.getName());
 
@@ -1035,7 +1074,7 @@ public class CMISRepository extends BaseCmisRepository {
 		try {
 			Session session = getSession();
 
-			Document document = getCmisDocument(session, fileEntryId);
+			Document document = getDocument(session, fileEntryId);
 
 			Document oldVersion = null;
 
@@ -1211,7 +1250,7 @@ public class CMISRepository extends BaseCmisRepository {
 		try {
 			Session session = getSession();
 
-			document = getCmisDocument(session, fileEntryId);
+			document = getDocument(session, fileEntryId);
 
 			String versionSeriesCheckedOutId =
 				document.getVersionSeriesCheckedOutId();
@@ -1685,7 +1724,63 @@ public class CMISRepository extends BaseCmisRepository {
 		return transientValue.getValue();
 	}
 
-	protected Document getCmisDocument(Session session, long fileEntryId)
+	protected org.apache.chemistry.opencmis.client.api.Folder getCmisFolder(
+			Session session, long folderId)
+		throws PortalException, SystemException {
+
+		Folder folder = getFolder(session, folderId);
+
+		org.apache.chemistry.opencmis.client.api.Folder cmisFolder =
+			(org.apache.chemistry.opencmis.client.api.Folder)folder.getModel();
+
+		return cmisFolder;
+	}
+
+	protected List<String> getCmisFolderIds(Session session, long folderId)
+		throws PortalException, SystemException {
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append("SELECT cmis:objectId FROM cmis:folder");
+
+		if (folderId > 0) {
+			sb.append(" WHERE IN_FOLDER(");
+
+			String objectId = toFolderId(session, folderId);
+
+			sb.append(StringUtil.quote(objectId));
+			sb.append(StringPool.CLOSE_PARENTHESIS);
+		}
+
+		String query = sb.toString();
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Calling query " + query);
+		}
+
+		ItemIterable<QueryResult> queryResults = session.query(query, false);
+
+		Iterator<QueryResult> itr = queryResults.iterator();
+
+		List<String> cmsFolderIds = new ArrayList<String>();
+
+		while (itr.hasNext()) {
+			QueryResult queryResult = itr.next();
+
+			PropertyData<String> propertyData = queryResult.getPropertyById(
+				PropertyIds.OBJECT_ID);
+
+			List<String> values = propertyData.getValues();
+
+			String value = values.get(0);
+
+			cmsFolderIds.add(value);
+		}
+
+		return cmsFolderIds;
+	}
+
+	protected Document getDocument(Session session, long fileEntryId)
 		throws PortalException, SystemException {
 
 		try {
@@ -1702,16 +1797,66 @@ public class CMISRepository extends BaseCmisRepository {
 		}
 	}
 
-	protected org.apache.chemistry.opencmis.client.api.Folder getCmisFolder(
-			Session session, long folderId)
+	protected List<String> getDocumentIds(
+			Session session, long folderId, String[] mimeTypes)
 		throws PortalException, SystemException {
 
-		Folder folder = getFolder(session, folderId);
+		StringBundler sb = new StringBundler();
 
-		org.apache.chemistry.opencmis.client.api.Folder cmisFolder =
-			(org.apache.chemistry.opencmis.client.api.Folder)folder.getModel();
+		sb.append("SELECT cmis:objectId FROM cmis:document");
 
-		return cmisFolder;
+		if ((mimeTypes != null) && (mimeTypes.length > 0)) {
+			sb.append(" WHERE cmis:contentStreamMimeType IN (");
+
+			for (int i = 0 ; i < mimeTypes.length; i++) {
+				sb.append(StringUtil.quote(mimeTypes[i]));
+
+				if ((i + 1) < mimeTypes.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append(StringPool.CLOSE_PARENTHESIS);
+		}
+
+		if (folderId > 0) {
+			if ((mimeTypes != null) && (mimeTypes.length > 0)) {
+				sb.append(" AND ");
+			}
+			else {
+				sb.append(" WHERE ");
+			}
+
+			sb.append("IN_FOLDER(");
+
+			String objectId = toFolderId(session, folderId);
+
+			sb.append(StringUtil.quote(objectId));
+			sb.append(StringPool.CLOSE_PARENTHESIS);
+		}
+
+		String query = sb.toString();
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Calling query " + query);
+		}
+
+		ItemIterable<QueryResult> queryResults = session.query(query, false);
+
+		Iterator<QueryResult> itr = queryResults.iterator();
+
+		List<String> cmisDocumentIds = new ArrayList<String>();
+
+		while (itr.hasNext()) {
+			QueryResult queryResult = itr.next();
+
+			String objectId = queryResult.getPropertyValueByQueryName(
+				PropertyIds.OBJECT_ID);
+
+			cmisDocumentIds.add(objectId);
+		}
+
+		return cmisDocumentIds;
 	}
 
 	protected List<FileEntry> getFileEntries(long folderId)
@@ -1760,12 +1905,27 @@ public class CMISRepository extends BaseCmisRepository {
 		}
 	}
 
-	protected List<Folder> getFolders(long folderId) throws SystemException {
-		cacheFoldersAndFileEntries(folderId);
+	protected List<Folder> getFolders(long parentFolderId)
+		throws PortalException, SystemException {
 
 		Map<Long, List<Folder>> foldersCache = _foldersCache.get();
 
-		return foldersCache.get(folderId);
+		List<Folder> folders = foldersCache.get(parentFolderId);
+
+		if (folders == null) {
+			List<String> folderIds = getCmisFolderIds(
+				getSession(), parentFolderId);
+
+			folders = new ArrayList<Folder>(folderIds.size());
+
+			for (String folderId : folderIds) {
+				folders.add(toFolder(folderId));
+			}
+
+			foldersCache.put(parentFolderId, folders);
+		}
+
+		return folders;
 	}
 
 	protected List<Object> getFoldersAndFileEntries(long folderId)
@@ -1781,63 +1941,54 @@ public class CMISRepository extends BaseCmisRepository {
 
 	protected String getObjectId(
 			Session session, long folderId, boolean fileEntry, String name)
-		throws SystemException {
+		throws PortalException, SystemException {
 
-		try {
-			String objectId = toFolderId(session, folderId);
+		String objectId = toFolderId(session, folderId);
 
-			StringBundler sb = new StringBundler(7);
+		StringBundler sb = new StringBundler(7);
 
-			sb.append("SELECT cmis:objectId FROM ");
+		sb.append("SELECT cmis:objectId FROM ");
 
-			if (fileEntry) {
-				sb.append("cmis:document ");
-			}
-			else {
-				sb.append("cmis:folder ");
-			}
-
-			sb.append("WHERE cmis:name = '");
-			sb.append(name);
-			sb.append("' AND IN_FOLDER('");
-			sb.append(objectId);
-			sb.append("')");
-
-			String query = sb.toString();
-
-			if (_log.isDebugEnabled()) {
-				_log.debug("Calling query " + query);
-			}
-
-			ItemIterable<QueryResult> queryResults = session.query(
-				query, false);
-
-			Iterator<QueryResult> itr = queryResults.iterator();
-
-			if (itr.hasNext()) {
-				QueryResult queryResult = itr.next();
-
-				PropertyData<String> propertyData = queryResult.getPropertyById(
-					PropertyIds.OBJECT_ID);
-
-				List<String> values = propertyData.getValues();
-
-				return values.get(0);
-			}
-
-			return null;
+		if (fileEntry) {
+			sb.append("cmis:document ");
 		}
-		catch (SystemException se) {
-			throw se;
+		else {
+			sb.append("cmis:folder ");
 		}
-		catch (Exception e) {
-			throw new RepositoryException(e);
+
+		sb.append("WHERE cmis:name = '");
+		sb.append(name);
+		sb.append("' AND IN_FOLDER('");
+		sb.append(objectId);
+		sb.append("')");
+
+		String query = sb.toString();
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Calling query " + query);
 		}
+
+		ItemIterable<QueryResult> queryResults = session.query(query, false);
+
+		Iterator<QueryResult> itr = queryResults.iterator();
+
+		if (itr.hasNext()) {
+			QueryResult queryResult = itr.next();
+
+			PropertyData<String> propertyData = queryResult.getPropertyById(
+				PropertyIds.OBJECT_ID);
+
+			List<String> values = propertyData.getValues();
+
+			return values.get(0);
+		}
+
+		return null;
 	}
 
 	protected void getSubfolderIds(
 			List<Long> subfolderIds, List<Folder> subfolders, boolean recurse)
-		throws SystemException {
+		throws PortalException, SystemException {
 
 		for (Folder subfolder : subfolders) {
 			long subfolderId = subfolder.getFolderId();
@@ -1906,6 +2057,31 @@ public class CMISRepository extends BaseCmisRepository {
 
 		httpSession.setAttribute(
 			_sessionKey, new TransientValue<Session>(session));
+	}
+
+	protected <E> List<E> subList(
+		List<E> list, int start, int end, OrderByComparator obc) {
+
+		if (obc != null) {
+			if ((obc instanceof RepositoryModelCreateDateComparator) ||
+				(obc instanceof RepositoryModelModifiedDateComparator) ||
+				(obc instanceof RepositoryModelSizeComparator)) {
+
+				list = ListUtil.sort(list, obc);
+			}
+			else if (obc instanceof RepositoryModelNameComparator) {
+				if (!obc.isAscending()) {
+					list = ListUtil.sort(list, obc);
+				}
+			}
+		}
+
+		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS)) {
+			return list;
+		}
+		else {
+			return ListUtil.subList(list, start, end);
+		}
 	}
 
 	protected String toFileEntryId(long fileEntryId)

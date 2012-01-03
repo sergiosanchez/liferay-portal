@@ -120,6 +120,11 @@ public abstract class BaseRepositoryImpl implements BaseRepository {
 			long folderId, int start, int end, OrderByComparator obc)
 		throws SystemException;
 
+	public abstract List<Object> getFoldersAndFileEntries(
+			long folderId, String[] mimeTypes, int start, int end,
+			OrderByComparator obc)
+		throws PortalException, SystemException;
+
 	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, boolean includeMountFolders, int start,
 			int end, OrderByComparator obc)
@@ -132,9 +137,9 @@ public abstract class BaseRepositoryImpl implements BaseRepository {
 			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders, int start, int end,
 			OrderByComparator obc)
-		throws SystemException {
+		throws PortalException, SystemException {
 
-		return getFoldersAndFileEntries(folderId, start, end, obc);
+		return getFoldersAndFileEntries(folderId, mimeTypes, start, end, obc);
 	}
 
 	public int getFoldersAndFileEntriesAndFileShortcutsCount(
@@ -147,13 +152,17 @@ public abstract class BaseRepositoryImpl implements BaseRepository {
 	public int getFoldersAndFileEntriesAndFileShortcutsCount(
 			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders)
-		throws SystemException {
+		throws PortalException, SystemException {
 
-		return getFoldersAndFileEntriesCount(folderId);
+		return getFoldersAndFileEntriesCount(folderId, mimeTypes);
 	}
 
 	public abstract int getFoldersAndFileEntriesCount(long folderId)
 		throws SystemException;
+
+	public abstract int getFoldersAndFileEntriesCount(
+			long folderId, String[] mimeTypes)
+		throws PortalException, SystemException;
 
 	public long getGroupId() {
 		return _groupId;
@@ -198,9 +207,9 @@ public abstract class BaseRepositoryImpl implements BaseRepository {
 	public List<FileEntry> getRepositoryFileEntries(
 			long userId, long rootFolderId, String[] mimeTypes, int status,
 			int start, int end, OrderByComparator obc)
-		throws SystemException {
+		throws PortalException, SystemException {
 
-		return getRepositoryFileEntries(userId, rootFolderId, start, end, obc);
+		return getFileEntries(rootFolderId, mimeTypes, start, end, obc);
 	}
 
 	public int getRepositoryFileEntriesCount(long userId, long rootFolderId)
@@ -211,9 +220,9 @@ public abstract class BaseRepositoryImpl implements BaseRepository {
 
 	public int getRepositoryFileEntriesCount(
 			long userId, long rootFolderId, String[] mimeTypes, int status)
-		throws SystemException {
+		throws PortalException, SystemException {
 
-		return getRepositoryFileEntriesCount(userId, rootFolderId);
+		return getFileEntriesCount(rootFolderId, mimeTypes);
 	}
 
 	public long getRepositoryId() {

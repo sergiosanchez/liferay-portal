@@ -109,10 +109,6 @@ if (folder != null) {
 	</div>
 </div>
 
-<div class="portlet-msg-error aui-helper-hidden" id="<portlet:namespace />errorContainer">
-	<liferay-ui:message key="your-request-failed-to-complete" />
-</div>
-
 <div class="body-row">
 	<div id="<portlet:namespace />listViewContainer">
 		<div class="folder-display-style lfr-list-view-content" id="<portlet:namespace />folderContainer">
@@ -126,7 +122,7 @@ if (folder != null) {
 
 						<liferay-portlet:renderURL varImpl="viewDocumentsHomeURL">
 							<portlet:param name="struts_action" value="/document_library/view" />
-							<portlet:param name="folderId" value="<%= String.valueOf(DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) %>" />
+							<portlet:param name="folderId" value="<%= String.valueOf(rootFolderId) %>" />
 							<portlet:param name="entryStart" value="0" />
 							<portlet:param name="entryEnd" value="<%= String.valueOf(entryEnd - entryStart) %>" />
 							<portlet:param name="folderStart" value="0" />
@@ -144,12 +140,12 @@ if (folder != null) {
 							<liferay-util:include page="/html/portlet/document_library/folder_action.jsp" />
 
 							<c:if test="<%= (foldersCount > 0) %>">
-								<a class="expand-folder" data-expand-folder="<%= Boolean.TRUE.toString() %>" data-folder-id="<%= DLFolderConstants.DEFAULT_PARENT_FOLDER_ID %>" data-view-entries="<%= Boolean.FALSE.toString() %>" href="<%= viewDocumentsHomeURL.toString() %>">
+								<a class="expand-folder" data-expand-folder="<%= Boolean.TRUE.toString() %>" data-folder-id="<%= rootFolderId %>" data-view-entries="<%= Boolean.FALSE.toString() %>" href="<%= viewDocumentsHomeURL.toString() %>">
 									<liferay-ui:icon cssClass="expand-folder-arrow" image="../aui/carat-1-r" message="expand" />
 								</a>
 							</c:if>
 
-							<a class="browse-folder" data-folder="<%= Boolean.TRUE.toString() %>" data-folder-id="<%= DLFolderConstants.DEFAULT_PARENT_FOLDER_ID %>" data-navigation="home" data-view-folders="<%= Boolean.FALSE.toString() %>" data-title="<%= LanguageUtil.get(pageContext, "home") %>" href="<%= viewDocumentsHomeURL.toString() %>">
+							<a class="browse-folder" data-folder="<%= Boolean.TRUE.toString() %>" data-folder-id="<%= rootFolderId %>" data-navigation="home" data-view-folders="<%= Boolean.FALSE.toString() %>" data-title="<%= LanguageUtil.get(pageContext, "home") %>" href="<%= viewDocumentsHomeURL.toString() %>">
 								<liferay-ui:icon image="../aui/home" message="" />
 
 								<span class="entry-title">
@@ -255,41 +251,60 @@ if (folder != null) {
 							}
 
 							for (Folder mountFolder : mountFolders) {
-								int mountFoldersCount = DLAppServiceUtil.getFoldersCount(mountFolder.getRepositoryId(), mountFolder.getFolderId());
-
 								request.setAttribute("view_entries.jsp-folder", mountFolder);
 								request.setAttribute("view_entries.jsp-folderId", String.valueOf(mountFolder.getFolderId()));
 								request.setAttribute("view_entries.jsp-repositoryId", String.valueOf(mountFolder.getRepositoryId()));
+
+								try {
+									int mountFoldersCount = DLAppServiceUtil.getFoldersCount(mountFolder.getRepositoryId(), mountFolder.getFolderId());
 							%>
 
-								<liferay-portlet:renderURL varImpl="viewURL">
-									<portlet:param name="struts_action" value="/document_library/view" />
-									<portlet:param name="folderId" value="<%= String.valueOf(mountFolder.getFolderId()) %>" />
-									<portlet:param name="entryStart" value="0" />
-									<portlet:param name="entryEnd" value="<%= String.valueOf(entryEnd - entryStart) %>" />
-									<portlet:param name="folderStart" value="0" />
-									<portlet:param name="folderEnd" value="<%= String.valueOf(folderEnd - folderStart) %>" />
-								</liferay-portlet:renderURL>
+									<liferay-portlet:renderURL varImpl="viewURL">
+										<portlet:param name="struts_action" value="/document_library/view" />
+										<portlet:param name="folderId" value="<%= String.valueOf(mountFolder.getFolderId()) %>" />
+										<portlet:param name="entryStart" value="0" />
+										<portlet:param name="entryEnd" value="<%= String.valueOf(entryEnd - entryStart) %>" />
+										<portlet:param name="folderStart" value="0" />
+										<portlet:param name="folderEnd" value="<%= String.valueOf(folderEnd - folderStart) %>" />
+									</liferay-portlet:renderURL>
 
-								<li class="folder <%= (mountFolder.getFolderId() == folderId) ? "selected" : StringPool.BLANK %>">
-									<liferay-util:include page="/html/portlet/document_library/folder_action.jsp" />
+									<li class="folder <%= (mountFolder.getFolderId() == folderId) ? "selected" : StringPool.BLANK %>">
+										<liferay-util:include page="/html/portlet/document_library/folder_action.jsp" />
 
-									<c:if test="<%= mountFoldersCount > 0 %>">
-										<a class="expand-folder" data-expand-folder="<%= Boolean.TRUE.toString() %>" data-folder-id="<%= String.valueOf(mountFolder.getFolderId()) %>" data-view-entries="<%= Boolean.FALSE.toString() %>" href="<%= viewURL.toString() %>">
-											<liferay-ui:icon cssClass="expand-folder-arrow" image="../aui/carat-1-r" message="expand" />
+										<c:if test="<%= mountFoldersCount > 0 %>">
+											<a class="expand-folder" data-expand-folder="<%= Boolean.TRUE.toString() %>" data-folder-id="<%= String.valueOf(mountFolder.getFolderId()) %>" data-view-entries="<%= Boolean.FALSE.toString() %>" href="<%= viewURL.toString() %>">
+												<liferay-ui:icon cssClass="expand-folder-arrow" image="../aui/carat-1-r" message="expand" />
+											</a>
+										</c:if>
+
+										<a class="browse-folder" data-folder="<%= Boolean.TRUE.toString() %>" data-folder-id="<%= String.valueOf(mountFolder.getFolderId()) %>" data-title="<%= mountFolder.getName() %>" href="<%= viewURL.toString() %>">
+											<liferay-ui:icon image="drive" />
+
+											<span class="entry-title">
+												<%= mountFolder.getName() %>
+											</span>
 										</a>
-									</c:if>
-
-									<a class="browse-folder" data-folder="<%= Boolean.TRUE.toString() %>" data-folder-id="<%= String.valueOf(mountFolder.getFolderId()) %>" data-title="<%= mountFolder.getName() %>" href="<%= viewURL.toString() %>">
-										<liferay-ui:icon image="drive" />
-
-										<span class="entry-title">
-											<%= mountFolder.getName() %>
-										</span>
-									</a>
-								</li>
+									</li>
 
 							<%
+								}
+								catch (Exception e) {
+							%>
+
+									<li class="folder error" title="<%= LanguageUtil.get(pageContext, "an-unexpected-error-occurred-while-connecting-to-the-repository") %>">
+										<liferay-util:include page="/html/portlet/document_library/folder_action.jsp" />
+
+										<span class="browse-folder">
+											<liferay-ui:icon image="drive_error" />
+
+											<span class="entry-title">
+												<%= mountFolder.getName() %>
+											</span>
+										</span>
+									</li>
+
+							<%
+								}
 							}
 							%>
 

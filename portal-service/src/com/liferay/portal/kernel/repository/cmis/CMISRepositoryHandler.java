@@ -141,6 +141,15 @@ public abstract class CMISRepositoryHandler extends BaseRepositoryImpl {
 			folderId, fileEntryTypeId, start, end, obc);
 	}
 
+	public List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int start, int end,
+			OrderByComparator obc)
+		throws PortalException, SystemException {
+
+		return _baseCmisRepository.getFileEntries(
+			folderId, mimeTypes, start, end, obc);
+	}
+
 	public int getFileEntriesCount(long folderId) throws SystemException {
 		return _baseCmisRepository.getFileEntriesCount(folderId);
 	}
@@ -150,6 +159,12 @@ public abstract class CMISRepositoryHandler extends BaseRepositoryImpl {
 
 		return _baseCmisRepository.getFileEntriesCount(
 			folderId, fileEntryTypeId);
+	}
+
+	public int getFileEntriesCount(long folderId, String[] mimeTypes)
+		throws PortalException, SystemException {
+
+		return _baseCmisRepository.getFileEntriesCount(folderId, mimeTypes);
 	}
 
 	public FileEntry getFileEntry(long fileEntryId)
@@ -191,7 +206,7 @@ public abstract class CMISRepositoryHandler extends BaseRepositoryImpl {
 	public List<Folder> getFolders(
 			long parentFolderId, boolean includeMountfolders, int start,
 			int end, OrderByComparator obc)
-		throws SystemException {
+		throws PortalException, SystemException {
 
 		return _baseCmisRepository.getFolders(
 			parentFolderId, includeMountfolders, start, end, obc);
@@ -207,14 +222,32 @@ public abstract class CMISRepositoryHandler extends BaseRepositoryImpl {
 	}
 
 	@Override
+	public List<Object> getFoldersAndFileEntries(
+			long folderId, String[] mimeTypes, int start, int end,
+			OrderByComparator obc)
+		throws PortalException, SystemException {
+
+		return _baseCmisRepository.getFoldersAndFileEntries(
+			folderId, mimeTypes, start, end, obc);
+	}
+
+	@Override
 	public int getFoldersAndFileEntriesCount(long folderId)
 		throws SystemException {
 
 		return _baseCmisRepository.getFoldersAndFileEntriesCount(folderId);
 	}
 
+	@Override
+	public int getFoldersAndFileEntriesCount(long folderId, String[] mimeTypes)
+		throws PortalException, SystemException {
+
+		return _baseCmisRepository.getFoldersAndFileEntriesCount(
+			folderId, mimeTypes);
+	}
+
 	public int getFoldersCount(long parentFolderId, boolean includeMountfolders)
-		throws SystemException {
+		throws PortalException, SystemException {
 
 		return _baseCmisRepository.getFoldersCount(
 			parentFolderId, includeMountfolders);

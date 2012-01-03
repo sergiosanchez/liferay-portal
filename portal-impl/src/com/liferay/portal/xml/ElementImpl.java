@@ -294,6 +294,18 @@ public class ElementImpl extends BranchImpl implements Element {
 
 	@Override
 	public boolean equals(Object obj) {
+		if (obj instanceof NodeImpl) {
+			NodeImpl nodeImpl = (NodeImpl)obj;
+
+			if (nodeImpl.getWrappedNode() instanceof org.dom4j.Element) {
+				obj = new ElementImpl(
+					(org.dom4j.Element)nodeImpl.getWrappedNode());
+			}
+			else {
+				return false;
+			}
+		}
+
 		org.dom4j.Element element = ((ElementImpl)obj).getWrappedElement();
 
 		return _element.equals(element);
@@ -504,20 +516,51 @@ public class ElementImpl extends BranchImpl implements Element {
 
 		Map<String, Element> elementsMap = new TreeMap<String, Element>();
 
-		List<Element> elements = elements(elementName);
+		List<Element> elements = elements();
 
 		for (Element element : elements) {
 			element.detach();
 
-			String attributeValue = element.attributeValue(attributeName);
+			if (elementName.equals(element.getName())) {
+				String attributeValue = element.attributeValue(attributeName);
 
-			elementsMap.put(attributeValue, element);
+				elementsMap.put(attributeValue, element);
+			}
+		}
+
+		for (Element element : elements) {
+			if (elementName.equals(element.getName())) {
+				break;
+			}
+
+			add(element);
 		}
 
 		for (Map.Entry<String, Element> entry : elementsMap.entrySet()) {
 			Element element = entry.getValue();
 
 			add(element);
+		}
+
+		boolean foundLastElementWithElementName = false;
+
+		for (int i = 0; i < elements.size(); i++) {
+			Element element = elements.get(i);
+
+			if (!foundLastElementWithElementName) {
+				if (elementName.equals(element.getName())) {
+					if ((i + 1) < elements.size()) {
+						Element nextElement = elements.get(i + 1);
+
+						if (!elementName.equals(nextElement.getName())) {
+							foundLastElementWithElementName = true;
+						}
+					}
+				}
+			}
+			else {
+				add(element);
+			}
 		}
 	}
 
@@ -526,20 +569,52 @@ public class ElementImpl extends BranchImpl implements Element {
 
 		Map<String, Element> elementsMap = new TreeMap<String, Element>();
 
-		List<Element> elements = elements(elementName);
+		List<Element> elements = elements();
 
 		for (Element element : elements) {
 			element.detach();
 
-			String childElementValue = element.elementText(childElementName);
+			if (elementName.equals(element.getName())) {
+				String childElementValue = element.elementText(
+					childElementName);
 
-			elementsMap.put(childElementValue, element);
+				elementsMap.put(childElementValue, element);
+			}
+		}
+
+		for (Element element : elements) {
+			if (elementName.equals(element.getName())) {
+				break;
+			}
+
+			add(element);
 		}
 
 		for (Map.Entry<String, Element> entry : elementsMap.entrySet()) {
 			Element element = entry.getValue();
 
 			add(element);
+		}
+
+		boolean foundLastElementWithElementName = false;
+
+		for (int i = 0; i < elements.size(); i++) {
+			Element element = elements.get(i);
+
+			if (!foundLastElementWithElementName) {
+				if (elementName.equals(element.getName())) {
+					if ((i + 1) < elements.size()) {
+						Element nextElement = elements.get(i + 1);
+
+						if (!elementName.equals(nextElement.getName())) {
+							foundLastElementWithElementName = true;
+						}
+					}
+				}
+			}
+			else {
+				add(element);
+			}
 		}
 	}
 

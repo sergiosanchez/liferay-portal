@@ -519,7 +519,7 @@
 	</category>
 
 	<category name="com.liferay.portal.servlet.filters.dynamiccss.DynamicCSSUtil">
-		<priority value="DEBUG" />
+		<priority value="ERROR" />
 	</category>
 
 	<category name="com.liferay.portal.servlet.filters.fragment">

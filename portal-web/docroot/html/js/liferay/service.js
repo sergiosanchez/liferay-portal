@@ -702,6 +702,7 @@ Liferay.Service.registerClass(
 		getGroupFileEntries: true,
 		getGroupFileEntriesCount: true,
 		getMountFolders: true,
+		getMountFoldersCount: true,
 		getSubfolderIds: true,
 		getTempFileEntryNames: true,
 		lockFileEntry: true,
@@ -821,6 +822,7 @@ Liferay.Service.registerClass(
 	Liferay.Service.DDL, "DDLRecord",
 	{
 		addRecord: true,
+		getRecord: true,
 		updateRecord: true
 	}
 );

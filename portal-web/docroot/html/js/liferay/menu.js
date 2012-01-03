@@ -1,4 +1,4 @@
-AUI().add(
+AUI.add(
 	'liferay-menu',
 	function(A) {
 		var Lang = A.Lang;
@@ -78,8 +78,8 @@ AUI().add(
 		var Menu = function() {
 			var instance = this;
 
-			if (!arguments.callee._hasRun) {
-				arguments.callee._hasRun = true;
+			if (!Menu._INSTANCE) {
+				Menu._INSTANCE = instance;
 
 				Liferay.on('portletDragStart', instance._closeActiveMenu, instance);
 
@@ -261,7 +261,7 @@ AUI().add(
 					trigger.setData('menuHeight', menuHeight);
 
 					listContainer.addClass('lfr-menu-list-overflow');
-					listContainer.setStyle('height', menuHeight);
+					listContainer.setStyle('maxHeight', menuHeight);
 				}
 
 				instance._getFocusManager().refresh();
@@ -315,7 +315,7 @@ AUI().add(
 								next: 'down:40',
 								previous: 'down:38'
 							}
-						 }
+						}
 					);
 
 					bodyNode.on(
@@ -443,14 +443,10 @@ AUI().add(
 		var buffer = [];
 
 		Menu.register = function(id) {
-			var instance = Menu._INSTANCE;
-
 			var menuNode = document.getElementById(id);
 
-			if (!instance) {
-				instance = new Menu();
-
-				Menu._INSTANCE = instance;
+			if (!Menu._INSTANCE) {
+				new Menu();
 			}
 
 			buffer.push(menuNode);

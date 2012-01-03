@@ -92,7 +92,7 @@ public interface LocalRepository {
 	public List<Folder> getFolders(
 			long parentFolderId, boolean includeMountfolders, int start,
 			int end, OrderByComparator obc)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, boolean includeMountFolders, int start,
@@ -103,7 +103,7 @@ public interface LocalRepository {
 			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders, int start, int end,
 			OrderByComparator obc)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public int getFoldersAndFileEntriesAndFileShortcutsCount(
 			long folderId, int status, boolean includeMountFolders)
@@ -112,10 +112,10 @@ public interface LocalRepository {
 	public int getFoldersAndFileEntriesAndFileShortcutsCount(
 			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public int getFoldersCount(long parentFolderId, boolean includeMountfolders)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public int getFoldersFileEntriesCount(List<Long> folderIds, int status)
 		throws SystemException;

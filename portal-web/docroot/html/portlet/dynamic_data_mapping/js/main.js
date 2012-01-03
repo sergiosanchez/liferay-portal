@@ -1,4 +1,4 @@
-AUI().add(
+AUI.add(
 	'liferay-portlet-dynamic-data-mapping',
 	function(A) {
 		var AArray = A.Array;
@@ -14,6 +14,8 @@ AUI().add(
 
 		var MAP_HIDDEN_FIELD_ATTRS = {
 			checkbox: ['readOnly', 'required'],
+
+			'ddm-fileupload': ['predefinedValue'],
 
 			DEFAULT: ['readOnly']
 		};
@@ -269,14 +271,12 @@ AUI().add(
 							AArray.each(
 								options,
 								function(item, index, collection) {
-									var optionValue = item.value;
-
 									var typeElementOption = instance._createDynamicNode(
 										'dynamic-element',
 										{
 											name: instance._formatOptionsKey(item.label),
 											type: 'option',
-											value: optionValue
+											value: Liferay.Util.escapeHTML(item.value)
 										}
 									);
 
@@ -375,8 +375,8 @@ AUI().add(
 
 											var attributeValue = instance.getFieldLocalizedValue(field, attributeName, item1);
 
-											if (attributeName === 'folder') {
-												attributeValue = A.JSON.stringify(attributeValue);
+											if (attributeName === 'predefinedValue' && instanceOf(field, A.FormBuilderMultipleChoiceField)) {
+												attributeValue = A.JSON.stringify(AArray(attributeValue));
 											}
 
 											buffer.push(
@@ -675,7 +675,7 @@ AUI().add(
 					type: 'ddm-documentlibrary'
 				},
 				{
-					hiddenAttributes: MAP_HIDDEN_FIELD_ATTRS.DEFAULT,
+					hiddenAttributes: MAP_HIDDEN_FIELD_ATTRS['ddm-fileupload'],
 					iconClass: 'aui-form-builder-field-icon aui-form-builder-field-icon-fileupload',
 					label: Liferay.Language.get('file-upload'),
 					type: 'ddm-fileupload'

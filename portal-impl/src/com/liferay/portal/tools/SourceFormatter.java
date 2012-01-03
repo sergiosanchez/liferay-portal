@@ -83,6 +83,7 @@ public class SourceFormatter {
 						_formatAntXML();
 						_formatDDLStructuresXML();
 						_formatFriendlyURLRoutesXML();
+						_formatPortletXML();
 						_formatSH();
 						_formatWebXML();
 					}
@@ -1462,6 +1463,76 @@ public class SourceFormatter {
 		content = _formatTaglibQuotes(fileName, content, StringPool.APOSTROPHE);
 
 		return content;
+	}
+
+	private static void _formatPortletXML()
+		throws DocumentException, IOException {
+
+		String basedir = "./";
+
+		if (_fileUtil.exists(basedir + "portal-impl")) {
+			File file = new File(
+				basedir + "portal-web/docroot/WEB-INF/portlet-custom.xml");
+
+			String content = _fileUtil.read(file);
+
+			String newContent = _formatPortletXML(content);
+
+			if ((newContent != null) && !content.equals(newContent)) {
+				_fileUtil.write(file, newContent);
+
+				_sourceFormatterHelper.printError(file.toString(), file);
+			}
+		}
+		else {
+			DirectoryScanner directoryScanner = new DirectoryScanner();
+
+			directoryScanner.setBasedir(basedir);
+			directoryScanner.setIncludes(new String[] {"**\\portlet.xml"});
+
+			List<String> fileNames = _sourceFormatterHelper.scanForFiles(
+				directoryScanner);
+
+			for (String fileName : fileNames) {
+				File file = new File(basedir + fileName);
+
+				String content = _fileUtil.read(file);
+
+				String newContent = _formatPortletXML(content);
+
+				if ((newContent != null) && !content.equals(newContent)) {
+					_fileUtil.write(file, newContent);
+
+					_sourceFormatterHelper.printError(fileName, file);
+				}
+			}
+		}
+	}
+
+	private static String _formatPortletXML(String content)
+		throws DocumentException, IOException {
+
+		Document document = _saxReaderUtil.read(content);
+
+		Element rootElement = document.getRootElement();
+
+		rootElement.sortAttributes(true);
+
+		List<Element> portletElements = rootElement.elements("portlet");
+
+		for (Element portletElement : portletElements) {
+			portletElement.sortElementsByChildElement("init-param", "name");
+
+			Element portletPreferencesElement = portletElement.element(
+				"portlet-preferences");
+
+			if (portletPreferencesElement != null) {
+				portletPreferencesElement.sortElementsByChildElement(
+					"preference", "name");
+			}
+		}
+
+		return document.formattedString();
 	}
 
 	private static void _formatSH() throws IOException {

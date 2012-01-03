@@ -2636,7 +2636,7 @@
 	</library>
 	<library>
 		<file-name>portal/quartz.jar</file-name>
-		<version>1.8.4</version>
+		<version>2.1.0</version>
 		<project-name>Quartz</project-name>
 		<project-url>http://www.quartz-scheduler.org</project-url>
 		<licenses>
@@ -2751,7 +2751,7 @@
 	</library>
 	<library>
 		<file-name>portal/slf4j-api.jar</file-name>
-		<version>1.5.11</version>
+		<version>1.6.4</version>
 		<project-name>SLF4J</project-name>
 		<project-url>http://www.slf4j.org</project-url>
 		<licenses>

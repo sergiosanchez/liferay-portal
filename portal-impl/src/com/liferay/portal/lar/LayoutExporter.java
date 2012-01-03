@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -602,14 +603,11 @@ public class LayoutExporter {
 		Element dlFoldersElement = layoutElement.addElement("dl-folders");
 		Element dlFilesElement = layoutElement.addElement("dl-file-entries");
 		Element dlFileRanksElement = layoutElement.addElement("dl-file-ranks");
-		Element igFoldersElement = layoutElement.addElement("ig-folders");
-		Element igImagesElement = layoutElement.addElement("ig-images");
 
 		JournalPortletDataHandlerImpl.exportArticle(
 			portletDataContext, layoutElement, layoutElement, layoutElement,
 			dlFileEntryTypesElement, dlFoldersElement, dlFilesElement,
-			dlFileRanksElement, igFoldersElement, igImagesElement, article,
-			false);
+			dlFileRanksElement, article, false);
 	}
 
 	protected void exportLayout(
@@ -630,22 +628,27 @@ public class LayoutExporter {
 		LayoutRevision layoutRevision = null;
 
 		if (LayoutStagingUtil.isBranchingLayout(layout)) {
-			layoutRevision = LayoutStagingUtil.getLayoutRevision(layout);
+			ServiceContext serviceContext =
+				ServiceContextThreadLocal.getServiceContext();
+
+			long layoutSetBranchId = ParamUtil.getLong(
+				serviceContext, "layoutSetBranchId");
+
+			if (layoutSetBranchId <= 0) {
+				return;
+			}
 
 			layoutRevision = LayoutRevisionUtil.fetchByL_H_P(
-				layoutRevision.getLayoutSetBranchId(), true, layout.getPlid());
+				layoutSetBranchId, true, layout.getPlid());
 
-			if (layoutRevision != null) {
-				if (!layoutRevision.isHead()) {
+			if (layoutRevision == null) {
 					return;
-				}
-				else {
-					LayoutStagingHandler layoutStagingHandler =
-						LayoutStagingUtil.getLayoutStagingHandler(layout);
-
-					layoutStagingHandler.setLayoutRevision(layoutRevision);
-				}
 			}
+
+			LayoutStagingHandler layoutStagingHandler =
+				LayoutStagingUtil.getLayoutStagingHandler(layout);
+
+			layoutStagingHandler.setLayoutRevision(layoutRevision);
 		}
 
 		Element layoutElement = layoutsElement.addElement("layout");
@@ -989,6 +992,8 @@ public class LayoutExporter {
 			parameterMap, PortletDataHandlerKeys.PORTLET_DATA_ALL);
 		boolean exportPortletSetup = MapUtil.getBoolean(
 			parameterMap, PortletDataHandlerKeys.PORTLET_SETUP);
+		boolean exportPortletSetupAll = MapUtil.getBoolean(
+			parameterMap, PortletDataHandlerKeys.PORTLET_SETUP_ALL);
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Export portlet data " + exportPortletData);
@@ -1034,17 +1039,21 @@ public class LayoutExporter {
 							PortletDataHandlerKeys.PORTLET_DATA +
 								StringPool.UNDERLINE + rootPortletId);
 
-					// PORTLET_DATA and the PORTLET_SETUP for this specific
+					// PORTLET_SETUP and the PORTLET_SETUP for this specific
 					// data handler must be true
 
 					exportCurPortletSetup =
-						exportPortletData &&
+						exportPortletSetup &&
 						MapUtil.getBoolean(
 							parameterMap,
 							PortletDataHandlerKeys.PORTLET_SETUP +
 								StringPool.UNDERLINE + rootPortletId);
 				}
 			}
+		}
+
+		if (exportPortletSetupAll) {
+			exportCurPortletSetup = true;
 		}
 
 		return new boolean[] {exportCurPortletData, exportCurPortletSetup};

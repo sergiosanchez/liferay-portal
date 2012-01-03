@@ -49,6 +49,10 @@
 		}
 	}
 
+	.document-container .search-results-container .aui-tabview-list {
+		margin-bottom: 0;
+	}
+
 	.move-list {
 		.move-file, .move-folder {
 			background: #F0FAF0 url() no-repeat 5px 50%;
@@ -126,6 +130,10 @@
 
 		&:hover {
 			background-color: #D3E8F1;
+		}
+
+		&.error:hover {
+			background-color: #FDD;
 		}
 
 		.active-area, .active-area.hover {
@@ -603,12 +611,12 @@
 			}
 		}
 
-		li a {
+		li a, li.folder.error {
 			display: block;
 			padding: 6px 8px;
 		}
 
-		ul li a {
+		ul li a, ul li.folder.error {
 			color: #34404F;
 			text-decoration: none;
 		}

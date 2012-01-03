@@ -138,14 +138,6 @@ public class GlobalShutdownAction extends SimpleAction {
 
 		DocumentConversionUtil.disconnect();
 
-		// Scheduler
-
-		try {
-			SchedulerEngineUtil.shutdown();
-		}
-		catch (Exception e) {
-		}
-
 		// Thread local registry
 
 		ThirdPartyThreadLocalRegistry.resetThreadLocals();
@@ -182,6 +174,14 @@ public class GlobalShutdownAction extends SimpleAction {
 
 		try {
 			LogFactoryUtil.setLogFactory(new Jdk14LogFactoryImpl());
+		}
+		catch (Exception e) {
+		}
+
+		// Scheduler engine
+
+		try {
+			SchedulerEngineUtil.shutdown();
 		}
 		catch (Exception e) {
 		}

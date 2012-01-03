@@ -98,6 +98,11 @@ public interface Repository {
 			OrderByComparator obc)
 		throws SystemException;
 
+	public List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int start, int end,
+			OrderByComparator obc)
+		throws PortalException, SystemException;
+
 	public List<Object> getFileEntriesAndFileShortcuts(
 			long folderId, int status, int start, int end)
 		throws SystemException;
@@ -110,6 +115,9 @@ public interface Repository {
 
 	public int getFileEntriesCount(long folderId, long fileEntryTypeId)
 		throws SystemException;
+
+	public int getFileEntriesCount(long folderId, String[] mimeTypes)
+		throws PortalException, SystemException;
 
 	public FileEntry getFileEntry(long fileEntryId)
 		throws PortalException, SystemException;
@@ -132,7 +140,7 @@ public interface Repository {
 	public List<Folder> getFolders(
 			long parentFolderId, boolean includeMountFolders, int start,
 			int end, OrderByComparator obc)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, boolean includeMountFolders, int start,
@@ -143,7 +151,7 @@ public interface Repository {
 			long folderId, int status, String[] mimetypes,
 			boolean includeMountFolders, int start, int end,
 			OrderByComparator obc)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public int getFoldersAndFileEntriesAndFileShortcutsCount(
 			long folderId, int status, boolean includeMountFolders)
@@ -152,10 +160,10 @@ public interface Repository {
 	public int getFoldersAndFileEntriesAndFileShortcutsCount(
 			long folderId, int status, String[] mimetypes,
 			boolean includeMountFolders)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public int getFoldersCount(long parentFolderId, boolean includeMountfolders)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public int getFoldersFileEntriesCount(List<Long> folderIds, int status)
 		throws SystemException;
@@ -174,14 +182,14 @@ public interface Repository {
 	public List<FileEntry> getRepositoryFileEntries(
 			long userId, long rootFolderId, String[] mimeTypes, int status,
 			int start, int end, OrderByComparator obc)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public int getRepositoryFileEntriesCount(long userId, long rootFolderId)
 		throws SystemException;
 
 	public int getRepositoryFileEntriesCount(
 			long userId, long rootFolderId, String[] mimeTypes, int status)
-		throws SystemException;
+		throws PortalException, SystemException;
 
 	public long getRepositoryId();
 

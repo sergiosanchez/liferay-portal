@@ -145,6 +145,13 @@ public class DefaultConfigurationAction
 
 		PortletConfig selPortletConfig = getSelPortletConfig(renderRequest);
 
+		String configTemplate = selPortletConfig.getInitParameter(
+			"config-template");
+
+		if (Validator.isNotNull(configTemplate)) {
+			return configTemplate;
+		}
+
 		String configJSP = selPortletConfig.getInitParameter("config-jsp");
 
 		if (Validator.isNotNull(configJSP)) {

@@ -850,17 +850,17 @@ public class PortalImpl implements Portal {
 
 		// www.liferay.com:8080/page to www.liferay.com:8080/es/page
 
-		String[] canonicalURLParts = canonicalURL.split(
-			virtualHost.concat("(:\\d{1,5})?"), 2);
+		int pos = canonicalURL.indexOf(virtualHost);
 
-		if ((canonicalURLParts.length > 1) &&
-			Validator.isNotNull(canonicalURLParts[1])) {
+		if (pos > 0) {
+			pos += virtualHost.length();
 
-			int pos = canonicalURL.indexOf(
-				canonicalURLParts[1], canonicalURLParts[0].length());
+			pos = canonicalURL.indexOf(CharPool.SLASH, pos);
 
-			return canonicalURL.substring(0, pos).concat(i18nPath).concat(
-				canonicalURL.substring(pos));
+			if ((pos > 0) && (pos < canonicalURL.length())) {
+				return canonicalURL.substring(0, pos).concat(
+					i18nPath).concat(canonicalURL.substring(pos));
+			}
 		}
 
 		return canonicalURL.concat(i18nPath);
@@ -2725,8 +2725,13 @@ public class PortalImpl implements Portal {
 	}
 
 	public String getPortalURL(HttpServletRequest request, boolean secure) {
-		return getPortalURL(
-			request.getServerName(), request.getServerPort(), secure);
+		String serverName = request.getServerName();
+
+		if (!Validator.isDomain(serverName)) {
+			throw new RuntimeException("Invalid server name " + serverName);
+		}
+
+		return getPortalURL(serverName, request.getServerPort(), secure);
 	}
 
 	public String getPortalURL(Layout layout, ThemeDisplay themeDisplay)
@@ -5327,25 +5332,25 @@ public class PortalImpl implements Portal {
 	}
 
 	protected String buildI18NPath(Locale locale) {
-		if (Validator.isNull(locale.toString())) {
+		String languageId = LocaleUtil.toLanguageId(locale);
+
+		if (Validator.isNull(languageId)) {
 			return null;
 		}
 
-		String i18nPath = StringPool.SLASH.concat(locale.toString());
-
-		if (!LanguageUtil.isDuplicateLanguageCode(locale.getLanguage())) {
-			i18nPath = StringPool.SLASH.concat(locale.getLanguage());
-		}
-		else {
+		if (LanguageUtil.isDuplicateLanguageCode(locale.getLanguage())) {
 			Locale priorityLocale = LanguageUtil.getLocale(
 				locale.getLanguage());
 
 			if (locale.equals(priorityLocale)) {
-				i18nPath = StringPool.SLASH.concat(locale.getLanguage());
+				languageId = locale.getLanguage();
 			}
 		}
+		else {
+			languageId = locale.getLanguage();
+		}
 
-		return i18nPath;
+		return StringPool.SLASH.concat(languageId);
 	}
 
 	protected long doGetPlidFromPortletId(

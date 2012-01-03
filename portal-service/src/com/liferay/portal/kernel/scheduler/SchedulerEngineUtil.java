@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.messaging.MessageListener;
 import com.liferay.portal.kernel.scheduler.messaging.SchedulerEventMessageListenerWrapper;
 import com.liferay.portal.kernel.scheduler.messaging.SchedulerResponse;
 import com.liferay.portal.kernel.util.ObjectValuePair;
+import com.liferay.portal.kernel.util.PortalLifecycle;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringPool;
 
@@ -180,6 +181,14 @@ public class SchedulerEngineUtil {
 		throws SchedulerException {
 
 		return _instance._getStartTime(jobName, groupName, storageType);
+	}
+
+	public static void initialize() throws SchedulerException {
+		_instance._initialize();
+
+		SchedulerLifecycle schedulerLifecycle = new SchedulerLifecycle();
+
+		schedulerLifecycle.registerPortalLifecycle(PortalLifecycle.METHOD_INIT);
 	}
 
 	public static String namespaceGroupName(
@@ -608,6 +617,12 @@ public class SchedulerEngineUtil {
 		}
 
 		return null;
+	}
+
+	private void _initialize() throws SchedulerException {
+		if (_schedulerEngineClusterManager != null) {
+			_schedulerEngineClusterManager.initialize();
+		}
 	}
 
 	private String _namespaceGroupName(

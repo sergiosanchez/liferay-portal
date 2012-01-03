@@ -1,4 +1,4 @@
-AUI().add(
+AUI.add(
 	'liferay-staging-version',
 	function(A) {
 		var Lang = A.Lang;
@@ -136,6 +136,7 @@ AUI().add(
 									points: ['tc', 'tc']
 								},
 								draggable: true,
+								height: 600,
 								modal: true,
 								title: Liferay.Language.get('history'),
 								width: 600

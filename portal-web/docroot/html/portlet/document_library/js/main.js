@@ -1,4 +1,4 @@
-AUI().add(
+AUI.add(
 	'liferay-document-library',
 	function(A) {
 		var AObject = A.Object;
@@ -43,6 +43,8 @@ AUI().add(
 		var DOCUMENT_LIBRARY_GROUP = 'document-library';
 
 		var EXPAND_FOLDER = 'expandFolder';
+
+		var MESSAGE_TYPE_ERROR = 'error';
 
 		var PARENT_NODE = 'parentNode';
 
@@ -104,6 +106,8 @@ AUI().add(
 
 		var TOUCH = A.UA.touch;
 
+		var TPL_MESSAGE_RESPONSE = '<div class="lfr-message-response" />';
+
 		var VIEW_ENTRIES = 'viewEntries';
 
 		var VIEW_ENTRIES_PAGE = 'viewEntriesPage';
@@ -153,6 +157,8 @@ AUI().add(
 						instance._entriesContainer = instance.byId('documentContainer');
 
 						instance._selectAllCheckbox = instance.byId('allRowIdsCheckbox');
+
+						instance._portletMessageContainer = A.Node.create(TPL_MESSAGE_RESPONSE);
 
 						instance._displayStyle = instance.ns('displayStyle');
 						instance._folderId = instance.ns('folderId');
@@ -204,6 +210,7 @@ AUI().add(
 
 						folderPaginator.on('changeRequest', instance._onFolderPaginatorChangeRequest, instance);
 
+						Liferay.on(instance._dataRetrieveFailure, instance._onDataRetrieveFailure, instance);
 						Liferay.on(instance._eventDataRequest, instance._onDataRequest, instance);
 						Liferay.on(instance._eventDataRetrieveSuccess, instance._onDataRetrieveSuccess, instance);
 						Liferay.on(instance._eventPageLoaded, instance._onPageLoaded, instance);
@@ -584,7 +591,7 @@ AUI().add(
 
 							dd.after(
 								'afterMouseDown',
-								function(event){
+								function(event) {
 									instance._dragTask(event.target.get('node').one('.document-link'));
 								},
 								instance
@@ -691,6 +698,14 @@ AUI().add(
 						instance._processDefaultParams(event);
 
 						instance._updatePaginatorValues(event);
+					},
+
+					_onDataRetrieveFailure: function(event) {
+						var instance = this;
+
+						instance._documentLibraryContainer.loadingmask.hide();
+
+						instance._sendMessage(MESSAGE_TYPE_ERROR, Liferay.Language.get('your-request-failed-to-complete'));
 					},
 
 					_onDocumentLibraryContainerClick: function(event) {
@@ -1246,6 +1261,8 @@ AUI().add(
 						if (repositorySearchResults) {
 							var repositorySearchResultsContainer = entriesContainer.one('#' + instance.ns('repositorySearchResultsContainer') + repositoryId);
 
+							repositorySearchResultsContainer.empty();
+
 							repositorySearchResultsContainer.plug(A.Plugin.ParseContent);
 
 							repositorySearchResultsContainer.append(repositorySearchResults);
@@ -1271,6 +1288,22 @@ AUI().add(
 								responseData: reponseData
 							}
 						);
+					},
+
+					_sendMessage: function(type, message) {
+						var instance = this;
+
+						var output = instance._portletMessageContainer;
+
+						output.removeClass('portlet-msg-error').removeClass('portlet-msg-success');
+
+						output.addClass('portlet-msg-' + type);
+
+						output.html(message);
+
+						output.show();
+
+						instance._entriesContainer.setContent(output);
 					},
 
 					_syncDisplayStyleToolbar: function(content) {
