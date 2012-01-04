@@ -1009,9 +1009,9 @@ public class PortalImpl implements Portal {
 		return userId;
 	}
 
-	public String getCanonicalURL(String completeURL, ThemeDisplay themeDisplay) 
-		throws PortalException, SystemException{
-		
+	public String getCanonicalURL(String completeURL, ThemeDisplay themeDisplay)
+		throws PortalException, SystemException {
+
 		return getCanonicalURL(completeURL, themeDisplay, null);
 	}
 	
@@ -1037,10 +1037,10 @@ public class PortalImpl implements Portal {
 			parametersURL = completeURL.substring(pos);
 		}
 
-		if (layout==null) {
+		if (layout == null) {
 			layout = themeDisplay.getLayout();
 		}
-		
+
 		String layoutFriendlyURL = StringPool.BLANK;
 
 		if ((groupFriendlyURL.contains(layout.getFriendlyURL()) ||
