@@ -15,6 +15,7 @@
 package com.liferay.portal.upgrade.v6_1_0;
 
 import com.liferay.portal.kernel.upgrade.BaseUpgradePortletPreferences;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
@@ -34,23 +35,26 @@ public class UpgradeAssetPublisher extends BaseUpgradePortletPreferences {
 		throws Exception {
 
 		PortletPreferences portletPreferences =
-				PortletPreferencesFactoryUtil.fromXML(
-					companyId, ownerId, ownerType, plid, portletId, xml);
+			PortletPreferencesFactoryUtil.fromXML(
+				companyId, ownerId, ownerType, plid, portletId, xml);
 
-		String classNameIds = portletPreferences.getValue("classNameIds", "");
+		String classNameIds = portletPreferences.getValue("classNameIds", null);
 
-		String igImageClassNameId = Long.toString(PortalUtil.getClassNameId(
-				"com.liferay.portlet.imagegallery.model.IGImage"));
+		if (Validator.isNotNull(classNameIds)) {
+			long igClassNameId = PortalUtil.getClassNameId(
+				"com.liferay.portlet.imagegallery.model.IGImage");
 
-		String dlFileEntryClassNameId = Long.toString(PortalUtil.getClassNameId(
-				DLFileEntry.class.getName()));
+			long dlClassNameId = PortalUtil.getClassNameId(
+				DLFileEntry.class.getName());
 
-		if (classNameIds.indexOf(igImageClassNameId)>=0) {
-			classNameIds = classNameIds.replace(
-					igImageClassNameId, dlFileEntryClassNameId);
+			if (classNameIds.indexOf(String.valueOf(igClassNameId)) != -1) {
+				classNameIds = classNameIds.replace(
+					String.valueOf(igClassNameId),
+					String.valueOf(dlClassNameId));
+
+				portletPreferences.setValue("classNameIds", classNameIds);
+			}
 		}
-
-		portletPreferences.setValue("classNameIds", classNameIds);
 
 		return PortletPreferencesFactoryUtil.toXML(portletPreferences);
 	}
