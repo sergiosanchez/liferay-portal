@@ -93,10 +93,11 @@ public class LocalizationUtil {
 	}
 
 	public static Map<Locale, String> getLocalizationMap(
-		String bundleName, ClassLoader classLoader, String key) {
+		String bundleName, ClassLoader classLoader, String key,
+		boolean includeBetaLocales) {
 
 		return getLocalization().getLocalizationMap(
-			bundleName, classLoader, key);
+			bundleName, classLoader, key, includeBetaLocales);
 	}
 
 	public static Map<Locale, String> getLocalizationMap(

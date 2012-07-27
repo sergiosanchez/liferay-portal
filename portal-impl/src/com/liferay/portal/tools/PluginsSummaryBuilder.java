@@ -192,6 +192,7 @@ public class PluginsSummaryBuilder {
 		_writeElement(sb, "bundle", relengProperties, 3);
 		_writeElement(sb, "category", relengProperties, 3);
 		_writeElement(sb, "demo-url", relengProperties, 3);
+		_writeElement(sb, "dependent-apps", relengProperties, 3);
 
 		if (FileUtil.exists(fullWebInfDirName + "releng/icons/90x90.png")) {
 			_writeElement(
@@ -201,7 +202,6 @@ public class PluginsSummaryBuilder {
 
 		_writeElement(sb, "labs", relengProperties, 3);
 		_writeElement(sb, "marketplace", relengProperties, 3);
-		_writeElement(sb, "parent-app", relengProperties, 3);
 		_writeElement(sb, "public", relengProperties, 3);
 
 		String fullScreenshotsDirName =
@@ -216,12 +216,14 @@ public class PluginsSummaryBuilder {
 			Arrays.sort(screenshotsFileNames);
 
 			for (String screenshotsFileName : screenshotsFileNames) {
-				if (screenshotsFileName.equals("Thumbs.db")) {
+				if (screenshotsFileName.equals("Thumbs.db") ||
+					screenshotsFileName.endsWith(".png")) {
+
 					FileUtil.delete(
 						fullScreenshotsDirName + screenshotsFileName);
 				}
 
-				if (!screenshotsFileName.endsWith(".png")) {
+				if (!screenshotsFileName.endsWith(".jpg")) {
 					continue;
 				}
 
@@ -231,7 +233,6 @@ public class PluginsSummaryBuilder {
 			}
 		}
 
-		_writeElement(sb, "standalone-app", relengProperties, 3);
 		_writeElement(sb, "supported", relengProperties, 3);
 
 		return sb.toString();
@@ -246,11 +247,10 @@ public class PluginsSummaryBuilder {
 		_writeProperty(sb, relengProperties, "bundle", "false");
 		_writeProperty(sb, relengProperties, "category", "");
 		_writeProperty(sb, relengProperties, "demo-url", "");
+		_writeProperty(sb, relengProperties, "dependent-apps", "");
 		_writeProperty(sb, relengProperties, "labs", "true");
 		_writeProperty(sb, relengProperties, "marketplace", "false");
-		_writeProperty(sb, relengProperties, "parent-app", "");
 		_writeProperty(sb, relengProperties, "public", "true");
-		_writeProperty(sb, relengProperties, "standalone-app", "true");
 		_writeProperty(sb, relengProperties, "supported", "false");
 
 		String relengPropertiesContent = sb.toString();

@@ -110,19 +110,21 @@ public class RSSPortletDataHandlerImpl extends JournalPortletDataHandlerImpl {
 			PortletPreferences portletPreferences)
 		throws Exception {
 
-		portletPreferences.setValue("footerArticleValues", StringPool.BLANK);
-		portletPreferences.setValue("headerArticleValues", StringPool.BLANK);
-		portletPreferences.setValue("urls", StringPool.BLANK);
-		portletPreferences.setValue("titles", StringPool.BLANK);
-		portletPreferences.setValue("itemsPerChannel", StringPool.BLANK);
 		portletPreferences.setValue(
 			"expandedItemsPerChannel", StringPool.BLANK);
-		portletPreferences.setValue("showFeedTitle", StringPool.BLANK);
-		portletPreferences.setValue("showFeedPublishedDate", StringPool.BLANK);
+		portletPreferences.setValue("feedImageAlignment", StringPool.BLANK);
+		portletPreferences.setValues(
+			"footerArticleValues", new String[] {"0", ""});
+		portletPreferences.setValues(
+			"headerArticleValues", new String[] {"0", ""});
+		portletPreferences.setValue("itemsPerChannel", StringPool.BLANK);
 		portletPreferences.setValue("showFeedDescription", StringPool.BLANK);
 		portletPreferences.setValue("showFeedImage", StringPool.BLANK);
-		portletPreferences.setValue("feedImageAlignment", StringPool.BLANK);
 		portletPreferences.setValue("showFeedItemAuthor", StringPool.BLANK);
+		portletPreferences.setValue("showFeedPublishedDate", StringPool.BLANK);
+		portletPreferences.setValue("showFeedTitle", StringPool.BLANK);
+		portletPreferences.setValue("titles", StringPool.BLANK);
+		portletPreferences.setValue("urls", StringPool.BLANK);
 
 		return portletPreferences;
 	}

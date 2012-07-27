@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.repository.Repository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
-import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
@@ -649,9 +648,7 @@ public class LiferayRepository
 
 		searchContext.setSearchEngineId(indexer.getSearchEngineId());
 
-		BooleanQuery fullQuery = indexer.getFullQuery(searchContext);
-
-		return SearchEngineUtil.search(searchContext, fullQuery);
+		return indexer.search(searchContext);
 	}
 
 	public Hits search(SearchContext searchContext, Query query)

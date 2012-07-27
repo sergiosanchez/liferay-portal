@@ -2247,6 +2247,12 @@ public class JournalArticleLocalServiceImpl
 			throw new ArticleVersionException();
 		}
 
+		boolean incrementVersion = false;
+
+		if (oldArticle.isApproved() || oldArticle.isExpired()) {
+			incrementVersion = true;
+		}
+
 		if (serviceContext != null) {
 			serviceContext.validateModifiedDate(
 				oldArticle, ArticleVersionException.class);
@@ -2256,7 +2262,7 @@ public class JournalArticleLocalServiceImpl
 
 		User user = userPersistence.findByPrimaryKey(oldArticle.getUserId());
 
-		if (!oldArticle.isDraft()) {
+		if (incrementVersion) {
 			double newVersion = MathUtil.format(oldVersion + 0.1, 1, 1);
 
 			long id = counterLocalService.increment();
@@ -2317,8 +2323,9 @@ public class JournalArticleLocalServiceImpl
 		article.setDescriptionMap(descriptionMap);
 
 		content = format(
-			user, groupId, articleId, version, !oldArticle.isDraft(), content,
-			oldArticle.getStructureId(), images);
+			user, groupId, articleId, article.getVersion(),
+			!oldArticle.isDraft(), content, oldArticle.getStructureId(),
+			images);
 
 		article.setContent(content);
 

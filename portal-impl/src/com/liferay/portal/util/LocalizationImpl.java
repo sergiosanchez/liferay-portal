@@ -347,7 +347,8 @@ public class LocalizationImpl implements Localization {
 	}
 
 	public Map<Locale, String> getLocalizationMap(
-		String bundleName, ClassLoader classLoader, String key) {
+		String bundleName, ClassLoader classLoader, String key,
+		boolean includeBetaLocales) {
 
 		if (key == null) {
 			return null;
@@ -362,7 +363,14 @@ public class LocalizationImpl implements Localization {
 
 		map.put(defaultLocale, defaultValue);
 
-		Locale[] locales = LanguageUtil.getAvailableLocales();
+		Locale[] locales = null;
+
+		if (includeBetaLocales) {
+			locales = LanguageUtil.getAvailableLocales();
+		}
+		else {
+			locales = LanguageUtil.getSupportedLocales();
+		}
 
 		for (Locale locale : locales) {
 			if (locale.equals(defaultLocale)) {

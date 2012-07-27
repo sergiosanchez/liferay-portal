@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Layout;
+import com.liferay.portal.model.User;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
@@ -248,13 +249,13 @@ public class EditArticleAction extends PortletAction {
 					 e instanceof ArticleTitleException ||
 					 e instanceof ArticleTypeException ||
 					 e instanceof ArticleVersionException ||
-					 e instanceof DuplicateArticleIdException ||
-					 e instanceof LocaleException) {
+					 e instanceof DuplicateArticleIdException) {
 
 				SessionErrors.add(actionRequest, e.getClass());
 			}
 			else if (e instanceof AssetCategoryException ||
-					 e instanceof AssetTagException) {
+					 e instanceof AssetTagException ||
+					 e instanceof LocaleException) {
 
 				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
@@ -546,6 +547,9 @@ public class EditArticleAction extends PortletAction {
 		UploadPortletRequest uploadPortletRequest =
 			PortalUtil.getUploadPortletRequest(actionRequest);
 
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
 		String cmd = ParamUtil.getString(uploadPortletRequest, Constants.CMD);
 
 		long groupId = ParamUtil.getLong(uploadPortletRequest, "groupId");
@@ -561,8 +565,10 @@ public class EditArticleAction extends PortletAction {
 		boolean localized = ParamUtil.getBoolean(
 			uploadPortletRequest, "localized");
 
+		User user = themeDisplay.getUser();
+
 		String defaultLanguageId = ParamUtil.getString(
-			uploadPortletRequest, "defaultLanguageId");
+			uploadPortletRequest, "defaultLanguageId", user.getLanguageId());
 
 		Locale defaultLocale = LocaleUtil.fromLanguageId(defaultLanguageId);
 
@@ -761,8 +767,10 @@ public class EditArticleAction extends PortletAction {
 						JournalStructureLocalServiceUtil.getStructure(
 							groupId, structureId, true);
 
+					boolean translate = cmd.equals(Constants.TRANSLATE);
+
 					content = JournalUtil.mergeArticleContent(
-						curArticle.getContent(), content, true);
+						curArticle.getContent(), content, !translate);
 					content = JournalUtil.removeOldContent(
 						content, structure.getMergedXsd());
 				}
