@@ -147,12 +147,12 @@ public class AddDefaultDocumentLibraryStructuresAction
 			serviceContext);
 
 		if (GetterUtil.getBoolean(
-				PropsUtil.get("dl.file.entry.type.igimage"))) {
+			PropsUtil.get("dl.file.entry.type.igimage"))) {
 
 			addDLFileEntryType(
-					userId, groupId, DLFileEntryTypeConstants.NAME_IG_IMAGE,
-					"IG Image", DLFileEntryTypeConstants.NAME_IG_IMAGE,
-					ddmStructureNames, serviceContext);
+				userId, groupId, DLFileEntryTypeConstants.NAME_IG_IMAGE,
+				"IG Image", DLFileEntryTypeConstants.NAME_IG_IMAGE,
+				ddmStructureNames, serviceContext);
 		}
 	}
 

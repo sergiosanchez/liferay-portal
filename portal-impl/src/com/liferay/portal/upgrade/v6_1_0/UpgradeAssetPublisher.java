@@ -45,8 +45,7 @@ public class UpgradeAssetPublisher extends BaseUpgradePortletPreferences {
 
 		try {
 			con = DataAccess.getUpgradeOptimizedConnection();
-			//Es un buen punto para comprobar como actua la cache de Hibernate
-			//¿Se lanza una consulta por cada AP a actualizar?
+
 			ps = con.prepareStatement(
 				"select fileEntryTypeId from DLFileEntryType " +
 					"where name = ? AND companyId = ?");
@@ -89,7 +88,7 @@ public class UpgradeAssetPublisher extends BaseUpgradePortletPreferences {
 				companyId, ownerId, ownerType, plid, portletId, xml);
 
 		String classNameIds[] = portletPreferences.getValues(
-				"classNameIds", null);
+			"classNameIds", null);
 
 		if (Validator.isNotNull(classNameIds)) {
 			long igClassNameId = PortalUtil.getClassNameId(
@@ -99,26 +98,28 @@ public class UpgradeAssetPublisher extends BaseUpgradePortletPreferences {
 				DLFileEntry.class.getName());
 
 			List<String> list = new LinkedList<String>(
-					Arrays.asList(classNameIds));
+				Arrays.asList(classNameIds));
 
 			int index = list.indexOf(String.valueOf(igClassNameId));
 
 			if (index >= 0) {
 				list.remove(index);
+
 				if (!list.contains(String.valueOf(dlClassNameId))) {
 					list.add(index, String.valueOf(dlClassNameId));
 				}
 			}
 
 			portletPreferences.setValues(
-					"classNameIds", list.toArray(new String[list.size()]));
+				"classNameIds", list.toArray(new String[list.size()]));
 
 			long fileEntryTypeId = getBasicImageFileEntryType(companyId);
 
 			portletPreferences.setValue(
 				"anyClassTypeDLFileEntryAssetRendererFactory",
-				""+fileEntryTypeId);
-			portletPreferences.setValue("classTypeIds", ""+fileEntryTypeId);
+				String.valueOf(fileEntryTypeId));
+			portletPreferences.setValue("classTypeIds",
+				String.valueOf(fileEntryTypeId));
 
 		}
 

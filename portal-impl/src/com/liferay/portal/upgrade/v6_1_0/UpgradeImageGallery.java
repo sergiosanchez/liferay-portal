@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Image;
-import com.liferay.portal.model.Organization;
 import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.service.ImageLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
@@ -75,7 +74,6 @@ public class UpgradeImageGallery extends UpgradeProcess {
 	}
 
 	protected void addBasicImageDocumentType() throws Exception {
-
 		if (!GetterUtil.getBoolean(
 				PropsUtil.get("dl.file.entry.type.igimage"))) {
 
@@ -100,12 +98,12 @@ public class UpgradeImageGallery extends UpgradeProcess {
 
 				long userId = getDefaultUserId(companyId);
 
-				long groupId = getDefaultGroupId(companyId);
+				long groupId = getCompanyGroupId(companyId);
 
 				Timestamp now = new Timestamp(System.currentTimeMillis());
 
 				insertBasicImageDocumentType(
-						groupId, companyId, userId, StringPool.BLANK, now, now);
+					groupId, companyId, userId, StringPool.BLANK, now, now);
 			}
 		}
 		finally {
@@ -369,7 +367,7 @@ public class UpgradeImageGallery extends UpgradeProcess {
 		upgradeDocumentLibrary.updateSyncs();
 	}
 
-	protected long getDefaultGroupId(long companyId) throws Exception {
+	protected long getCompanyGroupId(long companyId) throws Exception {
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;

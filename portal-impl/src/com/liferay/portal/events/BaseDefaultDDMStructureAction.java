@@ -92,8 +92,8 @@ public abstract class BaseDefaultDDMStructureAction extends SimpleAction {
 			xsd = DDMXMLUtil.updateXMLDefaultLocale(
 				xsd, ddmStructureDefaultLocale, LocaleUtil.getDefault());
 
-			boolean isBasicImage = nameMap.containsValue(
-					DLFileEntryTypeConstants.NAME_IG_IMAGE);
+			boolean isBasicImage = name.equals(
+				DLFileEntryTypeConstants.NAME_IG_IMAGE);
 
 			if (!isBasicImage || (isBasicImage && GetterUtil.getBoolean(
 					PropsUtil.get("dl.file.entry.type.igimage")))) {
