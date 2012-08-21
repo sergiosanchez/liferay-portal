@@ -1064,6 +1064,14 @@ public class PortalImpl implements Portal {
 			String completeURL, ThemeDisplay themeDisplay, Layout layout)
 		throws PortalException, SystemException {
 
+		return getCanonicalURL(completeURL, themeDisplay, layout, false);
+	}
+
+	public String getCanonicalURL(
+			String completeURL, ThemeDisplay themeDisplay, Layout layout,
+			boolean forceLayoutInURL)
+		throws PortalException, SystemException {
+
 		completeURL = removeRedirectParameter(completeURL);
 
 		String parametersURL = StringPool.BLANK;
@@ -1088,10 +1096,11 @@ public class PortalImpl implements Portal {
 
 		String layoutFriendlyURL = StringPool.BLANK;
 
-		if ((groupFriendlyURL.contains(layout.getFriendlyURL()) ||
+		if (forceLayoutInURL ||
+				((groupFriendlyURL.contains(layout.getFriendlyURL()) ||
 			 groupFriendlyURL.contains(
 				StringPool.SLASH + layout.getLayoutId())) &&
-			(!layout.isFirstParent() || Validator.isNotNull(parametersURL))) {
+			(!layout.isFirstParent() || Validator.isNotNull(parametersURL)))) {
 
 			layoutFriendlyURL = layout.getFriendlyURL();
 		}
