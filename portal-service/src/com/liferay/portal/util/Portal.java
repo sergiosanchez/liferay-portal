@@ -354,8 +354,27 @@ public interface Portal {
 	 * @throws SystemException if a system exception occurred
 	 */
 	public String getCanonicalURL(
+			String completeURL, ThemeDisplay themeDisplay, Layout layout)
+		throws PortalException, SystemException;
+
+	/**
+	 * Returns the canonical URL of the page, to distinguish it among its
+	 * translations.
+	 *
+	 * @param  completeURL the complete URL of the page
+	 * @param  themeDisplay the current theme display
+	 * @param  layout the layout. If it is <code>null</code>, then it is
+	 *         generated for the current layout
+	 * @param  forceLayoutInURL adds the page friendlyURL  to the canonical URL
+	 *         even if it is not needed
+	 * @return the canonical URL
+	 * @throws PortalException if a friendly URL or the group could not be
+	 *         retrieved
+	 * @throws SystemException if a system exception occurred
+	 */
+	public String getCanonicalURL(
 			String completeURL, ThemeDisplay themeDisplay, Layout layout,
-			boolean forceLayoutInUrl)
+			boolean forceLayoutInURL)
 		throws PortalException, SystemException;
 
 	/**

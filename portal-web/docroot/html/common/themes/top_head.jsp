@@ -31,7 +31,7 @@
 if (!themeDisplay.isSignedIn() && layout.isPublicLayout()) {
 	String completeURL = PortalUtil.getCurrentCompleteURL(request);
 
-	String canonicalURL = PortalUtil.getCanonicalURL(completeURL, themeDisplay, layout, false);
+	String canonicalURL = PortalUtil.getCanonicalURL(completeURL, themeDisplay, layout);
 %>
 
 	<link href="<%= HtmlUtil.escapeAttribute(canonicalURL) %>" rel="canonical" />
