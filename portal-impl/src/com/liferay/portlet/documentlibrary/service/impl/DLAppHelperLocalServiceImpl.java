@@ -621,45 +621,54 @@ public class DLAppHelperLocalServiceImpl
 			userId, fileVersion.getFileVersionId(), trashEntry.getStatus(),
 			workflowContext, new ServiceContext());
 
-		if (!DLAppHelperThreadLocal.isEnabled()) {
+		if (DLAppHelperThreadLocal.isEnabled()) {
 
-			// Social for wiki attachments
+			// File shortcut
+
+			dlFileShortcutLocalService.enableFileShortcuts(
+				fileEntry.getFileEntryId());
+
+			// File rank
+
+			dlFileRankLocalService.enableFileRanks(fileEntry.getFileEntryId());
+
+			// Social
+
+			socialActivityCounterLocalService.enableActivityCounters(
+				DLFileEntryConstants.getClassName(), fileEntry.getFileEntryId());
+		}
+
+		String extraData = StringPool.BLANK;
+
+		String className = DLFileEntryConstants.getClassName();
+		long classPK = fileEntry.getFileEntryId();
+
+		int activityType = SocialActivityConstants.TYPE_RESTORE_FROM_TRASH;
+
+		if ((dlFileEntry.getClassNameId() > 0) &&
+			(dlFileEntry.getClassPK() > 0)) {
+
+			className = dlFileEntry.getClassName();
+			classPK = dlFileEntry.getClassPK();
+
+			activityType =
+				SocialActivityConstants.TYPE_RESTORE_ATTACHMENT_FROM_TRASH;
 
 			JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
 
 			extraDataJSONObject.put("fileEntryId",
-					dlFileEntry.getFileEntryId());
+				dlFileEntry.getFileEntryId());
 			extraDataJSONObject.put("title", TrashUtil.getOriginalTitle(
-					dlFileEntry.getTitle()));
+				dlFileEntry.getTitle()));
 
-			socialActivityLocalService.addActivity(
-				userId, fileEntry.getGroupId(), dlFileEntry.getClassName(),
-				dlFileEntry.getClassPK(),
-				SocialActivityConstants.TYPE_RESTORE_FROM_TRASH,
-				extraDataJSONObject.toString(), 0);
-
-			return;
+			extraData = extraDataJSONObject.toString();
 		}
-
-		// File shortcut
-
-		dlFileShortcutLocalService.enableFileShortcuts(
-			fileEntry.getFileEntryId());
-
-		// File rank
-
-		dlFileRankLocalService.enableFileRanks(fileEntry.getFileEntryId());
 
 		// Social
 
-		socialActivityCounterLocalService.enableActivityCounters(
-			DLFileEntryConstants.getClassName(), fileEntry.getFileEntryId());
-
 		socialActivityLocalService.addActivity(
-			userId, fileEntry.getGroupId(), DLFileEntryConstants.getClassName(),
-			fileEntry.getFileEntryId(),
-			SocialActivityConstants.TYPE_RESTORE_FROM_TRASH, StringPool.BLANK,
-			0);
+			userId, fileEntry.getGroupId(), className, classPK, activityType,
+			extraData, 0);
 	}
 
 	public void restoreFileShortcutFromTrash(

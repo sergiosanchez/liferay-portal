@@ -72,30 +72,23 @@ Map<Long,Integer> lastFileStatusMap = new HashMap<Long,Integer>();
 		String title = null;
 		int status = WorkflowConstants.STATUS_APPROVED;
 		FileEntry fileEntry = null;
-		TrashEntry trashEntry = null;
-		double version = 0;	
+		double version = 0;
 		Date createDate = null;
 
-		if(Validator.isNotNull(activity.getExtraData())) {
-
+		if (Validator.isNotNull(activity.getExtraData())) {
 			JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject(HtmlUtil.unescape(activity.getExtraData()));
 
 			if (activity.getType() == SocialActivityConstants.TYPE_ADD_ATTACHMENT || activity.getType() == SocialActivityConstants.TYPE_MOVE_TO_TRASH || activity.getType() == SocialActivityConstants.TYPE_RESTORE_FROM_TRASH) {
+				fileEntry = PortletFileRepositoryUtil.getPortletFileEntry(extraDataJSONObject.getLong("fileEntryId"));
 
-				long fileEntryId = extraDataJSONObject.getLong("fileEntryId");
-				title = extraDataJSONObject.getString("title");
-
-				fileEntry = PortletFileRepositoryUtil.getPortletFileEntry(fileEntryId);
-
-				if(TrashUtil.isInTrash("com.liferay.portlet.documentlibrary.model.DLFileEntry", fileEntry.getFileEntryId())){
-					trashEntry = TrashEntryLocalServiceUtil.getEntry(DLFileEntry.class.getName(), fileEntry.getFileEntryId());
+				if (TrashUtil.isInTrash(DLFileEntry.class.getName(), fileEntry.getFileEntryId())) {
 					status = WorkflowConstants.STATUS_IN_TRASH;
 				}
 				
-				Integer lastFileStatus = lastFileStatusMap.get(fileEntryId);
+				Integer lastFileStatus = lastFileStatusMap.get(fileEntry.getFileEntryId());
 				
 				if (Validator.isNull(lastFileStatus)) {
-					lastFileStatusMap.put(fileEntryId, activity.getType());
+					lastFileStatusMap.put(fileEntry.getFileEntryId(), activity.getType());
 				}
 								
 			}
@@ -110,10 +103,10 @@ Map<Long,Integer> lastFileStatusMap = new HashMap<Long,Integer>();
 
 		SocialActivityFeedEntry feedEntry = SocialActivityInterpreterLocalServiceUtil.interpret(activity, themeDisplay);
 		%>
+
 		<c:if test="<%= Validator.isNotNull(feedEntry) %>">
 			<c:choose>
-				<c:when test="<%= activity.getType() == SocialActivityConstants.TYPE_MOVE_TO_TRASH || activity.getType() == SocialActivityConstants.TYPE_ADD_ATTACHMENT || activity.getType() == SocialActivityConstants.TYPE_RESTORE_FROM_TRASH %>">
-	
+				<c:when test="<%= activity.getType() == SocialActivityConstants.TYPE_MOVE_ATTACHMENT_TO_TRASH || activity.getType() == SocialActivityConstants.TYPE_ADD_ATTACHMENT || activity.getType() == SocialActivityConstants.TYPE_RESTORE_FROM_TRASH %>">
 					<liferay-portlet:actionURL varImpl="rowURL" windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>">
 						<portlet:param name="struts_action" value="/wiki/get_page_attachment" />
 						<portlet:param name="redirect" value="<%= currentURL %>" />
@@ -130,28 +123,30 @@ Map<Long,Integer> lastFileStatusMap = new HashMap<Long,Integer>();
 							<c:when test="<%= activity.getType() == SocialActivityConstants.TYPE_MOVE_TO_TRASH %>">
 								<liferay-ui:icon
 									image="trash"
-									message="trash"
+									label="<%= true %>"
+									message="<%= feedEntry.getTitle() %>"
 								/>
 							</c:when>
 							<c:when test="<%= activity.getType() == SocialActivityConstants.TYPE_RESTORE_FROM_TRASH %>">
 								<liferay-ui:icon
 									image="undo"
-									message="undo"
+									label="<%= true %>"
+									message="<%= feedEntry.getTitle() %>"
 								/>
 							</c:when>
 							<c:otherwise>
 								<liferay-ui:icon
 									image="add_article"
-									message="add_article"
+									label="<%= true %>"
+									message="<%= feedEntry.getTitle() %>"
 								/>
 							</c:otherwise>
 						</c:choose>
-						<%= feedEntry.getTitle() %>
+
 						<aui:a href="<%= rowURL.toString() %>"><%= title %></aui:a>
-	
 					</liferay-ui:search-container-column-text>
-	
 				</c:when>
+
 				<c:when test="<%= activity.getType() == WikiActivityKeys.UPDATE_PAGE || activity.getType() == WikiActivityKeys.ADD_PAGE %>">
 					<liferay-ui:search-container-column-text
 						name="activity"
@@ -195,8 +190,8 @@ Map<Long,Integer> lastFileStatusMap = new HashMap<Long,Integer>();
 				name="date"
 			>
 				<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(pageContext, System.currentTimeMillis() - createDate.getTime(), true) %>" key="x-ago" />
-			
 			</liferay-ui:search-container-column-text>
+
 			<c:choose>
 				<c:when test="<%= (activity.getType() == SocialActivityConstants.TYPE_MOVE_TO_TRASH || activity.getType() == SocialActivityConstants.TYPE_ADD_ATTACHMENT || activity.getType() == SocialActivityConstants.TYPE_RESTORE_FROM_TRASH) && lastFileStatusMap.get(fileEntry.getFileEntryId()) == activity.getType() %>">
 
@@ -223,7 +218,6 @@ Map<Long,Integer> lastFileStatusMap = new HashMap<Long,Integer>();
 				</c:otherwise>
 			</c:choose>
 		</c:if>
-
 	</liferay-ui:search-container-row>
 	<liferay-ui:search-iterator />
 </liferay-ui:search-container>
