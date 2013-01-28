@@ -46,6 +46,8 @@ PortletURL iteratorURL = renderResponse.createRenderURL();
 iteratorURL.setParameter("struts_action", "/wiki/view_page_activities");
 iteratorURL.setParameter("redirect", currentURL);
 iteratorURL.setParameter("nodeId", String.valueOf(node.getNodeId()));
+
+Map<Long,Integer> lastFileStatusMap = new HashMap<Long,Integer>();
 %>
 
 <liferay-ui:search-container
@@ -89,9 +91,18 @@ iteratorURL.setParameter("nodeId", String.valueOf(node.getNodeId()));
 					trashEntry = TrashEntryLocalServiceUtil.getEntry(DLFileEntry.class.getName(), fileEntry.getFileEntryId());
 					status = WorkflowConstants.STATUS_IN_TRASH;
 				}
+				
+				Integer lastFileStatus = lastFileStatusMap.get(fileEntryId);
+				
+				if (Validator.isNull(lastFileStatus)) {
+					lastFileStatusMap.put(fileEntryId, activity.getType());
+				}
+								
 			}
 			else if (activity.getType() == WikiActivityKeys.UPDATE_PAGE || activity.getType() == WikiActivityKeys.ADD_PAGE) {
 				version = extraDataJSONObject.getDouble("version");
+				
+				wikiPage = WikiPageLocalServiceUtil.getPage(node.getNodeId(), wikiPage.getTitle(), version);
 			}
 			
 			createDate = new Date(activity.getCreateDate());
@@ -161,6 +172,10 @@ iteratorURL.setParameter("nodeId", String.valueOf(node.getNodeId()));
 	
 								<%= feedEntry.getTitle() %>
 								<aui:a href="<%= rowURL.toString() %>"><%= version %></aui:a>
+								<c:if test="<%= Validator.isNotNull(wikiPage.getSummary()) %>">
+									<br/>
+									<%= LanguageUtil.get(pageContext, "summary") + ": " + wikiPage.getSummary() %>
+								</c:if>
 							</c:when>
 							<c:otherwise>
 								<liferay-ui:icon
@@ -182,8 +197,40 @@ iteratorURL.setParameter("nodeId", String.valueOf(node.getNodeId()));
 				<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(pageContext, System.currentTimeMillis() - createDate.getTime(), true) %>" key="x-ago" />
 			
 			</liferay-ui:search-container-column-text>
+			<c:choose>
+				<c:when test="<%= (activity.getType() == SocialActivityConstants.TYPE_MOVE_TO_TRASH || activity.getType() == SocialActivityConstants.TYPE_ADD_ATTACHMENT || activity.getType() == SocialActivityConstants.TYPE_RESTORE_FROM_TRASH) && lastFileStatusMap.get(fileEntry.getFileEntryId()) == activity.getType() %>">
+
+					<%
+					lastFileStatusMap.put(fileEntry.getFileEntryId(),-1);			
+					%>
+
+					<liferay-ui:search-container-column-jsp
+						align="right"
+						path="/html/portlet/wiki/page_activity_action_attachments.jsp"
+					/>
+				</c:when>
+				<c:when test="<%= (activity.getType() == WikiActivityKeys.UPDATE_PAGE || activity.getType() == WikiActivityKeys.ADD_PAGE) && wikiPage.getVersion() == version %>">
+					<liferay-ui:search-container-column-jsp
+						align="right"
+						path="/html/portlet/wiki/page_activity_action_pages.jsp"
+					/>
+				
+				</c:when>
+				<c:otherwise>
+					<liferay-ui:search-container-column-text
+						name="" value=" "
+					/>
+				</c:otherwise>
+			</c:choose>
 		</c:if>
 
 	</liferay-ui:search-container-row>
 	<liferay-ui:search-iterator />
 </liferay-ui:search-container>
+
+<liferay-ui:restore-entry
+	duplicateEntryAction="/wiki/restore_entry"
+	overrideMessage="overwrite-the-existing-attachment-with-the-removed-one"
+	renameMessage="keep-both-attachments-and-rename-the-removed-attachment-as"
+	restoreEntryAction="/wiki/restore_page_attachment"
+/>
