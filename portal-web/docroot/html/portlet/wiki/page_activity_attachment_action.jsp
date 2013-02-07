@@ -21,28 +21,22 @@ ResultRow row = (ResultRow)request.getAttribute(WebKeys.SEARCH_CONTAINER_RESULT_
 
 SocialActivity activity = (SocialActivity)row.getObject();
 
-WikiPage wikiPage = (WikiPage)request.getAttribute(WebKeys.WIKI_PAGE);
-long folderId = wikiPage.getAttachmentsFolderId();
-
-FileEntry fileEntry = null;
-TrashEntry trashEntry = null;
-
 JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject(HtmlUtil.unescape(activity.getExtraData()));
 
-long fileEntryId = extraDataJSONObject.getLong("fileEntryId");
+FileEntry fileEntry = PortletFileRepositoryUtil.getPortletFileEntry(extraDataJSONObject.getLong("fileEntryId"));
 
-fileEntry = PortletFileRepositoryUtil.getPortletFileEntry(fileEntryId);
+FileVersion fileVersion = fileEntry.getFileVersion();
 
-boolean isInTrash = false;
-
-if(TrashUtil.isInTrash(DLFileEntry.class.getName(), fileEntry.getFileEntryId())){
-	isInTrash = true;
-	trashEntry = TrashEntryLocalServiceUtil.getEntry(DLFileEntry.class.getName(), fileEntry.getFileEntryId());
-}
+WikiPage wikiPage = (WikiPage)request.getAttribute(WebKeys.WIKI_PAGE);
 %>
 
 <liferay-ui:icon-menu>
-	<c:if test="<%= isInTrash && (activity.getType() == SocialActivityConstants.TYPE_MOVE_ATTACHMENT_TO_TRASH) && WikiNodePermission.contains(permissionChecker, wikiPage.getNodeId(), ActionKeys.ADD_ATTACHMENT) %>">
+	<c:if test="<%= fileVersion.isInTrash() && (activity.getType() == SocialActivityConstants.TYPE_MOVE_ATTACHMENT_TO_TRASH) && WikiNodePermission.contains(permissionChecker, wikiPage.getNodeId(), ActionKeys.ADD_ATTACHMENT) %>">
+
+		<%
+		TrashEntry trashEntry = TrashEntryLocalServiceUtil.getEntry(DLFileEntry.class.getName(), fileEntry.getFileEntryId());
+		%>
+
 		<portlet:actionURL var="restoreEntryURL">
 			<portlet:param name="struts_action" value="/wiki/restore_page_attachment" />
 			<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.RESTORE %>" />
@@ -62,7 +56,7 @@ if(TrashUtil.isInTrash(DLFileEntry.class.getName(), fileEntry.getFileEntryId()))
 		/>
 	</c:if>
 
-	<c:if test="<%= !isInTrash && (activity.getType() == SocialActivityConstants.TYPE_ADD_ATTACHMENT || activity.getType() == SocialActivityConstants.TYPE_RESTORE_ATTACHMENT_FROM_TRASH) && WikiPagePermission.contains(permissionChecker, wikiPage.getNodeId(), wikiPage.getTitle(), ActionKeys.DELETE) %>">
+	<c:if test="<%= !fileVersion.isInTrash() && (activity.getType() == SocialActivityConstants.TYPE_ADD_ATTACHMENT || activity.getType() == SocialActivityConstants.TYPE_RESTORE_ATTACHMENT_FROM_TRASH) && WikiPagePermission.contains(permissionChecker, wikiPage.getNodeId(), wikiPage.getTitle(), ActionKeys.DELETE) %>">
 		<portlet:actionURL var="deleteURL">
 			<portlet:param name="struts_action" value="/wiki/edit_page_attachment" />
 			<portlet:param name="<%= Constants.CMD %>" value="<%= TrashUtil.isTrashEnabled(scopeGroupId) ? Constants.MOVE_TO_TRASH : Constants.DELETE %>" />

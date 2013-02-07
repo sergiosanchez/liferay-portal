@@ -16,9 +16,11 @@
 
 <%@ include file="/html/portlet/init.jsp" %>
 
-<%@ page import="com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateHandler" %><%@
+<%@ page import="com.liferay.portal.NoSuchModelException" %><%@
+page import="com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateHandler" %><%@
 page import="com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateHandlerRegistryUtil" %><%@
 page import="com.liferay.portal.kernel.repository.model.FileEntry" %><%@
+page import="com.liferay.portal.kernel.repository.model.FileVersion" %><%@
 page import="com.liferay.portal.kernel.sanitizer.SanitizerException" %><%@
 page import="com.liferay.portal.kernel.sanitizer.SanitizerUtil" %><%@
 page import="com.liferay.portal.kernel.search.Hits" %><%@

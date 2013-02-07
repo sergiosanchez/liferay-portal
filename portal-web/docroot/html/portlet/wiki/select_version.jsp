@@ -19,7 +19,7 @@
 <%
 WikiPage wikiPage = (WikiPage)request.getAttribute(WebKeys.WIKI_PAGE);
 
-double sourceVersion = GetterUtil.getDouble((String) request.getAttribute(WebKeys.WIKI_PAGE_SOURCE_VERSION));
+double sourceVersion = ParamUtil.getDouble(request, "sourceVersion");
 %>
 
 <liferay-ui:search-container
@@ -44,20 +44,13 @@ double sourceVersion = GetterUtil.getDouble((String) request.getAttribute(WebKey
 			value='<%= LanguageUtil.format(pageContext, "x-ago", LanguageUtil.getTimeDescription(pageContext, System.currentTimeMillis() - curWikiPage.getModifiedDate().getTime(), true)) %>'
 		/>
 
-		<c:choose>
-			<c:when test="<%= sourceVersion != curWikiPage.getVersion() %>">
-				<liferay-ui:search-container-column-text
-					name=""
-				>
-					<aui:button cssClass="select-wiki-page-version" data-sourceversion="<%= sourceVersion %>" data-targetversion="<%= curWikiPage.getVersion() %>" href="javascript:;" value="choose" />
-				</liferay-ui:search-container-column-text>
-			</c:when>
-			<c:otherwise>
-				<liferay-ui:search-container-column-text
-					name="" value=" "
-				/>
-			</c:otherwise>
-		</c:choose>
+		<liferay-ui:search-container-column-text
+			name=""
+		>
+				<c:if test="<%= sourceVersion != curWikiPage.getVersion() %>">
+						<aui:button cssClass="select-wiki-page-version" data-sourceversion="<%= sourceVersion %>" data-targetversion="<%= curWikiPage.getVersion() %>" href="javascript:;" value="choose" />
+				</c:if>
+		</liferay-ui:search-container-column-text>
 	</liferay-ui:search-container-row>
 
 	<liferay-ui:search-iterator />
@@ -83,19 +76,24 @@ searchContainer.get('contentBox').delegate(
 
 		var redirect = Liferay.PortletURL.createRenderURL();
 
-		redirect.setPortletId(36);
+		redirect.setPortletId('<%= portletDisplay.getId() %>');
 
 		redirect.setParameter('struts_action', '/wiki/view_page_activities');
+
+		<%
+		WikiNode node = wikiPage.getNode();
+		%>
+
 		redirect.setParameter('nodeId', '<%= wikiPage.getNode().getNodeId() %>');
 		redirect.setParameter("title", '<%= wikiPage.getTitle() %>');
 
 		var portletURL = Liferay.PortletURL.createRenderURL();
 
-		portletURL.setPortletId(36);
+		portletURL.setPortletId('<%= portletDisplay.getId() %>');
 
 		portletURL.setParameter('struts_action', '/wiki/compare_versions');
 		portletURL.setParameter('redirect', redirect);
-		portletURL.setParameter('nodeId', '<%= wikiPage.getNode().getNodeId() %>');
+		portletURL.setParameter('nodeId', '<%= node.getNodeId() %>');
 		portletURL.setParameter('title', '<%= wikiPage.getTitle() %>');
 		portletURL.setParameter('sourceVersion', sourceVersion);
 		portletURL.setParameter('targetVersion', targetVersion);
@@ -103,7 +101,7 @@ searchContainer.get('contentBox').delegate(
 
 		Liferay.Util.getOpener().location.href = portletURL.toString();
 	},
-	'.select-wiki-page-version .aui-button-input'
+	'.select-wiki-page-version input'
 );
 
 </aui:script>

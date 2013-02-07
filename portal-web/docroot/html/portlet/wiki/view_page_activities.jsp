@@ -45,8 +45,6 @@ PortletURL iteratorURL = renderResponse.createRenderURL();
 iteratorURL.setParameter("struts_action", "/wiki/view_page_activities");
 iteratorURL.setParameter("redirect", currentURL);
 iteratorURL.setParameter("nodeId", String.valueOf(node.getNodeId()));
-
-Map<Long,Integer> attachmentLastActivityMap = new HashMap<Long,Integer>();
 %>
 
 <div class="page-activities">
@@ -69,6 +67,7 @@ Map<Long,Integer> attachmentLastActivityMap = new HashMap<Long,Integer>();
 			User activityUser = UserLocalServiceUtil.getUserById(activity.getUserId());
 			JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject(activity.getExtraData());
 			FileEntry fileEntry = null;
+			FileVersion fileVersion = null;
 			%>
 
 			<liferay-ui:search-container-column-text
@@ -80,33 +79,30 @@ Map<Long,Integer> attachmentLastActivityMap = new HashMap<Long,Integer>();
 						<%
 						try {
 							fileEntry = PortletFileRepositoryUtil.getPortletFileEntry(extraDataJSONObject.getLong("fileEntryId"));
-						} catch (PortalException e) {}
+						}
+						catch (NoSuchModelException nsme) {
+						}
+
 						String title = extraDataJSONObject.getString("title");
 
-						int status = WorkflowConstants.STATUS_APPROVED;
-
-						if(Validator.isNotNull(fileEntry)) {
-
-							if (TrashUtil.isInTrash(DLFileEntry.class.getName(), fileEntry.getFileEntryId())) {
-								status = WorkflowConstants.STATUS_IN_TRASH;
-							}
-
-							markAttachmentLastActivity(activity.getType(), fileEntry.getFileEntryId(), attachmentLastActivityMap);
+						if(fileEntry != null) {
+							fileVersion = fileEntry.getFileVersion();
 						}
 						%>
 
-						<liferay-util:buffer var="attachmentTitleLink">
+						<liferay-util:buffer var="attachmentTitle">
 							<c:choose>
-								<c:when test="<%= Validator.isNotNull(fileEntry) %>">
+								<c:when test="<%= fileVersion != null %>">
 									<portlet:actionURL var="getPateAttachmentURL" windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>">
 										<portlet:param name="struts_action" value="/wiki/get_page_attachment" />
 										<portlet:param name="redirect" value="<%= currentURL %>" />
 										<portlet:param name="nodeId" value="<%= String.valueOf(node.getNodeId()) %>" />
 										<portlet:param name="title" value="<%= wikiPage.getTitle() %>" />
 										<portlet:param name="fileName" value="<%= fileEntry.getTitle() %>" />
-										<portlet:param name="status" value="<%= String.valueOf(status) %>" />
+										<portlet:param name="status" value="<%= String.valueOf(fileVersion.getStatus()) %>" />
 									</portlet:actionURL>
-										<aui:a href="<%= getPateAttachmentURL %>"><%= title %></aui:a>
+
+									<aui:a href="<%= getPateAttachmentURL %>"><%= title %></aui:a>
 								</c:when>
 								<c:otherwise>
 									<%= title %>
@@ -119,21 +115,21 @@ Map<Long,Integer> attachmentLastActivityMap = new HashMap<Long,Integer>();
 								<liferay-ui:icon
 									image="clip"
 									label="<%= true %>"
-									message='<%= LanguageUtil.format(pageContext, "activity-wiki-add-the-attachment", new Object[] {activityUser.getFullName(), attachmentTitleLink}) %>'
+									message='<%= LanguageUtil.format(pageContext, "activity-wiki-add-the-attachment", new Object[] {activityUser.getFullName(), attachmentTitle}) %>'
 								/>
 							</c:when>
 							<c:when test="<%= activity.getType() == SocialActivityConstants.TYPE_MOVE_ATTACHMENT_TO_TRASH %>">
 								<liferay-ui:icon
 									image="delete_attachment"
 									label="<%= true %>"
-									message='<%= LanguageUtil.format(pageContext, "activity-wiki-delete-the-attachment", new Object[] {activityUser.getFullName(), attachmentTitleLink}) %>'
+									message='<%= LanguageUtil.format(pageContext, "activity-wiki-delete-the-attachment", new Object[] {activityUser.getFullName(), attachmentTitle}) %>'
 								/>
 							</c:when>
 							<c:when test="<%= activity.getType() == SocialActivityConstants.TYPE_RESTORE_ATTACHMENT_FROM_TRASH %>">
 								<liferay-ui:icon
 									image="undo"
 									label="<%= true %>"
-									message='<%= LanguageUtil.format(pageContext, "activity-wiki-restore-the-attachment", new Object[] {activityUser.getFullName(), attachmentTitleLink}) %>'
+									message='<%= LanguageUtil.format(pageContext, "activity-wiki-restore-the-attachment", new Object[] {activityUser.getFullName(), attachmentTitle}) %>'
 								/>
 							</c:when>
 						</c:choose>
@@ -193,8 +189,7 @@ Map<Long,Integer> attachmentLastActivityMap = new HashMap<Long,Integer>();
 			</liferay-ui:search-container-column-text>
 
 			<c:choose>
-				<c:when test="<%= ((activity.getType() == SocialActivityConstants.TYPE_ADD_ATTACHMENT) || (activity.getType() == SocialActivityConstants.TYPE_MOVE_ATTACHMENT_TO_TRASH) || (activity.getType() == SocialActivityConstants.TYPE_RESTORE_ATTACHMENT_FROM_TRASH)) && (Validator.isNotNull(fileEntry)) && (isAttachmentLastActivity(activity.getType(), fileEntry.getFileEntryId(), attachmentLastActivityMap)) %>">
-
+				<c:when test="<%= ((activity.getType() == SocialActivityConstants.TYPE_ADD_ATTACHMENT) || (activity.getType() == SocialActivityConstants.TYPE_MOVE_ATTACHMENT_TO_TRASH) || (activity.getType() == SocialActivityConstants.TYPE_RESTORE_ATTACHMENT_FROM_TRASH)) && (fileEntry != null) %>">
 					<liferay-ui:search-container-column-jsp
 						align="right"
 						path="/html/portlet/wiki/page_activity_attachment_action.jsp"
@@ -205,12 +200,9 @@ Map<Long,Integer> attachmentLastActivityMap = new HashMap<Long,Integer>();
 						align="right"
 						path="/html/portlet/wiki/page_activity_page_action.jsp"
 					/>
-
 				</c:when>
 				<c:otherwise>
-					<liferay-ui:search-container-column-text
-						name="" value=" "
-					/>
+					<liferay-ui:search-container-column-text />
 				</c:otherwise>
 			</c:choose>
 		</liferay-ui:search-container-row>
@@ -225,23 +217,3 @@ Map<Long,Integer> attachmentLastActivityMap = new HashMap<Long,Integer>();
 		restoreEntryAction="/wiki/restore_page_attachment"
 	/>
 </div>
-
-<%!
-
-public boolean isAttachmentLastActivity(int curActivityType, long fileEntryId, Map<Long,Integer> attachmentLastActivityMap) {
-	if (curActivityType == attachmentLastActivityMap.get(fileEntryId)) {
-		attachmentLastActivityMap.put(fileEntryId,-1);
-		return true;
-	}
-
-	return false;
-}
-
-public void markAttachmentLastActivity(int curActivityType, long fileEntryId, Map<Long,Integer> attachmentLastActivityMap) {
-	Integer attachmentLastActivity = attachmentLastActivityMap.get(fileEntryId);
-
-	if (Validator.isNull(attachmentLastActivity)) {
-		attachmentLastActivityMap.put(fileEntryId, curActivityType);
-	}
-}
-%>

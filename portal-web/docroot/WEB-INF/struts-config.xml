@@ -2157,8 +2157,8 @@
 			<forward name="portlet.wiki.view_node" path="portlet.wiki.search" />
 		</action>
 
-		<action path="/wiki/select_version" type="com.liferay.portlet.wiki.action.EditVersionAction">
-			<forward name="portlet.wiki.edit_version" path="portlet.wiki.select_version" />
+		<action path="/wiki/select_version" type="com.liferay.portlet.wiki.action.ViewPageAction">
+			<forward name="portlet.wiki.view_page" path="portlet.wiki.select_version" />
 			<forward name="portlet.wiki.error" path="portlet.wiki.error" />
 		</action>
 
