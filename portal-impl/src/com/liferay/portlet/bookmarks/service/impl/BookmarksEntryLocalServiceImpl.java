@@ -321,20 +321,26 @@ public class BookmarksEntryLocalServiceImpl
 		return moveEntryToTrash(userId, entry);
 	}
 
-	public BookmarksEntry openEntry(long userId, long entryId)
-		throws PortalException, SystemException {
-
-		BookmarksEntry entry = bookmarksEntryPersistence.findByPrimaryKey(
-			entryId);
+	public BookmarksEntry openEntry(long userId, BookmarksEntry entry)
+		throws SystemException {
 
 		entry.setVisits(entry.getVisits() + 1);
 
 		bookmarksEntryPersistence.update(entry);
 
 		assetEntryLocalService.incrementViewCounter(
-			userId, BookmarksEntry.class.getName(), entryId, 1);
+			userId, BookmarksEntry.class.getName(), entry.getEntryId(), 1);
 
 		return entry;
+	}
+
+	public BookmarksEntry openEntry(long userId, long entryId)
+		throws PortalException, SystemException {
+
+		BookmarksEntry entry = bookmarksEntryPersistence.findByPrimaryKey(
+			entryId);
+
+		return openEntry(userId, entry);
 	}
 
 	@Indexable(type = IndexableType.REINDEX)

@@ -3,6 +3,10 @@
 <project name="portal-test-${test.ant.script.command}" basedir="../../." default="test" xmlns:antelope="antlib:ise.antelope.tasks">
 	<import file="../../build-test.xml" />
 
+	<propertycopy name="db-upgrade.bundled.tomcat.dir.name" from="db-upgrade.$${lp.version}.bundled.tomcat.dir.name" silent="true" />
+	<propertycopy name="db-upgrade.file.name" from="db-upgrade.$${lp.version}.file.name" silent="true" />
+	<propertycopy name="db-upgrade.plugins.dir" from="db-upgrade.$${lp.version}.plugins.dir" silent="true" />
+
 	<if>
 		<not>
 			<equals arg1="$${test.pacl}" arg2="true" />
@@ -12,12 +16,94 @@
 		</then>
 	</if>
 
+	<target name="test-${test.ant.script.command}-bundled-tomcat-mysql-firefox">
+		<antcall target="print-scm-revision" />
+
+		<antcall target="clean-up-test-properties" />
+
+		<ant antfile="build-dist.xml" target="build-dist-tomcat" />
+
+		<antcall target="prepare-versioned-mysql">
+			${test.ant.script.file.properties}
+			<param name="skip.prepare-bundle" value="true" />
+			<param name="sql.version" value="$${lp.version}" />
+		</antcall>
+
+		<ant antfile="build-test-tomcat.xml" target="run-selenium-versioned-tomcat">
+			${test.ant.script.file.database.collate}
+			${test.ant.script.file.evaluate.logs}
+			${test.ant.script.file.plugin.hooks}
+			${test.ant.script.file.plugin.layouttpls}
+			${test.ant.script.file.plugin.portlets}
+			${test.ant.script.file.plugin.portlets.properties}
+			${test.ant.script.file.plugin.themes}
+			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
+			<property name="bundled.tomcat.dir.name" value="$${db-upgrade.bundled.tomcat.dir.name}" />
+			<property name="file.name" value="$${db-upgrade.file.name}" />
+			<property name="legacy.theme.ids" value="classic,controlpanel" />
+			<property name="lp.plugins.dir" value="$${db-upgrade.plugins.dir}" />
+			<property name="lp.version" value="$${lp.version}" />
+			<property name="plugins.deployed" value="true" />
+			<property name="skip.rebuild-database" value="true" />
+			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
+		</ant>
+	</target>
+
+	<target name="test-${test.ant.script.command}-bundled-tomcat-sql-server-2008-firefox">
+		<antcall target="print-scm-revision" />
+
+		<antcall target="clean-up-test-properties" />
+
+		<antcall target="prepare-vm-server">
+			<param name="build.war" value="false" />
+			<param name="skip.prepare-bundle" value="true" />
+			<param name="vm.vmdk.suffix" value="sql-server-2008-r2" />
+			<param name="vm.host" value="${vm.db.host}" />
+		</antcall>
+
+		<ant antfile="build-dist.xml" target="build-dist-tomcat" />
+
+		<antcall target="prepare-versioned-sql-server-2008">
+			${test.ant.script.file.properties}
+			<param name="skip.prepare-bundle" value="true" />
+			<param name="sql.version" value="$${lp.version}" />
+		</antcall>
+
+		<ant antfile="build-test-tomcat.xml" target="run-selenium-versioned-tomcat">
+			${test.ant.script.file.database.collate}
+			${test.ant.script.file.evaluate.logs}
+			${test.ant.script.file.plugin.hooks}
+			${test.ant.script.file.plugin.layouttpls}
+			${test.ant.script.file.plugin.portlets}
+			${test.ant.script.file.plugin.portlets.properties}
+			${test.ant.script.file.plugin.themes}
+			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
+			<property name="bundled.tomcat.dir.name" value="$${db-upgrade.bundled.tomcat.dir.name}" />
+			<property name="file.name" value="$${db-upgrade.file.name}" />
+			<property name="legacy.theme.ids" value="classic,controlpanel" />
+			<property name="lp.plugins.dir" value="$${db-upgrade.plugins.dir}" />
+			<property name="lp.version" value="$${lp.version}" />
+			<property name="plugins.deployed" value="true" />
+			<property name="skip.rebuild-database" value="true" />
+			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
+		</ant>
+
+		<antcall target="stop-vm">
+			<param name="vm.host" value="${vm.db.host}" />
+		</antcall>
+	</target>
+
 	<target name="test-${test.ant.script.command}-geronimo-mysql-firefox">
 		<antcall target="print-scm-revision" />
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -41,7 +127,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -66,7 +153,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -90,7 +178,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -115,7 +204,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -139,7 +229,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -164,7 +255,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -188,7 +280,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -213,7 +306,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -237,7 +331,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -269,7 +364,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-db2">
+		<antcall target="prepare-common">
+			<param name="db.type" value="db2" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -304,7 +400,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-db2">
+		<antcall target="prepare-common">
+			<param name="db.type" value="db2" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -328,47 +425,13 @@
 		</antcall>
 	</target>
 
-	<target name="test-${test.ant.script.command}-tomcat-ee-6.1.20-mysql-firefox">
-		<antcall target="print-scm-revision" />
-
-		<antcall target="clean-up-test-properties" />
-
-		<ant antfile="build-dist.xml" target="build-dist-tomcat" />
-
-		<antcall target="prepare-versioned-mysql">
-			${test.ant.script.file.properties}
-			<param name="skip.prepare-bundle" value="true" />
-			<param name="sql.version" value="6.1.20" />
-		</antcall>
-
-		<ant antfile="build-test-tomcat.xml" target="run-selenium-versioned-tomcat">
-			${test.ant.script.file.database.collate}
-			${test.ant.script.file.evaluate.logs}
-			${test.ant.script.file.plugin.hooks}
-			${test.ant.script.file.plugin.layouttpls}
-			${test.ant.script.file.plugin.portlets}
-			${test.ant.script.file.plugin.portlets.properties}
-			${test.ant.script.file.plugin.themes}
-			${test.ant.script.file.plugin.webs}
-			${test.ant.script.file.selenium.implementation}
-			<property name="file.name" value="$${db-upgrade.6.1.20.file.name}" />
-			<property name="legacy.theme.ids" value="classic,controlpanel" />
-			<property name="lp.plugins.dir" value="$${db-upgrade.6.1.20.plugins.dir}" />
-			<property name="lp.version" value="6.1.20" />
-			<property name="plugins.deployed" value="true" />
-			<property name="skip.rebuild-database" value="true" />
-			<property name="test.name" value="${test.ant.script.suite}" />
-			<property name="test.pacl" value="$${test.pacl}" />
-			<property name="tomcat.folder.dir" value="$${db-upgrade.6.1.20.tomcat.folder.dir}" />
-		</ant>
-	</target>
-
 	<target name="test-${test.ant.script.command}-tomcat-hsql-firefox">
 		<antcall target="print-scm-revision" />
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-hsql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="hsql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -392,7 +455,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-hsql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="hsql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -417,7 +481,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -441,7 +506,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -466,7 +532,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -491,7 +558,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -516,7 +584,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -542,7 +611,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -575,7 +645,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-oracle-10">
+		<antcall target="prepare-common">
+			<param name="db.type" value="oracle-10" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -610,7 +681,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-oracle-10">
+		<antcall target="prepare-common">
+			<param name="db.type" value="oracle-10" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -646,7 +718,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-oracle-11">
+		<antcall target="prepare-common">
+			<param name="db.type" value="oracle-11" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -681,7 +754,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-oracle-11">
+		<antcall target="prepare-common">
+			<param name="db.type" value="oracle-11" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -717,7 +791,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-postgresql-8.4">
+		<antcall target="prepare-common">
+			<param name="db.type" value="postgresql-8.4" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -752,7 +827,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-postgresql-8.4">
+		<antcall target="prepare-common">
+			<param name="db.type" value="postgresql-8.4" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -788,7 +864,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-postgresql-9.0">
+		<antcall target="prepare-common">
+			<param name="db.type" value="postgresql-9.0" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -823,7 +900,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-postgresql-9.0">
+		<antcall target="prepare-common">
+			<param name="db.type" value="postgresql-9.0" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -859,7 +937,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-sql-server-2005">
+		<antcall target="prepare-common">
+			<param name="db.type" value="sql-server-2005" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -894,7 +973,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-sql-server-2005">
+		<antcall target="prepare-common">
+			<param name="db.type" value="sql-server-2005" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -930,7 +1010,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-sql-server-2008">
+		<antcall target="prepare-common">
+			<param name="db.type" value="sql-server-2008" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -965,7 +1046,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-sql-server-2008">
+		<antcall target="prepare-common">
+			<param name="db.type" value="sql-server-2008" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -1001,7 +1083,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-sybase">
+		<antcall target="prepare-common">
+			<param name="db.type" value="sybase" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -1036,7 +1119,8 @@
 			<param name="vm.host" value="${vm.db.host}" />
 		</antcall>
 
-		<antcall target="prepare-sybase">
+		<antcall target="prepare-common">
+			<param name="db.type" value="sybase" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -1065,7 +1149,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -1089,7 +1174,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -1114,7 +1200,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 			<param name="vm.vmdk.suffix" value="websphere-6.1.0.27" />
 		</antcall>
@@ -1139,7 +1226,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 			<param name="vm.vmdk.suffix" value="websphere-6.1.0.27" />
 		</antcall>
@@ -1164,7 +1252,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -1188,7 +1277,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 			<param name="vm.vmdk.suffix" value="websphere-8.0.0.0" />
 		</antcall>
@@ -1213,7 +1303,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 		</antcall>
 
@@ -1238,7 +1329,8 @@
 
 		<antcall target="clean-up-test-properties" />
 
-		<antcall target="prepare-mysql">
+		<antcall target="prepare-common">
+			<param name="db.type" value="mysql" />
 			${test.ant.script.file.properties}
 			<param name="vm.vmdk.suffix" value="websphere-8.0.0.0" />
 		</antcall>

@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.OSDetector;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
@@ -1663,14 +1664,23 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 
 		String webSphereHome = System.getenv("WAS_HOME");
 
+		String wsadminBatchFileName = null;
+
+		if (OSDetector.isWindows()) {
+			wsadminBatchFileName = webSphereHome + "\\bin\\wsadmin.bat";
+		}
+		else {
+			wsadminBatchFileName = webSphereHome + "/bin/wsadmin.sh";
+		}
+
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"Installing plugin by executing " + webSphereHome +
-					"\\bin\\wsadmin.bat -f " + wsadminFileName);
+				"Installing plugin by executing " + wsadminBatchFileName +
+					" -f " + wsadminFileName);
 		}
 
 		ProcessBuilder processBuilder = new ProcessBuilder(
-			webSphereHome + "\\bin\\wsadmin.bat", "-f", wsadminFileName);
+			wsadminBatchFileName, "-f", wsadminFileName);
 
 		processBuilder.redirectErrorStream(true);
 

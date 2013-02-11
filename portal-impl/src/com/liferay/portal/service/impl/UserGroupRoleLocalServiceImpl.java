@@ -23,8 +23,7 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Role;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroupRole;
-import com.liferay.portal.security.auth.MembershipPolicy;
-import com.liferay.portal.security.auth.MembershipPolicyFactory;
+import com.liferay.portal.security.auth.MembershipPolicyUtil;
 import com.liferay.portal.security.permission.PermissionCacheUtil;
 import com.liferay.portal.service.base.UserGroupRoleLocalServiceBaseImpl;
 import com.liferay.portal.service.persistence.UserGroupRolePK;
@@ -82,9 +81,6 @@ public class UserGroupRoleLocalServiceImpl
 	}
 
 	public void checkMembershipPolicy(User user) throws SystemException {
-		MembershipPolicy membershipPolicy =
-			MembershipPolicyFactory.getInstance();
-
 		LinkedHashMap<String, Object> groupParams =
 			new LinkedHashMap<String, Object>();
 
@@ -97,7 +93,7 @@ public class UserGroupRoleLocalServiceImpl
 			QueryUtil.ALL_POS);
 
 		for (Group group : groups) {
-			Set<Role> mandatoryRoles = membershipPolicy.getMandatoryRoles(
+			Set<Role> mandatoryRoles = MembershipPolicyUtil.getMandatoryRoles(
 				group, user);
 
 			for (Role role : mandatoryRoles) {
@@ -111,7 +107,7 @@ public class UserGroupRoleLocalServiceImpl
 				}
 			}
 
-			Set<Role> forbiddenRoles = membershipPolicy.getForbiddenRoles(
+			Set<Role> forbiddenRoles = MembershipPolicyUtil.getForbiddenRoles(
 				group, user);
 
 			for (Role role : forbiddenRoles) {

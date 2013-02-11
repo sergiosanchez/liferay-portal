@@ -383,6 +383,8 @@
 
 		<action path="/bookmarks/find_entry" type="com.liferay.portlet.bookmarks.action.FindEntryAction" />
 
+		<action path="/bookmarks/find_folder" type="com.liferay.portlet.bookmarks.action.FindFolderAction" />
+
 		<action path="/bookmarks/open_entry" type="com.liferay.portlet.bookmarks.action.OpenEntryAction" />
 
 		<action path="/bookmarks/search" forward="portlet.bookmarks.search" />
@@ -844,6 +846,8 @@
 			<forward name="portlet.journal.edit_folder" path="portlet.journal.edit_folder" />
 			<forward name="portlet.journal.error" path="portlet.journal.error" />
 		</action>
+
+		<action path="/journal/find_folder" type="com.liferay.portlet.journal.action.FindFolderAction" />
 
 		<action path="/journal/get_article" type="com.liferay.portlet.journal.action.GetArticleAction" />
 
@@ -2153,6 +2157,11 @@
 			<forward name="portlet.wiki.view_node" path="portlet.wiki.search" />
 		</action>
 
+		<action path="/wiki/select_version" type="com.liferay.portlet.wiki.action.ViewPageAction">
+			<forward name="portlet.wiki.view_page" path="portlet.wiki.select_version" />
+			<forward name="portlet.wiki.error" path="portlet.wiki.error" />
+		</action>
+
 		<action path="/wiki/view" type="com.liferay.portlet.wiki.action.ViewPageAction">
 			<forward name="portlet.wiki.error" path="portlet.wiki.error" />
 			<forward name="portlet.wiki.view_categorized_pages" path="portlet.wiki.view_categorized_pages" />
@@ -2190,6 +2199,12 @@
 			<forward name="portlet.wiki.error" path="portlet.wiki.error" />
 			<forward name="portlet.wiki.view_categorized_pages" path="portlet.wiki.view_categorized_pages" />
 			<forward name="portlet.wiki.view_node" path="portlet.wiki.view_orphan_pages" />
+		</action>
+
+		<action path="/wiki/view_page_activities" type="com.liferay.portlet.wiki.action.ViewPageAction">
+			<forward name="portlet.wiki.error" path="portlet.wiki.error" />
+			<forward name="portlet.wiki.view_categorized_pages" path="portlet.wiki.view_categorized_pages" />
+			<forward name="portlet.wiki.view_page" path="portlet.wiki.view_page_activities" />
 		</action>
 
 		<action path="/wiki/view_page_attachments" type="com.liferay.portlet.wiki.action.ViewPageAction">

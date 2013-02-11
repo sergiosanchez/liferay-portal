@@ -15,6 +15,9 @@
 package com.liferay.portalweb.socialofficehome.sites;
 
 import com.liferay.portalweb.portal.BaseTestSuite;
+import com.liferay.portalweb.socialofficehome.sites.privaterestrictedsite.PrivateRestrictedSiteTestPlan;
+import com.liferay.portalweb.socialofficehome.sites.privatesite.PrivateSiteTestPlan;
+import com.liferay.portalweb.socialofficehome.sites.publicrestrictedsite.PublicRestrictedSiteTestPlan;
 import com.liferay.portalweb.socialofficehome.sites.site.SiteTestPlan;
 
 import junit.framework.Test;
@@ -28,6 +31,9 @@ public class SitesTestPlan extends BaseTestSuite {
 	public static Test suite() {
 		TestSuite testSuite = new TestSuite();
 
+		testSuite.addTest(PrivateRestrictedSiteTestPlan.suite());
+		testSuite.addTest(PrivateSiteTestPlan.suite());
+		testSuite.addTest(PublicRestrictedSiteTestPlan.suite());
 		testSuite.addTest(SiteTestPlan.suite());
 
 		return testSuite;

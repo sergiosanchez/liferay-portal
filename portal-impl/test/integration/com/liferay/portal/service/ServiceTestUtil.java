@@ -557,6 +557,10 @@ public class ServiceTestUtil {
 		return _random.nextBoolean();
 	}
 
+	public static long randomLong() throws Exception {
+		return _random.nextLong();
+	}
+
 	public static String randomString() throws Exception {
 		return PwdGenerator.getPassword();
 	}

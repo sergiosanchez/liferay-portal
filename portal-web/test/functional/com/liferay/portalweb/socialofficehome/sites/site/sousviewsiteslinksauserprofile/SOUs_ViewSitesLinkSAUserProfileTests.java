@@ -23,11 +23,11 @@ import com.liferay.portalweb.socialoffice.users.user.signinso.SOUs_SignInSOTest;
 import com.liferay.portalweb.socialoffice.users.user.signinso.SOUs_SignOutSOTest;
 import com.liferay.portalweb.socialoffice.users.user.signinso.SignInSOTest;
 import com.liferay.portalweb.socialoffice.users.user.signinso.SignOutSOTest;
+import com.liferay.portalweb.socialofficehome.sites.privaterestrictedsite.addsitessitetypeprivaterestricted.AddSitesSiteTypePrivateRestrictedTest;
+import com.liferay.portalweb.socialofficehome.sites.privatesite.addsitessitetypeprivate.AddSitesSiteTypePrivateTest;
+import com.liferay.portalweb.socialofficehome.sites.publicrestrictedsite.addsitessitetypepublicrestricted.AddSitesSiteTypePublicRestrictedTest;
 import com.liferay.portalweb.socialofficehome.sites.site.addsitessite.AddSitesSiteTest;
 import com.liferay.portalweb.socialofficehome.sites.site.addsitessite.TearDownSOSitesTest;
-import com.liferay.portalweb.socialofficehome.sites.site.addsitessitetypeprivate.AddSitesSiteTypePrivateTest;
-import com.liferay.portalweb.socialofficehome.sites.site.addsitessitetypeprivaterestricted.AddSitesSiteTypePrivateRestrictedTest;
-import com.liferay.portalweb.socialofficehome.sites.site.addsitessitetypepublicrestricted.AddSitesSiteTypePublicRestrictedTest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;

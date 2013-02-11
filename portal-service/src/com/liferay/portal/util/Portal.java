@@ -636,6 +636,9 @@ public interface Portal {
 
 	public String getFirstPageLayoutTypes(PageContext pageContext);
 
+	public String getFullName(
+		String firstName, String middleName, String lastName);
+
 	public String getGlobalLibDir();
 
 	public String getGoogleGadgetURL(Portlet portlet, ThemeDisplay themeDisplay)
@@ -775,6 +778,9 @@ public interface Portal {
 	public HttpServletRequest getOriginalServletRequest(
 		HttpServletRequest request);
 
+	/**
+	 * @deprecated As of 6.2 renamed to {@link #getSiteGroupId(long)}
+	 */
 	public long getParentGroupId(long scopeGroupId)
 		throws PortalException, SystemException;
 
@@ -946,6 +952,9 @@ public interface Portal {
 		throws PortalException, SystemException;
 
 	public long[] getSiteAndCompanyGroupIds(ThemeDisplay themeDisplay)
+		throws PortalException, SystemException;
+
+	public long getSiteGroupId(long groupId)
 		throws PortalException, SystemException;
 
 	/**

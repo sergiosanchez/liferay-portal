@@ -114,11 +114,29 @@
 			},
 
 			ThemeDisplay: {
-				getCDNDynamicResourcesHost: function() {
-					return "<%= themeDisplay.getCDNDynamicResourcesHost() %>";
-				},
+				<c:if test="<%= layout != null %>">
+					getLayoutId: function() {
+						return "<%= layout.getLayoutId() %>";
+					},
+					getLayoutURL: function() {
+						return "<%= PortalUtil.getLayoutURL(layout, themeDisplay) %>";
+					},
+					getParentLayoutId: function() {
+						return "<%= layout.getParentLayoutId() %>";
+					},
+					isPrivateLayout: function() {
+						return "<%= layout.isPrivateLayout() %>";
+					},
+					isVirtualLayout: function() {
+						return <%= (layout instanceof VirtualLayout) %>;
+					},
+				</c:if>
+
 				getCDNBaseURL: function() {
 					return "<%= themeDisplay.getCDNBaseURL() %>";
+				},
+				getCDNDynamicResourcesHost: function() {
+					return "<%= themeDisplay.getCDNDynamicResourcesHost() %>";
 				},
 				getCDNHost: function() {
 					return "<%= themeDisplay.getCDNHost() %>";
@@ -129,76 +147,17 @@
 				getCompanyGroupId: function() {
 					return "<%= themeDisplay.getCompanyGroupId() %>";
 				},
-				getUserId: function() {
-					return "<%= themeDisplay.getUserId() %>";
-				},
-
-				<c:if test="<%= themeDisplay.isSignedIn() %>">
-					getUserName: function() {
-						return "<%= UnicodeFormatter.toString(user.getFullName()) %>";
-					},
-				</c:if>
-
-				getDoAsUserIdEncoded: function() {
-					return "<%= UnicodeFormatter.toString(themeDisplay.getDoAsUserId()) %>";
-				},
-				getPlid: function() {
-					return "<%= themeDisplay.getPlid() %>";
-				},
-
-				<c:if test="<%= layout != null %>">
-					getLayoutId: function() {
-						return "<%= layout.getLayoutId() %>";
-					},
-					getLayoutURL: function() {
-						return "<%= PortalUtil.getLayoutURL(layout, themeDisplay) %>";
-					},
-					isPrivateLayout: function() {
-						return "<%= layout.isPrivateLayout() %>";
-					},
-					getParentLayoutId: function() {
-						return "<%= layout.getParentLayoutId() %>";
-					},
-					isVirtualLayout: function() {
-						return <%= (layout instanceof VirtualLayout) %>;
-					},
-				</c:if>
-
-				getScopeGroupId: function() {
-					return "<%= themeDisplay.getScopeGroupId() %>";
-				},
-				getScopeGroupIdOrLiveGroupId: function() {
-					return "<%= themeDisplay.getScopeGroupIdOrLiveGroupId() %>";
-				},
-				getParentGroupId: function() {
-					return "<%= themeDisplay.getParentGroupId() %>";
-				},
-				isImpersonated: function() {
-					return <%= themeDisplay.isImpersonated() %>;
-				},
-				isSignedIn: function() {
-					return <%= themeDisplay.isSignedIn() %>;
-				},
 				getDefaultLanguageId: function() {
 					return "<%= LocaleUtil.toLanguageId(LocaleUtil.getDefault()) %>";
+				},
+				getDoAsUserIdEncoded: function() {
+					return "<%= UnicodeFormatter.toString(themeDisplay.getDoAsUserId()) %>";
 				},
 				getLanguageId: function() {
 					return "<%= LanguageUtil.getLanguageId(request) %>";
 				},
-				isAddSessionIdToURL: function() {
-					return <%= themeDisplay.isAddSessionIdToURL() %>;
-				},
-				isFreeformLayout: function() {
-					return <%= themeDisplay.isFreeformLayout() %>;
-				},
-				isStateExclusive: function() {
-					return <%= themeDisplay.isStateExclusive() %>;
-				},
-				isStateMaximized: function() {
-					return <%= themeDisplay.isStateMaximized() %>;
-				},
-				isStatePopUp: function() {
-					return <%= themeDisplay.isStatePopUp() %>;
+				getParentGroupId: function() {
+					return "<%= themeDisplay.getSiteGroupId() %>";
 				},
 				getPathContext: function() {
 					return "<%= themeDisplay.getPathContext() %>";
@@ -218,11 +177,17 @@
 				getPathThemeRoot: function() {
 					return "<%= themeDisplay.getPathThemeRoot() %>";
 				},
-				getURLControlPanel: function() {
-					return "<%= themeDisplay.getURLControlPanel() %>";
+				getPlid: function() {
+					return "<%= themeDisplay.getPlid() %>";
 				},
-				getURLHome: function() {
-					return "<%= themeDisplay.getURLHome() %>";
+				getPortletSetupShowBordersDefault: function() {
+					return <%= GetterUtil.getString(themeDisplay.getThemeSetting("portlet-setup-show-borders-default"), StringUtil.valueOf(PropsValues.THEME_PORTLET_DECORATE_DEFAULT)) %>;
+				},
+				getScopeGroupId: function() {
+					return "<%= themeDisplay.getScopeGroupId() %>";
+				},
+				getScopeGroupIdOrLiveGroupId: function() {
+					return "<%= themeDisplay.getSiteGroupIdOrLiveGroupId() %>";
 				},
 				getSessionId: function() {
 					<c:choose>
@@ -234,8 +199,48 @@
 						</c:otherwise>
 					</c:choose>
 				},
-				getPortletSetupShowBordersDefault: function() {
-					return <%= GetterUtil.getString(themeDisplay.getThemeSetting("portlet-setup-show-borders-default"), StringUtil.valueOf(PropsValues.THEME_PORTLET_DECORATE_DEFAULT)) %>;
+				getSiteGroupId: function() {
+					return "<%= themeDisplay.getSiteGroupId() %>";
+				},
+				getURLControlPanel: function() {
+					return "<%= themeDisplay.getURLControlPanel() %>";
+				},
+				getURLHome: function() {
+					return "<%= themeDisplay.getURLHome() %>";
+				},
+				getUserId: function() {
+					return "<%= themeDisplay.getUserId() %>";
+				},
+				getUserName: function() {
+					<c:choose>
+						<c:when test="<%= themeDisplay.isSignedIn() %>">
+							return "<%= UnicodeFormatter.toString(user.getFullName()) %>";
+						</c:when>
+						<c:otherwise>
+							return "";
+						</c:otherwise>
+					</c:choose>
+				},
+				isAddSessionIdToURL: function() {
+					return <%= themeDisplay.isAddSessionIdToURL() %>;
+				},
+				isFreeformLayout: function() {
+					return <%= themeDisplay.isFreeformLayout() %>;
+				},
+				isImpersonated: function() {
+					return <%= themeDisplay.isImpersonated() %>;
+				},
+				isSignedIn: function() {
+					return <%= themeDisplay.isSignedIn() %>;
+				},
+				isStateExclusive: function() {
+					return <%= themeDisplay.isStateExclusive() %>;
+				},
+				isStateMaximized: function() {
+					return <%= themeDisplay.isStateMaximized() %>;
+				},
+				isStatePopUp: function() {
+					return <%= themeDisplay.isStatePopUp() %>;
 				}
 			},
 

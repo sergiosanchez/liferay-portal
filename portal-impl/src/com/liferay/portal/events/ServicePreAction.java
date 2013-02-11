@@ -721,7 +721,7 @@ public class ServicePreAction extends Action {
 			scopeGroupId = doAsGroupId;
 		}
 
-		long parentGroupId = PortalUtil.getParentGroupId(scopeGroupId);
+		long siteGroupId = PortalUtil.getSiteGroupId(scopeGroupId);
 
 		// Theme and color scheme
 
@@ -822,7 +822,7 @@ public class ServicePreAction extends Action {
 		themeDisplay.setPpid(ppid);
 		themeDisplay.setLayoutTypePortlet(layoutTypePortlet);
 		themeDisplay.setScopeGroupId(scopeGroupId);
-		themeDisplay.setParentGroupId(parentGroupId);
+		themeDisplay.setSiteGroupId(siteGroupId);
 		themeDisplay.setSignedIn(signedIn);
 		themeDisplay.setPermissionChecker(permissionChecker);
 		themeDisplay.setLocale(locale);
