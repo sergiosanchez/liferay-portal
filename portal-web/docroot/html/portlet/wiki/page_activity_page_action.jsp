@@ -19,9 +19,9 @@
 <%
 ResultRow row = (ResultRow)request.getAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
 
-SocialActivity activity = (SocialActivity)row.getObject();
+SocialActivity socialActivity = (SocialActivity)row.getObject();
 
-JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject(HtmlUtil.unescape(activity.getExtraData()));
+JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject(HtmlUtil.unescape(socialActivity.getExtraData()));
 
 double version = extraDataJSONObject.getDouble("version");
 
@@ -62,7 +62,7 @@ WikiPage wikiPage = (WikiPage)request.getAttribute(WebKeys.WIKI_PAGE);
 	<liferay-ui:icon
 		image="copy"
 		label="<%= true %>"
-		message='compare-to'
-		url='<%= taglibURL %>'
+		message="compare-to"
+		url="<%= taglibURL %>"
 	/>
 </liferay-ui:icon-menu>

@@ -57,51 +57,50 @@ double sourceVersion = ParamUtil.getDouble(request, "sourceVersion");
 </liferay-ui:search-container>
 
 <aui:script use="liferay-portlet-url,liferay-search-container">
-var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />wikiPageVersionSearchContainer');
+	var searchContainer = Liferay.SearchContainer.get('<portlet:namespace />wikiPageVersionSearchContainer');
 
-searchContainer.get('contentBox').delegate(
-	'click',
-	function(event) {
-		var link = event.currentTarget;
+	searchContainer.get('contentBox').delegate(
+		'click',
+		function(event) {
+			var link = event.currentTarget;
 
-		var sourceVersion = parseFloat(link.getAttribute('data-sourceversion'));
-		var targetVersion = parseFloat(link.getAttribute('data-targetversion'));
+			var sourceVersion = parseFloat(link.getAttribute('data-sourceversion'));
+			var targetVersion = parseFloat(link.getAttribute('data-targetversion'));
 
-		if(targetVersion < sourceVersion) {
-			var tempVersion = targetVersion;
+			if(targetVersion < sourceVersion) {
+				var tempVersion = targetVersion;
 
-			targetVersion = sourceVersion;
-			sourceVersion = tempVersion;
-		}
+				targetVersion = sourceVersion;
+				sourceVersion = tempVersion;
+			}
 
-		var redirect = Liferay.PortletURL.createRenderURL();
+			var redirect = Liferay.PortletURL.createRenderURL();
 
-		redirect.setPortletId('<%= portletDisplay.getId() %>');
+			redirect.setPortletId('<%= portletDisplay.getId() %>');
 
-		redirect.setParameter('struts_action', '/wiki/view_page_activities');
+			redirect.setParameter('struts_action', '/wiki/view_page_activities');
 
-		<%
-		WikiNode node = wikiPage.getNode();
-		%>
+			<%
+			WikiNode node = wikiPage.getNode();
+			%>
 
-		redirect.setParameter('nodeId', '<%= wikiPage.getNode().getNodeId() %>');
-		redirect.setParameter("title", '<%= wikiPage.getTitle() %>');
+			redirect.setParameter('nodeId', '<%= wikiPage.getNode().getNodeId() %>');
+			redirect.setParameter("title", '<%= wikiPage.getTitle() %>');
 
-		var portletURL = Liferay.PortletURL.createRenderURL();
+			var portletURL = Liferay.PortletURL.createRenderURL();
 
-		portletURL.setPortletId('<%= portletDisplay.getId() %>');
+			portletURL.setPortletId('<%= portletDisplay.getId() %>');
 
-		portletURL.setParameter('struts_action', '/wiki/compare_versions');
-		portletURL.setParameter('redirect', redirect);
-		portletURL.setParameter('nodeId', '<%= node.getNodeId() %>');
-		portletURL.setParameter('title', '<%= wikiPage.getTitle() %>');
-		portletURL.setParameter('sourceVersion', sourceVersion);
-		portletURL.setParameter('targetVersion', targetVersion);
-		portletURL.setParameter('type', 'html');
+			portletURL.setParameter('struts_action', '/wiki/compare_versions');
+			portletURL.setParameter('redirect', redirect);
+			portletURL.setParameter('nodeId', '<%= node.getNodeId() %>');
+			portletURL.setParameter('title', '<%= wikiPage.getTitle() %>');
+			portletURL.setParameter('sourceVersion', sourceVersion);
+			portletURL.setParameter('targetVersion', targetVersion);
+			portletURL.setParameter('type', 'html');
 
-		Liferay.Util.getOpener().location.href = portletURL.toString();
-	},
-	'.select-wiki-page-version input'
-);
-
+			Liferay.Util.getOpener().location.href = portletURL.toString();
+		},
+		'.select-wiki-page-version input'
+	);
 </aui:script>
