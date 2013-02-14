@@ -1,6 +1,6 @@
 .portlet-wiki {
 	.wiki-body pre {
-		background : #fff;
+		background: #fff;
 		border: 1px dashed #2f6fab;
 		margin: 5px 0;
 		padding: 0.5em;
@@ -20,21 +20,21 @@
 		}
 
 		ul {
-		 	margin-top: 0;
+			margin-top: 0;
 		}
 
 		li.toclevel-1 {
-			list-style-type: none;
+			list-style-type:none;
 			margin-left: 0;
 		}
 
 		li.toclevel-2 {
-			list-style-type: none;
+			list-style-type:none;
 			margin-left: 15px;
 		}
 
 		li.toclevel-3 {
-			list-style-type: none;
+			list-style-type:none;
 			margin-left: 30px;
 		}
 	}
@@ -58,13 +58,13 @@
 	.portlet-body h2 {
 		border-bottom: 1px solid #999;
 		font-size: 1.5em;
-		font-weight: normal;
+		font-weight:normal;
 		margin-bottom: 0.5em;
 	}
 
 	.portlet-body h3 {
 		color: #222;
-		font-weight: bold;
+		font-weight:bold;
 		font-size: 1.4em;
 		margin-bottom: 1em;
 	}
@@ -80,7 +80,7 @@
 	.portlet-body h4 a.hashlink {
 		color: #DDE0E1;
 		font-size: 12px;
-		text-decoration: none;
+		text-decoration:none;
 	}
 
 	.portlet-body h2:hover a.hashlink,
@@ -92,7 +92,7 @@
 	.portlet-body h1.page-title .return-to-page {
 		background: url(@theme_image_path@/wiki/return_to_page.png) no-repeat 0 50%;
 		padding-left: 20px;
-		text-decoration: none;
+		text-decoration:none;
 	}
 
 	.preview {
@@ -106,8 +106,8 @@
 	}
 
 	.taglib-custom-attributes-list label {
-		display: block;
-		font-weight: bold;
+		display:block;
+		font-weight:bold;
 	}
 
 	.child-pages {
@@ -117,7 +117,7 @@
 	.child-pages h2 {
 		background-color: #DDD;
 		border-width: 0;
-		font-weight: normal;
+		font-weight:normal;
 		margin: 0 0 0.5em;
 		padding: 0.2em;
 	}
@@ -132,15 +132,15 @@
 	}
 
 	.child-pages li {
-		font-weight: bold;
+		font-weight:bold;
 		font-size: 1.1em;
 	}
 
 	.content-body .wiki-code {
 		background: #fff;
 		border: 1px solid #777;
-		font-family: monospace;
-		white-space: pre;
+		font-family:monospace;
+		white-space:pre;
 	}
 
 	.content-body .code-lines {
@@ -151,53 +151,53 @@
 	}
 
 	.content-body a.external-link {
-		background: transparent url(@theme_image_path@/wiki/external.png) right top no-repeat;
-		text-decoration: none;
+		background:transparent url(@theme_image_path@/wiki/external.png) right top no-repeat;
+		text-decoration:none;
 		padding-right: 10px;
 	}
 
 	.content-body a.external-link:hover {
-		background: transparent url(@theme_image_path@/wiki/external.png) right top no-repeat;
-		text-decoration: underline;
+		background:transparent url(@theme_image_path@/wiki/external.png) right top no-repeat;
+		text-decoration:underline;
 		padding-right: 11px;
 	}
 
 	.history-navigation .central-info a.change-mode {
-		font-weight: bold;
+		font-weight:bold;
 	}
 
 	.history-navigation .central-info span.change-mode {
 		color: #999;
-		font-weight: bold;
+		font-weight:bold;
 	}
 
 	.history-navigation .central-info {
-		float: left;
+		float:left;
 		padding-left: 10px;
 		padding-right: 10px;
-		text-align: center;
+		text-align:center;
 		width: 66%;
 	}
 
 	.history-navigation .central-title {
-		font-weight: bold;
+		font-weight:bold;
 		padding-right: 20px;
 	}
 
 	.history-navigation .central-username {
-		font-weight: bold;
+		font-weight:bold;
 	}
 
 	.history-navigation .next {
 		background-image: url(@theme_image_path@/arrows/paging_next.png);
 		background-position: 100% 0;
-		float: right;
+		float:right;
 		padding-right: 15px;
 	}
 
 	.history-navigation .previous {
 		background-image: url(@theme_image_path@/arrows/paging_previous.png);
-		float: left;
+		float:left;
 		padding-left: 15px;
 	}
 
@@ -217,13 +217,13 @@
 		background: #eee;
 		border-top: 1px solid #ccc;
 		margin: 15px 0 20px;
-		overflow: hidden;
+		overflow:hidden;
 		padding: 5px;
 	}
 
 	.node-current {
-		text-decoration: none;
-		font-weight: bold;
+		text-decoration:none;
+		font-weight:bold;
 	}
 
 	.page-actions {
@@ -232,7 +232,7 @@
 
 	.page-actions .article-actions {
 		border-right: 1px solid #999;
-		float: left;
+		float:left;
 		margin-right: 10px;
 		padding-right: 10px;
 	}
@@ -244,7 +244,7 @@
 	.page-actions.top-actions {
 		margin-bottom: 15px;
 		margin-top: 0;
-		text-align: right;
+		text-align:right;
 	}
 
 	.page-actions.top-actions img {
@@ -252,9 +252,15 @@
 	}
 
 	.page-activities {
+		.activity-status {
+			color: #666;
+			font-weight:bold;
+			text-transform:uppercase;
+		}
+
 		.activity-summary {
 			color: #999;
-			display: block;
+			display:block;
 			margin-left: 3em;
 		}
 	}
@@ -262,7 +268,7 @@
 	.entry-links h2 {
 		border-width: 0;
 		font-size: 1em;
-		font-weight: bold;
+		font-weight:bold;
 	}
 
 	.page-info {
@@ -271,8 +277,8 @@
 
 	.page-info tr th, .page-info tr td {
 		border: 1px solid #ccc;
-		border-left: none;
-		border-right: none;
+		border-left:none;
+		border-right:none;
 		padding: 0.3em 1em;
 	}
 
@@ -284,7 +290,7 @@
 		color: #f93;
 		line-height: 1.2em;
 		margin: -1em 0 1.4em 0;
-		width: auto;
+		width:auto;
 	}
 
 	.page-ratings {
@@ -293,18 +299,18 @@
 
 	.page-redirect {
 		color: #7d7d7d;
-		cursor: pointer;
+		cursor:pointer;
 		line-height: 1.2em;
 		margin: -1em 0 1.4em 0;
-		width: auto;
+		width:auto;
 	}
 
 	.page-redirect:hover {
-		text-decoration: underline;
+		text-decoration:underline;
 	}
 
 	.popup-print {
-		float: right;
+		float:right;
 	}
 
 	.syntax-help-content {
@@ -327,15 +333,15 @@
 
 	.top-links-nodes {
 		border: 1px solid #ddd;
-		float: left;
-		list-style-type: none;
+		float:left;
+		list-style-type:none;
 		margin: 0 0.5em 0.5em;
 		padding: 0.2em 0.5em;
 
 		.top-link-node {
 			border-right: 1px solid #aaa;
-			display: inline-block;
-			list-style-type: none;
+			display:inline-block;
+			list-style-type:none;
 			margin: 0.3em;
 			padding-right: 0.2em;
 
@@ -346,32 +352,33 @@
 	}
 
 	.top-links .page-search {
-		float: right;
+		float:right;
 		margin: 0 0 0.5em 0.5em;
 	}
 
 	.search-root-entry {
 		color: #999;
-		float: right;
+		float:right;
 	}
 
 	.top-links-configuration {
-		float: left;
+		float:left;
 	}
 
 	.subscription-info tr td {
-		border: none;
+		border:none;
 		padding: 0.1em 10px 0.1em 0;
 	}
 
 	.trash-attachments {
-		float: right;
+		float:right;
 	}
 
 	#wikiCommentsPanelContainer {
 		border-width: 0;
 	}
-}
+
+	}
 
 .trash-restore-popup {
 	.aui-form {
@@ -388,7 +395,8 @@
 	.portlet-msg-alert {
 		margin: 10px 0;
 	}
-}
+
+	}
 
 .ie {
 	.portlet-wiki {
@@ -400,4 +408,5 @@
 			margin-bottom: 0.3em;
 		}
 	}
-}
+
+	}
