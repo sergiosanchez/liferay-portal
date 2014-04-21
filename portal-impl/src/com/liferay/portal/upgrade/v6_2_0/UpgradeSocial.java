@@ -54,9 +54,21 @@ public class UpgradeSocial extends UpgradeProcess {
 
 	protected void addActivity(
 			long activityId, long groupId, long companyId, long userId,
-			Timestamp createDate, long mirrorActivityId, long classNameId,
-			long classPK, int type, String extraData, long receiverUserId)
+			Timestamp modifiedDate, long mirrorActivityId, long classNameId,
+			long classPK, int type, long receiverUserId, String title,
+			double version, Set<String> keys)
 		throws Exception {
+
+		modifiedDate = getUniqueModifiedDate(
+			keys, groupId, userId, modifiedDate, classNameId, classPK, type);
+
+		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
+
+		extraDataJSONObject.put("title", title);
+
+		if (version != -1) {
+			extraDataJSONObject.put("version", version);
+		}
 
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -79,12 +91,12 @@ public class UpgradeSocial extends UpgradeProcess {
 			ps.setLong(2, groupId);
 			ps.setLong(3, companyId);
 			ps.setLong(4, userId);
-			ps.setLong(5, createDate.getTime());
+			ps.setLong(5, modifiedDate.getTime());
 			ps.setLong(6, mirrorActivityId);
 			ps.setLong(7, classNameId);
 			ps.setLong(8, classPK);
 			ps.setInt(9, type);
-			ps.setString(10, extraData);
+			ps.setString(10, extraDataJSONObject.toString());
 			ps.setLong(11, receiverUserId);
 
 			ps.executeUpdate();
@@ -175,21 +187,10 @@ public class UpgradeSocial extends UpgradeProcess {
 				long entryId = rs.getLong("entryId");
 				String title = rs.getString("title");
 
-				int type = BlogsActivityKeys.ADD_ENTRY;
-
-				modifiedDate = getUniqueModifiedDate(
-					keys, groupId, userId, modifiedDate, classNameId, entryId,
-					type);
-
-				JSONObject extraDataJSONObject =
-					JSONFactoryUtil.createJSONObject();
-
-				extraDataJSONObject.put("title", title);
-
 				addActivity(
 					increment(), groupId, companyId, userId, modifiedDate, 0,
-					classNameId, entryId, type, extraDataJSONObject.toString(),
-					0);
+					classNameId, entryId, BlogsActivityKeys.ADD_ENTRY, 0, title,
+					-1, keys);
 			}
 		}
 		finally {
@@ -227,21 +228,10 @@ public class UpgradeSocial extends UpgradeProcess {
 				long entryId = rs.getLong("entryId");
 				String name = rs.getString("name");
 
-				int type = BookmarksActivityKeys.ADD_ENTRY;
-
-				modifiedDate = getUniqueModifiedDate(
-					keys, groupId, userId, modifiedDate, classNameId, entryId,
-					type);
-
-				JSONObject extraDataJSONObject =
-					JSONFactoryUtil.createJSONObject();
-
-				extraDataJSONObject.put("title", name);
-
 				addActivity(
 					increment(), groupId, companyId, userId, modifiedDate, 0,
-					classNameId, entryId, type, extraDataJSONObject.toString(),
-					0);
+					classNameId, entryId, BookmarksActivityKeys.ADD_ENTRY, 0,
+					name, -1, keys);
 			}
 		}
 		finally {
@@ -279,21 +269,9 @@ public class UpgradeSocial extends UpgradeProcess {
 				long eventId = rs.getLong("eventId");
 				String title = rs.getString("title");
 
-				int type = 1;
-
-				modifiedDate = getUniqueModifiedDate(
-					keys, groupId, userId, modifiedDate, classNameId, eventId,
-					type);
-
-				JSONObject extraDataJSONObject =
-					JSONFactoryUtil.createJSONObject();
-
-				extraDataJSONObject.put("title", title);
-
 				addActivity(
 					increment(), groupId, companyId, userId, modifiedDate, 0,
-					classNameId, eventId, type, extraDataJSONObject.toString(),
-					0);
+					classNameId, eventId, 1, 0, title, -1, keys);
 			}
 		}
 		finally {
@@ -341,19 +319,9 @@ public class UpgradeSocial extends UpgradeProcess {
 					type = DLActivityKeys.UPDATE_FILE_ENTRY;
 				}
 
-				modifiedDate = getUniqueModifiedDate(
-					keys, groupId, userId, modifiedDate, classNameId,
-					fileEntryId, type);
-
-				JSONObject extraDataJSONObject =
-					JSONFactoryUtil.createJSONObject();
-
-				extraDataJSONObject.put("title", title);
-
 				addActivity(
 					increment(), groupId, companyId, userId, modifiedDate, 0,
-					classNameId, fileEntryId, type,
-					extraDataJSONObject.toString(), 0);
+					classNameId, fileEntryId, type, 0, title, -1, keys);
 			}
 		}
 		finally {
@@ -534,20 +502,10 @@ public class UpgradeSocial extends UpgradeProcess {
 					type = WikiActivityKeys.UPDATE_PAGE;
 				}
 
-				modifiedDate = getUniqueModifiedDate(
-					keys, groupId, userId, modifiedDate, classNameId,
-					resourcePrimKey, type);
-
-				JSONObject extraDataJSONObject =
-					JSONFactoryUtil.createJSONObject();
-
-				extraDataJSONObject.put("title", title);
-				extraDataJSONObject.put("version", version);
-
 				addActivity(
 					increment(), groupId, companyId, userId, modifiedDate, 0,
-					classNameId, resourcePrimKey, type,
-					extraDataJSONObject.toString(), 0);
+					classNameId, resourcePrimKey, type, 0, title, version,
+					keys);
 			}
 		}
 		finally {
