@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -39,7 +39,6 @@ import com.liferay.portal.security.auth.FullNameGenerator;
 import com.liferay.portal.security.auth.FullNameGeneratorFactory;
 import com.liferay.portal.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
-import com.liferay.portal.service.persistence.UserActionableDynamicQuery;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PropsValues;
 
@@ -51,6 +50,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
 /**
@@ -65,6 +66,8 @@ public class UserIndexer extends BaseIndexer {
 	public static final String PORTLET_ID = PortletKeys.USERS_ADMIN;
 
 	public UserIndexer() {
+		setDefaultSelectedFieldNames(
+			Field.COMPANY_ID, Field.UID, Field.USER_ID);
 		setIndexerEnabled(PropsValues.USERS_INDEXER_ENABLED);
 		setPermissionAware(true);
 		setStagingAware(false);
@@ -156,7 +159,24 @@ public class UserIndexer extends BaseIndexer {
 			Object value)
 		throws Exception {
 
-		if (key.equals("usersOrgs")) {
+		if (key.equals("usersGroups")) {
+			if (value instanceof Long[]) {
+				Long[] values = (Long[])value;
+
+				BooleanQuery usersGroupsQuery = BooleanQueryFactoryUtil.create(
+					searchContext);
+
+				for (long groupId : values) {
+					usersGroupsQuery.addTerm("groupIds", groupId);
+				}
+
+				contextQuery.add(usersGroupsQuery, BooleanClauseOccur.MUST);
+			}
+			else {
+				contextQuery.addRequiredTerm("groupIds", String.valueOf(value));
+			}
+		}
+		else if (key.equals("usersOrgs")) {
 			if (value instanceof Long[]) {
 				Long[] values = (Long[])value;
 
@@ -271,8 +291,8 @@ public class UserIndexer extends BaseIndexer {
 
 	@Override
 	protected Summary doGetSummary(
-		Document document, Locale locale, String snippet,
-		PortletURL portletURL) {
+		Document document, Locale locale, String snippet, PortletURL portletURL,
+		PortletRequest portletRequest, PortletResponse portletResponse) {
 
 		String firstName = document.get("firstName");
 		String middleName = document.get("middleName");
@@ -415,23 +435,27 @@ public class UserIndexer extends BaseIndexer {
 	protected void reindexUsers(long companyId)
 		throws PortalException, SystemException {
 
-		ActionableDynamicQuery actionableDynamicQuery =
-			new UserActionableDynamicQuery() {
-
-			@Override
-			protected void performAction(Object object) throws PortalException {
-				User user = (User)object;
-
-				if (!user.isDefaultUser()) {
-					Document document = getDocument(user);
-
-					addDocument(document);
-				}
-			}
-
-		};
+		final ActionableDynamicQuery actionableDynamicQuery =
+			UserLocalServiceUtil.getActionableDynamicQuery();
 
 		actionableDynamicQuery.setCompanyId(companyId);
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod() {
+
+				@Override
+				public void performAction(Object object)
+					throws PortalException {
+
+					User user = (User)object;
+
+					if (!user.isDefaultUser()) {
+						Document document = getDocument(user);
+
+						actionableDynamicQuery.addDocument(document);
+					}
+				}
+
+			});
 		actionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		actionableDynamicQuery.performActions();

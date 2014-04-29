@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -20,11 +20,19 @@ import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBFactoryUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DefaultActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Projection;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
+import com.liferay.portal.kernel.lar.ManifestSummary;
+import com.liferay.portal.kernel.lar.PortletDataContext;
+import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -46,6 +54,7 @@ import com.liferay.portal.service.persistence.PasswordPolicyFinder;
 import com.liferay.portal.service.persistence.PasswordPolicyPersistence;
 import com.liferay.portal.service.persistence.PasswordPolicyRelPersistence;
 import com.liferay.portal.service.persistence.PhonePersistence;
+import com.liferay.portal.service.persistence.RegionPersistence;
 import com.liferay.portal.service.persistence.RoleFinder;
 import com.liferay.portal.service.persistence.RolePersistence;
 import com.liferay.portal.service.persistence.UserFinder;
@@ -272,6 +281,85 @@ public abstract class OrganizationLocalServiceBaseImpl
 	public Organization getOrganization(long organizationId)
 		throws PortalException, SystemException {
 		return organizationPersistence.findByPrimaryKey(organizationId);
+	}
+
+	@Override
+	public ActionableDynamicQuery getActionableDynamicQuery()
+		throws SystemException {
+		ActionableDynamicQuery actionableDynamicQuery = new DefaultActionableDynamicQuery();
+
+		actionableDynamicQuery.setBaseLocalService(com.liferay.portal.service.OrganizationLocalServiceUtil.getService());
+		actionableDynamicQuery.setClass(Organization.class);
+		actionableDynamicQuery.setClassLoader(getClassLoader());
+
+		actionableDynamicQuery.setPrimaryKeyPropertyName("organizationId");
+
+		return actionableDynamicQuery;
+	}
+
+	protected void initActionableDynamicQuery(
+		ActionableDynamicQuery actionableDynamicQuery)
+		throws SystemException {
+		actionableDynamicQuery.setBaseLocalService(com.liferay.portal.service.OrganizationLocalServiceUtil.getService());
+		actionableDynamicQuery.setClass(Organization.class);
+		actionableDynamicQuery.setClassLoader(getClassLoader());
+
+		actionableDynamicQuery.setPrimaryKeyPropertyName("organizationId");
+	}
+
+	@Override
+	public ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		final PortletDataContext portletDataContext) throws SystemException {
+		final ExportActionableDynamicQuery exportActionableDynamicQuery = new ExportActionableDynamicQuery() {
+				@Override
+				public long performCount()
+					throws PortalException, SystemException {
+					ManifestSummary manifestSummary = portletDataContext.getManifestSummary();
+
+					StagedModelType stagedModelType = getStagedModelType();
+
+					long modelAdditionCount = super.performCount();
+
+					manifestSummary.addModelAdditionCount(stagedModelType.toString(),
+						modelAdditionCount);
+
+					long modelDeletionCount = ExportImportHelperUtil.getModelDeletionCount(portletDataContext,
+							stagedModelType);
+
+					manifestSummary.addModelDeletionCount(stagedModelType.toString(),
+						modelDeletionCount);
+
+					return modelAdditionCount;
+				}
+			};
+
+		initActionableDynamicQuery(exportActionableDynamicQuery);
+
+		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
+				@Override
+				public void addCriteria(DynamicQuery dynamicQuery) {
+					portletDataContext.addDateRangeCriteria(dynamicQuery,
+						"modifiedDate");
+				}
+			});
+
+		exportActionableDynamicQuery.setCompanyId(portletDataContext.getCompanyId());
+
+		exportActionableDynamicQuery.setPerformActionMethod(new ActionableDynamicQuery.PerformActionMethod() {
+				@Override
+				@SuppressWarnings("unused")
+				public void performAction(Object object)
+					throws PortalException, SystemException {
+					Organization stagedModel = (Organization)object;
+
+					StagedModelDataHandlerUtil.exportStagedModel(portletDataContext,
+						stagedModel);
+				}
+			});
+		exportActionableDynamicQuery.setStagedModelType(new StagedModelType(
+				PortalUtil.getClassNameId(Organization.class.getName())));
+
+		return exportActionableDynamicQuery;
 	}
 
 	@Override
@@ -1472,6 +1560,43 @@ public abstract class OrganizationLocalServiceBaseImpl
 	}
 
 	/**
+	 * Returns the region remote service.
+	 *
+	 * @return the region remote service
+	 */
+	public com.liferay.portal.service.RegionService getRegionService() {
+		return regionService;
+	}
+
+	/**
+	 * Sets the region remote service.
+	 *
+	 * @param regionService the region remote service
+	 */
+	public void setRegionService(
+		com.liferay.portal.service.RegionService regionService) {
+		this.regionService = regionService;
+	}
+
+	/**
+	 * Returns the region persistence.
+	 *
+	 * @return the region persistence
+	 */
+	public RegionPersistence getRegionPersistence() {
+		return regionPersistence;
+	}
+
+	/**
+	 * Sets the region persistence.
+	 *
+	 * @param regionPersistence the region persistence
+	 */
+	public void setRegionPersistence(RegionPersistence regionPersistence) {
+		this.regionPersistence = regionPersistence;
+	}
+
+	/**
 	 * Returns the resource local service.
 	 *
 	 * @return the resource local service
@@ -1921,6 +2046,10 @@ public abstract class OrganizationLocalServiceBaseImpl
 	protected com.liferay.portal.service.PhoneService phoneService;
 	@BeanReference(type = PhonePersistence.class)
 	protected PhonePersistence phonePersistence;
+	@BeanReference(type = com.liferay.portal.service.RegionService.class)
+	protected com.liferay.portal.service.RegionService regionService;
+	@BeanReference(type = RegionPersistence.class)
+	protected RegionPersistence regionPersistence;
 	@BeanReference(type = com.liferay.portal.service.ResourceLocalService.class)
 	protected com.liferay.portal.service.ResourceLocalService resourceLocalService;
 	@BeanReference(type = com.liferay.portal.service.RoleLocalService.class)

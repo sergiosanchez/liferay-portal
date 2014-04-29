@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -174,6 +174,15 @@ else {
 	<aui:input name="preview" type="hidden" />
 	<aui:input name="workflowAction" type="hidden" value="<%= String.valueOf(WorkflowConstants.ACTION_SAVE_DRAFT) %>" />
 
+	<liferay-ui:error exception="<%= AntivirusScannerException.class %>">
+
+		<%
+		AntivirusScannerException ase = (AntivirusScannerException)errorException;
+		%>
+
+		<liferay-ui:message key="<%= ase.getMessageKey() %>" />
+	</liferay-ui:error>
+
 	<liferay-ui:error exception="<%= CaptchaMaxChallengesException.class %>" message="maximum-number-of-captcha-attempts-exceeded" />
 	<liferay-ui:error exception="<%= CaptchaTextException.class %>" message="text-verification-failed" />
 	<liferay-ui:error exception="<%= DuplicateFileException.class %>" message="please-enter-a-unique-document-name" />
@@ -192,11 +201,9 @@ else {
 		if (fileMaxSize == 0) {
 			fileMaxSize = PrefsPropsUtil.getLong(PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE);
 		}
-
-		fileMaxSize /= 1024;
 		%>
 
-		<liferay-ui:message arguments="<%= fileMaxSize %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
+		<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(fileMaxSize, locale) %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
 	</liferay-ui:error>
 
 	<liferay-ui:error exception="<%= LockedThreadException.class %>" message="thread-is-locked" />
@@ -268,7 +275,7 @@ else {
 		</c:if>
 
 		<c:if test="<%= (message == null) && themeDisplay.isSignedIn() && !SubscriptionLocalServiceUtil.isSubscribed(themeDisplay.getCompanyId(), user.getUserId(), MBThread.class.getName(), threadId) && !SubscriptionLocalServiceUtil.isSubscribed(themeDisplay.getCompanyId(), user.getUserId(), MBCategory.class.getName(), categoryId) %>">
-			<aui:input helpMessage="message-boards-message-subscribe-me-help" label="subscribe-me" name="subscribe" type='<%= (MBUtil.getEmailMessageAddedEnabled(groupPortletSettings) || MBUtil.getEmailMessageUpdatedEnabled(groupPortletSettings)) ? "checkbox" : "hidden" %>' value="<%= subscribeByDefault %>" />
+			<aui:input helpMessage="message-boards-message-subscribe-me-help" label="subscribe-me" name="subscribe" type='<%= (mbSettings.isEmailMessageAddedEnabled() || mbSettings.isEmailMessageUpdatedEnabled()) ? "checkbox" : "hidden" %>' value="<%= subscribeByDefault %>" />
 		</c:if>
 
 		<c:if test="<%= (priorities.length > 0) && MBCategoryPermission.contains(permissionChecker, scopeGroupId, categoryId, ActionKeys.UPDATE_THREAD_PRIORITY) %>">
@@ -344,7 +351,7 @@ else {
 									/>
 								</span>
 
-								<aui:input cssClass="hide" label="" name='<%= "msgFile" + (i + 1) %>' size="70" type="file" />
+								<aui:input cssClass="hide" label="" name='<%= "msgFile" + (i + 1) %>' size="70" title="message-attachment" type="file" />
 
 								<liferay-ui:icon-delete
 									id='<%= "removeExisting" + (i + 1) %>'
@@ -389,7 +396,7 @@ else {
 				%>
 
 					<div>
-						<aui:input label="" name='<%= "msgFile" + i %>' size="70" type="file" />
+						<aui:input label="" name='<%= "msgFile" + i %>' size="70" title="message-attachment" type="file" />
 					</div>
 
 				<%

@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -22,7 +22,7 @@ String randomNamespace = PortalUtil.generateRandomKey(request, "taglib_ui_input_
 String amPmParam = namespace + request.getAttribute("liferay-ui:input-time:amPmParam");
 int amPmValue = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:input-time:amPmValue"));
 String cssClass = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-time:cssClass"));
-String dateParam = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-time:dateParam"));
+String dateParam = namespace + GetterUtil.getString((String)request.getAttribute("liferay-ui:input-time:dateParam"), "date");
 Date dateValue = (Date)GetterUtil.getObject(request.getAttribute("liferay-ui:input-time:dateValue"));
 boolean disabled = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:input-time:disabled"));
 String hourParam = namespace + request.getAttribute("liferay-ui:input-time:hourParam");
@@ -30,7 +30,7 @@ int hourValue = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:i
 String minuteParam = namespace + request.getAttribute("liferay-ui:input-time:minuteParam");
 int minuteValue = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:input-time:minuteValue"));
 int minuteInterval = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:input-time:minuteInterval"));
-String name = GetterUtil.getString((String)request.getAttribute("liferay-ui:input-time:name"));
+String name = namespace + GetterUtil.getString((String)request.getAttribute("liferay-ui:input-time:name"));
 
 if (minuteInterval < 1) {
 	minuteInterval = 30;
@@ -41,6 +41,12 @@ int hourOfDayValue = hourValue;
 if (amPmValue == Calendar.PM) {
 	hourOfDayValue += 12;
 }
+
+String amPmParamId = HtmlUtil.getAUICompatibleId(amPmParam);
+String dateParamId = HtmlUtil.getAUICompatibleId(dateParam);
+String hourParamId = HtmlUtil.getAUICompatibleId(hourParam);
+String minuteParamId = HtmlUtil.getAUICompatibleId(minuteParam);
+String nameId = HtmlUtil.getAUICompatibleId(name);
 
 Calendar calendar = CalendarFactoryUtil.getCalendar(1970, 0, 1, hourOfDayValue, minuteValue);
 
@@ -65,22 +71,22 @@ Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(simpleDateFormatPa
 <span class="lfr-input-time <%= cssClass %>" id="<%= randomNamespace %>displayTime">
 	<c:choose>
 		<c:when test="<%= BrowserSnifferUtil.isMobile(request) %>">
-			<input class="input-small" <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= namespace + name %>" name="<%= namespace + name %>" type="time" value="<%= format.format(calendar.getTime()) %>" />
+			<input class="input-small" <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= nameId %>" name="<%= HtmlUtil.escapeAttribute(name) %>" type="time" value="<%= format.format(calendar.getTime()) %>" />
 		</c:when>
 		<c:otherwise>
-			<input class="input-small" <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= namespace + name %>" name="<%= namespace + name %>" type="text" placeholder="<%= placeholder %>" value="<%= format.format(calendar.getTime()) %>" />
+			<input class="input-small" <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= nameId %>" name="<%= HtmlUtil.escapeAttribute(name) %>" placeholder="<%= placeholder %>" type="text" value="<%= format.format(calendar.getTime()) %>" />
 		</c:otherwise>
 	</c:choose>
 
-	<input <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= hourParam %>" name="<%= hourParam %>" type="hidden" value="<%= hourValue %>" />
-	<input <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= minuteParam %>" name="<%= minuteParam %>" type="hidden" value="<%= minuteValue %>" />
-	<input <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= amPmParam %>" name="<%= amPmParam %>" type="hidden" value="<%= amPmValue %>" />
-	<input <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= dateParam %>" name="<%= dateParam %>" type="hidden" value="<%= dateValue %>" />
+	<input <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= hourParamId %>" name="<%= HtmlUtil.escapeAttribute(hourParam) %>" type="hidden" value="<%= hourValue %>" />
+	<input <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= minuteParamId %>" name="<%= HtmlUtil.escapeAttribute(minuteParam) %>" type="hidden" value="<%= minuteValue %>" />
+	<input <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= amPmParamId %>" name="<%= HtmlUtil.escapeAttribute(amPmParam) %>" type="hidden" value="<%= amPmValue %>" />
+	<input <%= disabled ? "disabled=\"disabled\"" : "" %> id="<%= dateParamId %>" name="<%= HtmlUtil.escapeAttribute(dateParam) %>" type="hidden" value="<%= dateValue %>" />
 </span>
 
 <aui:script use='<%= "aui-timepicker" + (BrowserSnifferUtil.isMobile(request) ? "-native" : StringPool.BLANK) %>'>
 	Liferay.component(
-		'<%= namespace + name %>TimePicker',
+		'<%= nameId %>TimePicker',
 		function() {
 			var timePicker = new A.TimePicker<%= BrowserSnifferUtil.isMobile(request) ? "Native" : StringPool.BLANK %>(
 				{
@@ -106,17 +112,17 @@ Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(simpleDateFormatPa
 							</c:if>
 
 							if (date) {
-								container.one('#<%= hourParam %>').val(hours);
-								container.one('#<%= minuteParam %>').val(date.getMinutes());
-								container.one('#<%= amPmParam %>').val(amPm);
-								container.one('#<%= dateParam %>').val(date);
+								container.one('#<%= hourParamId %>').val(hours);
+								container.one('#<%= minuteParamId %>').val(date.getMinutes());
+								container.one('#<%= amPmParamId %>').val(amPm);
+								container.one('#<%= dateParamId %>').val(date);
 							}
 						}
 					},
 					popover: {
 						zIndex: Liferay.zIndex.TOOLTIP
 					},
-					trigger: '#<%= namespace + name %>',
+					trigger: '#<%= nameId %>',
 					values: <%= _getHoursJSONArray(minuteInterval, locale) %>
 				}
 			);
@@ -126,14 +132,25 @@ Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(simpleDateFormatPa
 
 				var container = instance.get('container');
 
-				return A.Date.parse(container.one('#<%= dateParam %>').val());
+				var dateVal = container.one('#<%= dateParamId %>').val();
+
+				var time = A.Date.parse(dateVal);
+
+				if (!time) {
+					var hours = container.one('#<%= hourParamId %>').val();
+					var minutes = container.one('#<%= minuteParamId %>').val();
+
+					time = A.Date.parse(A.Date.aggregates.T, hours + ':' + minutes + ':0');
+				}
+
+				return time;
 			};
 
 			return timePicker;
 		}
 	);
 
-	Liferay.component('<%= namespace + name %>TimePicker');
+	Liferay.component('<%= nameId %>TimePicker');
 </aui:script>
 
 <%!

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -16,8 +16,10 @@ package com.liferay.portlet.dynamicdatamapping.service.impl;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.security.permission.ActionKeys;
+import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.service.base.DDMStructureServiceBaseImpl;
@@ -26,6 +28,7 @@ import com.liferay.portlet.dynamicdatamapping.service.permission.DDMStructurePer
 import com.liferay.portlet.dynamicdatamapping.util.DDMDisplay;
 import com.liferay.portlet.dynamicdatamapping.util.DDMUtil;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -277,6 +280,16 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 		return ddmStructure;
 	}
 
+	@Override
+	public List<DDMStructure> getJournalFolderStructures(
+			long[] groupIds, long journalFolderId, boolean inherited)
+		throws PortalException, SystemException {
+
+		return filterStructures(
+			ddmStructureLocalService.getJournalFolderStructures(
+				groupIds, journalFolderId, inherited));
+	}
+
 	/**
 	 * Returns the structure with the ID.
 	 *
@@ -385,6 +398,33 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 		throws SystemException {
 
 		return ddmStructurePersistence.filterFindByGroupId(groupIds);
+	}
+
+	/**
+	 * Returns all the structures matching the groups and class name ID that the
+	 * user has permission to view.
+	 *
+	 * @param  groupIds the primary keys of the groups
+	 * @param  classNameId the primary key of the class name for the structure's
+	 *         related model
+	 * @return the structures matching the groups and class name ID that the
+	 *         user has permission to view
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public List<DDMStructure> getStructures(long[] groupIds, long classNameId)
+		throws SystemException {
+
+		return ddmStructurePersistence.filterFindByG_C(groupIds, classNameId);
+	}
+
+	@Override
+	public List<DDMStructure> getStructures(
+			long[] groupIds, long classNameId, int start, int end)
+		throws SystemException {
+
+		return ddmStructurePersistence.filterFindByG_C(
+			groupIds, classNameId, start, end);
 	}
 
 	/**
@@ -599,6 +639,28 @@ public class DDMStructureServiceImpl extends DDMStructureServiceBaseImpl {
 		return ddmStructureLocalService.updateStructure(
 			structureId, parentStructureId, nameMap, descriptionMap, xsd,
 			serviceContext);
+	}
+
+	protected List<DDMStructure> filterStructures(List<DDMStructure> structures)
+		throws PortalException {
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		structures = ListUtil.copy(structures);
+
+		Iterator<DDMStructure> itr = structures.iterator();
+
+		while (itr.hasNext()) {
+			DDMStructure structure = itr.next();
+
+			if (!DDMStructurePermission.contains(
+					permissionChecker, structure, ActionKeys.VIEW)) {
+
+				itr.remove();
+			}
+		}
+
+		return structures;
 	}
 
 }

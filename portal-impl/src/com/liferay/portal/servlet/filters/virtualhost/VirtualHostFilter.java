@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -272,6 +272,16 @@ public class VirtualHostFilter extends BasePortalFilter {
 				Group group = GroupLocalServiceUtil.getGroup(
 					layoutSet.getGroupId());
 
+				if (isDocumentFriendlyURL(
+						request, group.getGroupId(), friendlyURL)) {
+
+					processFilter(
+						VirtualHostFilter.class, request, response,
+						filterChain);
+
+					return;
+				}
+
 				if (group.isGuest() && friendlyURL.equals(StringPool.SLASH) &&
 					!layoutSet.isPrivateLayout()) {
 
@@ -291,16 +301,6 @@ public class VirtualHostFilter extends BasePortalFilter {
 						}
 					}
 					else {
-						if (isDocumentFriendlyURL(
-								request, group.getGroupId(), friendlyURL)) {
-
-							processFilter(
-								VirtualHostFilter.class, request, response,
-								filterChain);
-
-							return;
-						}
-
 						forwardURL.append(_PUBLIC_GROUP_SERVLET_MAPPING);
 					}
 

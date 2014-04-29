@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -131,6 +131,10 @@ public class BaseInputTag extends com.liferay.taglib.util.IncludeTag {
 
 	public boolean getLast() {
 		return _last;
+	}
+
+	public boolean getLocalized() {
+		return _localized;
 	}
 
 	public java.lang.Object getMax() {
@@ -355,6 +359,12 @@ public class BaseInputTag extends com.liferay.taglib.util.IncludeTag {
 		setScopedAttribute("last", last);
 	}
 
+	public void setLocalized(boolean localized) {
+		_localized = localized;
+
+		setScopedAttribute("localized", localized);
+	}
+
 	public void setMax(java.lang.Object max) {
 		_max = max;
 
@@ -490,6 +500,7 @@ public class BaseInputTag extends com.liferay.taglib.util.IncludeTag {
 		_label = null;
 		_languageId = null;
 		_last = false;
+		_localized = false;
 		_max = null;
 		_model = null;
 		_min = null;
@@ -542,6 +553,7 @@ public class BaseInputTag extends com.liferay.taglib.util.IncludeTag {
 		setNamespacedAttribute(request, "label", _label);
 		setNamespacedAttribute(request, "languageId", _languageId);
 		setNamespacedAttribute(request, "last", _last);
+		setNamespacedAttribute(request, "localized", _localized);
 		setNamespacedAttribute(request, "max", _max);
 		setNamespacedAttribute(request, "model", _model);
 		setNamespacedAttribute(request, "min", _min);
@@ -592,6 +604,7 @@ public class BaseInputTag extends com.liferay.taglib.util.IncludeTag {
 	private java.lang.String _label = null;
 	private java.lang.String _languageId = null;
 	private boolean _last = false;
+	private boolean _localized = false;
 	private java.lang.Object _max = null;
 	private java.lang.Class<?> _model = null;
 	private java.lang.Object _min = null;

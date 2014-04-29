@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -61,7 +61,7 @@ portletURL.setParameter("tag", StringPool.BLANK);
 		</c:if>
 	</aui:nav>
 
-	<c:if test="<%= showFoldersSearch %>">
+	<c:if test="<%= bookmarksSettings.getShowFoldersSearch() %>">
 		<liferay-portlet:renderURL varImpl="searchURL">
 			<portlet:param name="struts_action" value="/bookmarks/search" />
 		</liferay-portlet:renderURL>

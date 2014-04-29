@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -72,7 +72,7 @@ int defaultSpeed = 3000;
 			String largeSrc = DLUtil.getPreviewURL(fileEntry, fileEntry.getFileVersion(), themeDisplay, StringPool.BLANK);
 		%>
 
-			<img border="0" name="<portlet:namespace />slideShow" src="<%= largeSrc %>" />
+			<img alt="<liferay-ui:message key="slide-show" />" border="0" name="<portlet:namespace />slideShow" src="<%= largeSrc %>" />
 
 		<%
 		}

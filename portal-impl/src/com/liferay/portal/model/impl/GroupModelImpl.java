@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -199,8 +199,8 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 				"value.object.finder.cache.enabled.Groups_UserGroups"), true);
 	public static final String MAPPING_TABLE_USERS_GROUPS_NAME = "Users_Groups";
 	public static final Object[][] MAPPING_TABLE_USERS_GROUPS_COLUMNS = {
-			{ "userId", Types.BIGINT },
-			{ "groupId", Types.BIGINT }
+			{ "groupId", Types.BIGINT },
+			{ "userId", Types.BIGINT }
 		};
 	public static final String MAPPING_TABLE_USERS_GROUPS_SQL_CREATE = "create table Users_Groups (groupId LONG not null,userId LONG not null,primary key (groupId, userId))";
 	public static final boolean FINDER_CACHE_ENABLED_USERS_GROUPS = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -239,6 +239,19 @@ public class DDMStructureLocalServiceWrapper implements DDMStructureLocalService
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _ddmStructureLocalService.getDDMStructure(structureId);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructureLocalService.getActionableDynamicQuery();
+	}
+
+	@Override
+	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructureLocalService.getExportActionableDynamicQuery(portletDataContext);
 	}
 
 	@Override
@@ -497,6 +510,171 @@ public class DDMStructureLocalServiceWrapper implements DDMStructureLocalService
 		long[] structureIds)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		_ddmStructureLocalService.setDLFileEntryTypeDDMStructures(fileEntryTypeId,
+			structureIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void addJournalFolderDDMStructure(long folderId, long structureId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.addJournalFolderDDMStructure(folderId,
+			structureId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void addJournalFolderDDMStructure(long folderId,
+		com.liferay.portlet.dynamicdatamapping.model.DDMStructure ddmStructure)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.addJournalFolderDDMStructure(folderId,
+			ddmStructure);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void addJournalFolderDDMStructures(long folderId, long[] structureIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.addJournalFolderDDMStructures(folderId,
+			structureIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void addJournalFolderDDMStructures(long folderId,
+		java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> DDMStructures)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.addJournalFolderDDMStructures(folderId,
+			DDMStructures);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void clearJournalFolderDDMStructures(long folderId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.clearJournalFolderDDMStructures(folderId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void deleteJournalFolderDDMStructure(long folderId, long structureId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.deleteJournalFolderDDMStructure(folderId,
+			structureId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void deleteJournalFolderDDMStructure(long folderId,
+		com.liferay.portlet.dynamicdatamapping.model.DDMStructure ddmStructure)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.deleteJournalFolderDDMStructure(folderId,
+			ddmStructure);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void deleteJournalFolderDDMStructures(long folderId,
+		long[] structureIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.deleteJournalFolderDDMStructures(folderId,
+			structureIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void deleteJournalFolderDDMStructures(long folderId,
+		java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> DDMStructures)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.deleteJournalFolderDDMStructures(folderId,
+			DDMStructures);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getJournalFolderDDMStructures(
+		long folderId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructureLocalService.getJournalFolderDDMStructures(folderId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getJournalFolderDDMStructures(
+		long folderId, int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructureLocalService.getJournalFolderDDMStructures(folderId,
+			start, end);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getJournalFolderDDMStructures(
+		long folderId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructureLocalService.getJournalFolderDDMStructures(folderId,
+			start, end, orderByComparator);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public int getJournalFolderDDMStructuresCount(long folderId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructureLocalService.getJournalFolderDDMStructuresCount(folderId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public boolean hasJournalFolderDDMStructure(long folderId, long structureId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructureLocalService.hasJournalFolderDDMStructure(folderId,
+			structureId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public boolean hasJournalFolderDDMStructures(long folderId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructureLocalService.hasJournalFolderDDMStructures(folderId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Override
+	public void setJournalFolderDDMStructures(long folderId, long[] structureIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_ddmStructureLocalService.setJournalFolderDDMStructures(folderId,
 			structureIds);
 	}
 
@@ -990,6 +1168,15 @@ public class DDMStructureLocalServiceWrapper implements DDMStructureLocalService
 		return _ddmStructureLocalService.getDLFileEntryTypeStructures(dlFileEntryTypeId);
 	}
 
+	@Override
+	public java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getJournalFolderStructures(
+		long[] groupIds, long journalFolderId, boolean inherited)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructureLocalService.getJournalFolderStructures(groupIds,
+			journalFolderId, inherited);
+	}
+
 	/**
 	* Returns the structure with the ID.
 	*
@@ -1029,19 +1216,19 @@ public class DDMStructureLocalServiceWrapper implements DDMStructureLocalService
 
 	/**
 	* Returns the structure matching the class name ID, structure key, and
-	* group, optionally in the global scope.
+	* group, optionally in the parent site.
 	*
 	* <p>
 	* This method first searches in the group. If the structure is still not
-	* found and <code>includeGlobalStructures</code> is set to
-	* <code>true</code>, this method searches the global group.
+	* found and <code>includeAncestorStructures</code> is set to
+	* <code>true</code>, this method searches the parent sites.
 	* </p>
 	*
 	* @param groupId the primary key of the structure's group
 	* @param classNameId the primary key of the class name for the structure's
 	related model
 	* @param structureKey the unique string identifying the structure
-	* @param includeGlobalStructures whether to include the global scope in
+	* @param includeAncestorStructures whether to include the parent sites in
 	the search
 	* @return the matching structure
 	* @throws PortalException if a matching structure could not be found
@@ -1050,11 +1237,11 @@ public class DDMStructureLocalServiceWrapper implements DDMStructureLocalService
 	@Override
 	public com.liferay.portlet.dynamicdatamapping.model.DDMStructure getStructure(
 		long groupId, long classNameId, java.lang.String structureKey,
-		boolean includeGlobalStructures)
+		boolean includeAncestorStructures)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _ddmStructureLocalService.getStructure(groupId, classNameId,
-			structureKey, includeGlobalStructures);
+			structureKey, includeAncestorStructures);
 	}
 
 	/**

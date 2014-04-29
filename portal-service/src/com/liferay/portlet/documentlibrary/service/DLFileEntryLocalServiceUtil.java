@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -230,6 +230,17 @@ public class DLFileEntryLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService().getDLFileEntry(fileEntryId);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getActionableDynamicQuery();
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getExportActionableDynamicQuery(portletDataContext);
 	}
 
 	public static com.liferay.portal.model.PersistedModel getPersistedModel(
@@ -595,6 +606,17 @@ public class DLFileEntryLocalServiceUtil {
 	}
 
 	public static java.util.List<com.liferay.portlet.documentlibrary.model.DLFileEntry> getFileEntries(
+		long groupId, long userId,
+		java.util.List<java.lang.Long> repositoryIds,
+		java.util.List<java.lang.Long> folderIds, java.lang.String[] mimeTypes,
+		com.liferay.portal.kernel.dao.orm.QueryDefinition queryDefinition)
+		throws java.lang.Exception {
+		return getService()
+				   .getFileEntries(groupId, userId, repositoryIds, folderIds,
+			mimeTypes, queryDefinition);
+	}
+
+	public static java.util.List<com.liferay.portlet.documentlibrary.model.DLFileEntry> getFileEntries(
 		long groupId, long userId, java.util.List<java.lang.Long> folderIds,
 		java.lang.String[] mimeTypes,
 		com.liferay.portal.kernel.dao.orm.QueryDefinition queryDefinition)
@@ -632,6 +654,16 @@ public class DLFileEntryLocalServiceUtil {
 	public static int getFileEntriesCount(long groupId, long folderId,
 		int status) throws com.liferay.portal.kernel.exception.SystemException {
 		return getService().getFileEntriesCount(groupId, folderId, status);
+	}
+
+	public static int getFileEntriesCount(long groupId, long userId,
+		java.util.List<java.lang.Long> repositoryIds,
+		java.util.List<java.lang.Long> folderIds, java.lang.String[] mimeTypes,
+		com.liferay.portal.kernel.dao.orm.QueryDefinition queryDefinition)
+		throws java.lang.Exception {
+		return getService()
+				   .getFileEntriesCount(groupId, userId, repositoryIds,
+			folderIds, mimeTypes, queryDefinition);
 	}
 
 	public static int getFileEntriesCount(long groupId, long userId,
@@ -824,13 +856,13 @@ public class DLFileEntryLocalServiceUtil {
 
 	public static com.liferay.portlet.documentlibrary.model.DLFileEntry updateStatus(
 		long userId, long fileVersionId, int status,
-		java.util.Map<java.lang.String, java.io.Serializable> workflowContext,
-		com.liferay.portal.service.ServiceContext serviceContext)
+		com.liferay.portal.service.ServiceContext serviceContext,
+		java.util.Map<java.lang.String, java.io.Serializable> workflowContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService()
-				   .updateStatus(userId, fileVersionId, status,
-			workflowContext, serviceContext);
+				   .updateStatus(userId, fileVersionId, status, serviceContext,
+			workflowContext);
 	}
 
 	public static boolean verifyFileEntryCheckOut(long fileEntryId,

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -23,12 +23,13 @@ import com.liferay.portal.model.ContainerModel;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.journal.InvalidDDMStructureException;
 import com.liferay.portlet.journal.asset.JournalFolderAssetRenderer;
 import com.liferay.portlet.journal.model.JournalFolder;
 import com.liferay.portlet.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.portlet.journal.service.permission.JournalFolderPermission;
 import com.liferay.portlet.journal.util.JournalUtil;
-import com.liferay.portlet.trash.DuplicateEntryException;
+import com.liferay.portlet.trash.RestoreEntryException;
 import com.liferay.portlet.trash.model.TrashEntry;
 
 import javax.portlet.PortletRequest;
@@ -41,22 +42,22 @@ import javax.portlet.PortletRequest;
 public class JournalFolderTrashHandler extends JournalBaseTrashHandler {
 
 	@Override
-	public void checkDuplicateEntry(
+	public void checkRestorableEntry(
 			long classPK, long containerModelId, String newName)
 		throws PortalException, SystemException {
 
 		JournalFolder folder = JournalFolderLocalServiceUtil.getFolder(classPK);
 
-		checkDuplicateEntry(
+		checkRestorableEntry(
 			classPK, 0, containerModelId, folder.getName(), newName);
 	}
 
 	@Override
-	public void checkDuplicateTrashEntry(
+	public void checkRestorableEntry(
 			TrashEntry trashEntry, long containerModelId, String newName)
 		throws PortalException, SystemException {
 
-		checkDuplicateEntry(
+		checkRestorableEntry(
 			trashEntry.getClassPK(), trashEntry.getEntryId(), containerModelId,
 			trashEntry.getTypeSettingsProperty("title"), newName);
 	}
@@ -251,13 +252,38 @@ public class JournalFolderTrashHandler extends JournalBaseTrashHandler {
 				folder.getGroupId(), containerModelId, originalTitle);
 
 		if (duplicateFolder != null) {
-			DuplicateEntryException dee = new DuplicateEntryException();
+			RestoreEntryException ree = new RestoreEntryException(
+				RestoreEntryException.DUPLICATE);
 
-			dee.setDuplicateEntryId(duplicateFolder.getFolderId());
-			dee.setOldName(duplicateFolder.getName());
-			dee.setTrashEntryId(trashEntryId);
+			ree.setDuplicateEntryId(duplicateFolder.getFolderId());
+			ree.setOldName(duplicateFolder.getName());
+			ree.setTrashEntryId(trashEntryId);
 
-			throw dee;
+			throw ree;
+		}
+	}
+
+	protected void checkRestorableEntry(
+			long classPK, long trashEntryId, long containerModelId,
+			String originalTitle, String newName)
+		throws PortalException, SystemException {
+
+		checkValidContainer(classPK, containerModelId);
+
+		checkDuplicateEntry(
+			classPK, trashEntryId, containerModelId, originalTitle, newName);
+	}
+
+	protected void checkValidContainer(long classPK, long containerModelId)
+		throws PortalException, SystemException {
+
+		try {
+			JournalFolderLocalServiceUtil.validateFolderDDMStructures(
+				classPK, containerModelId);
+		}
+		catch (InvalidDDMStructureException iddmse) {
+			throw new RestoreEntryException(
+				RestoreEntryException.INVALID_CONTAINER);
 		}
 	}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -38,6 +38,12 @@ public interface WikiPage extends WikiPageModel, PersistedModel {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
+	public com.liferay.portlet.wiki.model.WikiPage fetchParentPage()
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	public com.liferay.portlet.wiki.model.WikiPage fetchRedirectPage()
+		throws com.liferay.portal.kernel.exception.SystemException;
+
 	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry> getAttachmentsFileEntries()
 		throws com.liferay.portal.kernel.exception.SystemException;
 
@@ -68,11 +74,16 @@ public interface WikiPage extends WikiPageModel, PersistedModel {
 	public long getNodeAttachmentsFolderId()
 		throws com.liferay.portal.kernel.exception.SystemException;
 
-	public com.liferay.portlet.wiki.model.WikiPage getParentPage();
+	public com.liferay.portlet.wiki.model.WikiPage getParentPage()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
 
-	public java.util.List<com.liferay.portlet.wiki.model.WikiPage> getParentPages();
+	public java.util.List<com.liferay.portlet.wiki.model.WikiPage> getParentPages()
+		throws com.liferay.portal.kernel.exception.SystemException;
 
-	public com.liferay.portlet.wiki.model.WikiPage getRedirectPage();
+	public com.liferay.portlet.wiki.model.WikiPage getRedirectPage()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
 
 	public java.util.List<com.liferay.portlet.wiki.model.WikiPage> getViewableChildPages();
 

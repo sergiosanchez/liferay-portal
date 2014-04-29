@@ -7,6 +7,13 @@
 			</then>
 		</if>
 
-		<execute action="Dockbar#assertElementPresent" locator1="_145_${fieldLabel}Content" />
+		<execute action="Dockbar#assertElementPresent" locator1="//div[@id='_145_${fieldLabel}Content']" />
+	</command>
+
+	<command name="viewAddTabsWithNoAddPagePermission">
+		<execute action="Dockbar#click" locator-key1="ADD" value1="Add" />
+		<execute action="Dockbar#assertTextEquals" locator-key1="ADD_CONTENT_LINK" value1="Content" />
+		<execute action="Dockbar#assertTextEquals" locator-key1="ADD_APPLICATION_LINK" value1="Applications" />
+		<execute action="Dockbar#assertElementNotPresent" locator-key1="ADD_PAGE_LINK" value1="Page" />
 	</command>
 </definition>

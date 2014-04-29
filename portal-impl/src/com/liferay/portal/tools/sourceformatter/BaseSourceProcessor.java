@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -91,6 +91,24 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	@Override
 	public SourceMismatchException getFirstSourceMismatchException() {
 		return _firstSourceMismatchException;
+	}
+
+	protected void checkEmptyCollection(
+		String line, String fileName, int lineCount) {
+
+		// LPS-46028
+
+		Matcher matcher = emptyCollectionPattern.matcher(line);
+
+		if (matcher.find()) {
+			String collectionType = TextFormatter.format(
+				matcher.group(1), TextFormatter.J);
+
+			processErrorMessage(
+				fileName,
+				"Use Collections.empty" + collectionType + "(): " + fileName +
+					" " + lineCount);
+		}
 	}
 
 	protected void checkIfClauseParentheses(
@@ -195,7 +213,9 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	protected void checkInefficientStringMethods(
 		String line, String fileName, int lineCount) {
 
-		if (mainReleaseVersion.equals(MAIN_RELEASE_VERSION_6_1_0)) {
+		if (mainReleaseVersion.equals(MAIN_RELEASE_VERSION_6_1_0) ||
+			isRunsOutsidePortal(fileName)) {
+
 			return;
 		}
 
@@ -410,20 +430,25 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 				"<%--\n" + copyright + "\n--%>");
 		}
 
-		int x = content.indexOf("* Copyright (c) 2000-20");
+		int x = content.indexOf("* Copyright (c) 2000-");
 
 		if (x == -1) {
 			return content;
 		}
 
-		int y = copyright.indexOf("* Copyright (c) 2000-20");
+		int y = content.indexOf("Liferay", x);
 
-		if (y == -1) {
+		String contentCopyrightYear = content.substring(x, y);
+
+		x = copyright.indexOf("* Copyright (c) 2000-");
+
+		if (x == -1) {
 			return content;
 		}
 
-		String contentCopyrightYear = content.substring(x, x + 25);
-		String copyrightYear = copyright.substring(y, y + 25);
+		y = copyright.indexOf("Liferay", x);
+
+		String copyrightYear = copyright.substring(x, y);
 
 		return StringUtil.replace(content, contentCopyrightYear, copyrightYear);
 	}
@@ -713,12 +738,21 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	protected String[] getLanguageKeys(Matcher matcher) {
-		if (matcher.groupCount() > 0) {
+		int groupCount = matcher.groupCount();
+
+		if (groupCount == 1) {
 			String languageKey = matcher.group(1);
 
 			if (Validator.isNotNull(languageKey)) {
 				return new String[] {languageKey};
 			}
+		}
+		else if (groupCount == 2) {
+			String languageKey = matcher.group(2);
+
+			languageKey = TextFormatter.format(languageKey, TextFormatter.P);
+
+			return new String[] {languageKey};
 		}
 
 		StringBundler sb = new StringBundler();
@@ -915,6 +949,15 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		}
 
 		return false;
+	}
+
+	protected boolean isRunsOutsidePortal(String fileName) {
+		if (fileName.contains("/sync-engine-shared/")) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	protected void processErrorMessage(String fileName, String message) {
@@ -1116,6 +1159,8 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 
 	protected static final String MAIN_RELEASE_VERSION_7_0_0 = "7.0.0";
 
+	protected static Pattern emptyCollectionPattern = Pattern.compile(
+		"Collections\\.EMPTY_(LIST|MAP|SET)");
 	protected static FileImpl fileUtil = FileImpl.getInstance();
 	protected static Pattern languageKeyPattern = Pattern.compile(
 		"LanguageUtil.(?:get|format)\\([^;%]+|Liferay.Language.get\\('([^']+)");

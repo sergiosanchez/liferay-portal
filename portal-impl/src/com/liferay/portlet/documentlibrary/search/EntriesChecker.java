@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -70,7 +70,17 @@ public class EntriesChecker extends RowChecker {
 	@Override
 	public String getAllRowsCheckBox() {
 		if (_documentLibraryDisplayPortlet) {
-			return getAllRowsCheckbox(getAllRowIds(), getEntryRowIds());
+			return getAllRowsCheckbox(null, getAllRowIds(), getEntryRowIds());
+		}
+
+		return null;
+	}
+
+	@Override
+	public String getAllRowsCheckBox(HttpServletRequest request) {
+		if (_documentLibraryDisplayPortlet) {
+			return getAllRowsCheckbox(
+				request, getAllRowIds(), getEntryRowIds());
 		}
 
 		return null;
@@ -188,7 +198,7 @@ public class EntriesChecker extends RowChecker {
 		}
 
 		return getRowCheckBox(
-			checked, disabled,
+			request, checked, disabled,
 			_liferayPortletResponse.getNamespace() + RowChecker.ROW_IDS +
 				name + "Checkbox",
 			primaryKey, checkBoxRowIds, checkBoxAllRowIds, checkBoxPostOnClick);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -16,11 +16,14 @@ package com.liferay.portlet.documentlibrary.service.permission;
 
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.test.ExecutionTestListeners;
+import com.liferay.portal.model.ResourceConstants;
+import com.liferay.portal.model.RoleConstants;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.ServiceTestUtil;
 import com.liferay.portal.service.permission.BasePermissionTestCase;
-import com.liferay.portal.test.EnvironmentExecutionTestListener;
 import com.liferay.portal.test.LiferayIntegrationJUnitTestRunner;
+import com.liferay.portal.test.MainServletExecutionTestListener;
+import com.liferay.portal.util.RoleTestUtil;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.util.DLAppTestUtil;
 
@@ -32,7 +35,7 @@ import org.junit.runner.RunWith;
  * @author Eric Chin
  * @author Shinn Lok
  */
-@ExecutionTestListeners(listeners = {EnvironmentExecutionTestListener.class})
+@ExecutionTestListeners(listeners = {MainServletExecutionTestListener.class})
 @RunWith(LiferayIntegrationJUnitTestRunner.class)
 public class DLFolderPermissionTest extends BasePermissionTestCase {
 
@@ -69,6 +72,16 @@ public class DLFolderPermissionTest extends BasePermissionTestCase {
 	@Override
 	protected String getResourceName() {
 		return DLPermission.RESOURCE_NAME;
+	}
+
+	@Override
+	protected void removePortletModelViewPermission() throws Exception {
+		super.removePortletModelViewPermission();
+
+		RoleTestUtil.removeResourcePermission(
+			RoleConstants.GUEST, getResourceName(),
+			ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(group.getGroupId()), ActionKeys.VIEW);
 	}
 
 	private Folder _folder;

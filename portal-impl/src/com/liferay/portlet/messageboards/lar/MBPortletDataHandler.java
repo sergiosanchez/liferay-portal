@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -29,13 +29,11 @@ import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.portlet.messageboards.model.MBThreadFlag;
 import com.liferay.portlet.messageboards.service.MBBanLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBCategoryLocalServiceUtil;
+import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBStatsUserLocalServiceUtil;
+import com.liferay.portlet.messageboards.service.MBThreadFlagLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBThreadLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.permission.MBPermission;
-import com.liferay.portlet.messageboards.service.persistence.MBBanExportActionableDynamicQuery;
-import com.liferay.portlet.messageboards.service.persistence.MBCategoryExportActionableDynamicQuery;
-import com.liferay.portlet.messageboards.service.persistence.MBMessageExportActionableDynamicQuery;
-import com.liferay.portlet.messageboards.service.persistence.MBThreadFlagExportActionableDynamicQuery;
 
 import java.util.List;
 
@@ -114,19 +112,21 @@ public class MBPortletDataHandler extends BasePortletDataHandler {
 
 		if (portletDataContext.getBooleanParameter(NAMESPACE, "messages")) {
 			ActionableDynamicQuery categoryActionableDynamicQuery =
-				new MBCategoryExportActionableDynamicQuery(portletDataContext);
+				MBCategoryLocalServiceUtil.getExportActionableDynamicQuery(
+					portletDataContext);
 
 			categoryActionableDynamicQuery.performActions();
 
 			ActionableDynamicQuery messageActionableDynamicQuery =
-				new MBMessageExportActionableDynamicQuery(portletDataContext);
+				MBMessageLocalServiceUtil.getExportActionableDynamicQuery(
+					portletDataContext);
 
 			messageActionableDynamicQuery.performActions();
 		}
 
 		if (portletDataContext.getBooleanParameter(NAMESPACE, "thread-flags")) {
 			ActionableDynamicQuery threadFlagActionableDynamicQuery =
-				new MBThreadFlagExportActionableDynamicQuery(
+				MBThreadFlagLocalServiceUtil.getExportActionableDynamicQuery(
 					portletDataContext);
 
 			threadFlagActionableDynamicQuery.performActions();
@@ -134,7 +134,8 @@ public class MBPortletDataHandler extends BasePortletDataHandler {
 
 		if (portletDataContext.getBooleanParameter(NAMESPACE, "user-bans")) {
 			ActionableDynamicQuery banActionableDynamicQuery =
-				new MBBanExportActionableDynamicQuery(portletDataContext);
+				MBBanLocalServiceUtil.getExportActionableDynamicQuery(
+					portletDataContext);
 
 			banActionableDynamicQuery.performActions();
 		}
@@ -207,22 +208,26 @@ public class MBPortletDataHandler extends BasePortletDataHandler {
 		throws Exception {
 
 		ActionableDynamicQuery banActionableDynamicQuery =
-			new MBBanExportActionableDynamicQuery(portletDataContext);
+			MBBanLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		banActionableDynamicQuery.performCount();
 
 		ActionableDynamicQuery categoryActionableDynamicQuery =
-			new MBCategoryExportActionableDynamicQuery(portletDataContext);
+			MBCategoryLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		categoryActionableDynamicQuery.performCount();
 
 		ActionableDynamicQuery messageActionableDynamicQuery =
-			new MBMessageExportActionableDynamicQuery(portletDataContext);
+			MBMessageLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		messageActionableDynamicQuery.performCount();
 
 		ActionableDynamicQuery threadFlagActionableDynamicQuery =
-			new MBThreadFlagExportActionableDynamicQuery(portletDataContext);
+			MBThreadFlagLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		threadFlagActionableDynamicQuery.performCount();
 	}

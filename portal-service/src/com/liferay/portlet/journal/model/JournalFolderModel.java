@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -276,6 +276,27 @@ public interface JournalFolderModel extends BaseModel<JournalFolder>,
 	public void setDescription(String description);
 
 	/**
+	 * Returns the override d d m structures of this journal folder.
+	 *
+	 * @return the override d d m structures of this journal folder
+	 */
+	public boolean getOverrideDDMStructures();
+
+	/**
+	 * Returns <code>true</code> if this journal folder is override d d m structures.
+	 *
+	 * @return <code>true</code> if this journal folder is override d d m structures; <code>false</code> otherwise
+	 */
+	public boolean isOverrideDDMStructures();
+
+	/**
+	 * Sets whether this journal folder is override d d m structures.
+	 *
+	 * @param overrideDDMStructures the override d d m structures of this journal folder
+	 */
+	public void setOverrideDDMStructures(boolean overrideDDMStructures);
+
+	/**
 	 * Returns the status of this journal folder.
 	 *
 	 * @return the status of this journal folder
@@ -401,6 +422,9 @@ public interface JournalFolderModel extends BaseModel<JournalFolder>,
 
 	@Override
 	public boolean isInTrashExplicitly() throws SystemException;
+
+	@Override
+	public boolean isInTrashImplicitly() throws SystemException;
 
 	/**
 	 * @deprecated As of 6.1.0, replaced by {@link #isApproved()}

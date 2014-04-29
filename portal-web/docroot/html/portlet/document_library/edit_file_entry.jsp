@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -112,7 +112,7 @@ if ((checkedOut || pending) && !PropsValues.DL_FILE_ENTRY_DRAFTS_ENABLED) {
 	saveAsDraft = true;
 }
 
-DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(request, fileEntry, fileVersion);
+DLFileEntryActionsDisplayContext dlFileEntryActionsDisplayContext = new DLFileEntryActionsDisplayContext(request, dlPortletInstanceSettings, fileEntry, fileVersion);
 %>
 
 <c:if test="<%= Validator.isNull(referringPortletResource) %>">
@@ -183,6 +183,15 @@ DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(re
 	<aui:input name="fileEntryId" type="hidden" value="<%= fileEntryId %>" />
 	<aui:input name="workflowAction" type="hidden" value="<%= String.valueOf(WorkflowConstants.ACTION_PUBLISH) %>" />
 
+	<liferay-ui:error exception="<%= AntivirusScannerException.class %>">
+
+		<%
+		AntivirusScannerException ase = (AntivirusScannerException)errorException;
+		%>
+
+		<liferay-ui:message key="<%= ase.getMessageKey() %>" />
+	</liferay-ui:error>
+
 	<liferay-ui:error exception="<%= DuplicateFileException.class %>" message="please-enter-a-unique-document-name" />
 	<liferay-ui:error exception="<%= DuplicateFolderNameException.class %>" message="please-enter-a-unique-document-name" />
 
@@ -191,7 +200,7 @@ DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(re
 	</liferay-ui:error>
 
 	<liferay-ui:error exception="<%= FileMimeTypeException.class %>">
-		<liferay-ui:message key="media-files-must-be-one-of-the-following-formats" /> <%= StringUtil.merge(DLUtil.getMediaGalleryMimeTypes(portletPreferences, renderRequest), StringPool.COMMA_AND_SPACE) %>.
+		<liferay-ui:message key="media-files-must-be-one-of-the-following-formats" /> <%= StringUtil.merge(dlPortletInstanceSettings.getMimeTypes(), StringPool.COMMA_AND_SPACE) %>.
 	</liferay-ui:error>
 
 	<liferay-ui:error exception="<%= FileNameException.class %>" message="please-enter-a-file-with-a-valid-file-name" />
@@ -207,12 +216,10 @@ DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(re
 	if (fileMaxSize == 0) {
 		fileMaxSize = PrefsPropsUtil.getLong(PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE);
 	}
-
-	fileMaxSize /= 1024;
 	%>
 
 	<liferay-ui:error exception="<%= FileSizeException.class %>">
-		<liferay-ui:message arguments="<%= fileMaxSize %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
+		<liferay-ui:message arguments="<%= TextFormatter.formatStorageSize(fileMaxSize, locale) %>" key="please-enter-a-file-with-a-valid-file-size-no-larger-than-x" translateArguments="<%= false %>" />
 	</liferay-ui:error>
 
 	<liferay-ui:asset-categories-error />
@@ -229,7 +236,7 @@ DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(re
 		<aui:field-wrapper>
 			<c:if test="<%= fileMaxSize != 0 %>">
 				<div class="alert alert-info">
-					<%= LanguageUtil.format(pageContext, "upload-documents-no-larger-than-x-k", String.valueOf(fileMaxSize), false) %>
+					<%= LanguageUtil.format(pageContext, "upload-documents-no-larger-than-x", TextFormatter.formatStorageSize(fileMaxSize, locale), false) %>
 				</div>
 			</c:if>
 		</aui:field-wrapper>
@@ -250,55 +257,53 @@ DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(re
 		}
 		%>
 
-		<aui:field-wrapper label="folder">
-			<div class="input-append">
-				<liferay-ui:input-resource id="folderName" url="<%= folderName %>" />
+		<div class="control-group">
+			<aui:input label="folder" name="folderName" type="resource" value="<%= folderName %>" />
 
-				<c:if test="<%= referringPortletResourceRootPortletId.equals(PortletKeys.ASSET_PUBLISHER) && (fileEntryId == 0) %>">
-					<aui:button name="selectFolderButton" value="select" />
+			<c:if test="<%= referringPortletResourceRootPortletId.equals(PortletKeys.ASSET_PUBLISHER) && (fileEntryId == 0) %>">
+				<aui:button name="selectFolderButton" value="select" />
 
-					<%
-					String taglibRemoveFolder = "Liferay.Util.removeFolderSelection('folderId', 'folderName', '" + renderResponse.getNamespace() + "');";
-					%>
+				<%
+				String taglibRemoveFolder = "Liferay.Util.removeFolderSelection('folderId', 'folderName', '" + renderResponse.getNamespace() + "');";
+				%>
 
-					<aui:button disabled="<%= folderId <= 0 %>" name="removeFolderButton" onClick="<%= taglibRemoveFolder %>" value="remove" />
+				<aui:button disabled="<%= folderId <= 0 %>" name="removeFolderButton" onClick="<%= taglibRemoveFolder %>" value="remove" />
 
-					<liferay-portlet:renderURL var="selectFolderURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-						<portlet:param name="struts_action" value='<%= "/document_library/select_folder" %>' />
-					</liferay-portlet:renderURL>
+				<liferay-portlet:renderURL var="selectFolderURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
+					<portlet:param name="struts_action" value='<%= "/document_library/select_folder" %>' />
+				</liferay-portlet:renderURL>
 
-					<aui:script use="aui-base">
-						A.one('#<portlet:namespace />selectFolderButton').on(
-							'click',
-							function(event) {
-								Liferay.Util.selectEntity(
-									{
-										dialog: {
-											constrain: true,
-											modal: true,
-											width: 680
-										},
-										id: '<portlet:namespace />selectFolder',
-										title: '<liferay-ui:message arguments="folder" key="select-x" />',
-										uri: '<%= selectFolderURL.toString() %>'
+				<aui:script use="aui-base">
+					A.one('#<portlet:namespace />selectFolderButton').on(
+						'click',
+						function(event) {
+							Liferay.Util.selectEntity(
+								{
+									dialog: {
+										constrain: true,
+										modal: true,
+										width: 680
 									},
-									function(event) {
-										var folderData = {
-											idString: 'folderId',
-											idValue: event.folderid,
-											nameString: 'folderName',
-											nameValue: event.foldername
-										};
+									id: '<portlet:namespace />selectFolder',
+									title: '<liferay-ui:message arguments="folder" key="select-x" />',
+									uri: '<%= selectFolderURL.toString() %>'
+								},
+								function(event) {
+									var folderData = {
+										idString: 'folderId',
+										idValue: event.folderid,
+										nameString: 'folderName',
+										nameValue: event.foldername
+									};
 
-										Liferay.Util.selectFolder(folderData, '<portlet:namespace />');
-									}
-								);
-							}
-						);
-					</aui:script>
-				</c:if>
-			</div>
-		</aui:field-wrapper>
+									Liferay.Util.selectFolder(folderData, '<portlet:namespace />');
+								}
+							);
+						}
+					);
+				</aui:script>
+			</c:if>
+		</div>
 
 		<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) || windowState.equals(LiferayWindowState.POP_UP) %>" name="file" onChange='<%= renderResponse.getNamespace() + "validateTitle();" %>' type="file">
 			<aui:validator name="acceptFiles">
@@ -328,7 +333,7 @@ DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(re
 					inherited = !dlFolder.isOverrideFileEntryTypes();
 				}
 
-				List<DLFileEntryType> dlFileEntryTypes = DLFileEntryTypeLocalServiceUtil.getFolderFileEntryTypes(PortalUtil.getSiteAndCompanyGroupIds(themeDisplay), folderId, inherited);
+				List<DLFileEntryType> dlFileEntryTypes = DLFileEntryTypeLocalServiceUtil.getFolderFileEntryTypes(PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId), folderId, inherited);
 				%>
 
 				<c:choose>
@@ -442,24 +447,24 @@ DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(re
 		</c:if>
 
 		<aui:button-row>
-			<c:if test="<%= dlActionsDisplayContext.isSaveButtonVisible() %>">
-				<aui:button disabled="<%= dlActionsDisplayContext.isSaveButtonDisabled() %>" name="saveButton" onClick='<%= renderResponse.getNamespace() + "saveFileEntry(true);" %>' value="<%= dlActionsDisplayContext.getSaveButtonLabel() %>" />
+			<c:if test="<%= dlFileEntryActionsDisplayContext.isSaveButtonVisible() %>">
+				<aui:button disabled="<%= dlFileEntryActionsDisplayContext.isSaveButtonDisabled() %>" name="saveButton" onClick='<%= renderResponse.getNamespace() + "saveFileEntry(true);" %>' value="<%= dlFileEntryActionsDisplayContext.getSaveButtonLabel() %>" />
 			</c:if>
 
-			<c:if test="<%= dlActionsDisplayContext.isPublishButtonVisible() %>">
-				<aui:button disabled="<%= dlActionsDisplayContext.isPublishButtonDisabled() %>" name="publishButton" type="submit" value="<%= dlActionsDisplayContext.getPublishButtonLabel() %>" />
+			<c:if test="<%= dlFileEntryActionsDisplayContext.isPublishButtonVisible() %>">
+				<aui:button disabled="<%= dlFileEntryActionsDisplayContext.isPublishButtonDisabled() %>" name="publishButton" type="submit" value="<%= dlFileEntryActionsDisplayContext.getPublishButtonLabel() %>" />
 			</c:if>
 
-			<c:if test="<%= dlActionsDisplayContext.isCheckoutDocumentButtonVisible() %>">
-				<aui:button disabled="<%= dlActionsDisplayContext.isCheckoutDocumentDisabled() %>" onClick='<%= renderResponse.getNamespace() + "checkOut();" %>' value="checkout[document]" />
+			<c:if test="<%= dlFileEntryActionsDisplayContext.isCheckoutDocumentButtonVisible() %>">
+				<aui:button disabled="<%= dlFileEntryActionsDisplayContext.isCheckoutDocumentDisabled() %>" onClick='<%= renderResponse.getNamespace() + "checkOut();" %>' value="checkout[document]" />
 			</c:if>
 
-			<c:if test="<%= dlActionsDisplayContext.isCheckinButtonVisible() %>">
-				<aui:button disabled="<%= dlActionsDisplayContext.isCheckinButtonDisabled() %>" onClick='<%= renderResponse.getNamespace() + "checkIn();" %>' value="save-and-checkin" />
+			<c:if test="<%= dlFileEntryActionsDisplayContext.isCheckinButtonVisible() %>">
+				<aui:button disabled="<%= dlFileEntryActionsDisplayContext.isCheckinButtonDisabled() %>" onClick='<%= renderResponse.getNamespace() + "checkIn();" %>' value="save-and-checkin" />
 			</c:if>
 
-			<c:if test="<%= dlActionsDisplayContext.isCancelCheckoutDocumentButtonVisible() %>">
-				<aui:button disabled="<%= dlActionsDisplayContext.isCancelCheckoutDocumentButtonDisabled() %>" onClick='<%= renderResponse.getNamespace() + "cancelCheckOut();" %>' value="cancel-checkout[document]" />
+			<c:if test="<%= dlFileEntryActionsDisplayContext.isCancelCheckoutDocumentButtonVisible() %>">
+				<aui:button disabled="<%= dlFileEntryActionsDisplayContext.isCancelCheckoutDocumentButtonDisabled() %>" onClick='<%= renderResponse.getNamespace() + "cancelCheckOut();" %>' value="cancel-checkout[document]" />
 			</c:if>
 
 			<aui:button href="<%= redirect %>" type="cancel" />

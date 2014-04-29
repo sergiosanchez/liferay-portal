@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,6 +18,7 @@ import com.liferay.portal.NoSuchUserGroupRoleException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Role;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroupRole;
@@ -48,6 +49,12 @@ public class UserGroupRoleLocalServiceImpl
 			userGroupRoles.add(userGroupRole);
 		}
 
+		Group group = groupPersistence.fetchByPrimaryKey(groupId);
+
+		if (group.isRegularSite()) {
+			groupPersistence.addUser(groupId, userId);
+		}
+
 		PermissionCacheUtil.clearCache();
 
 		return userGroupRoles;
@@ -65,6 +72,12 @@ public class UserGroupRoleLocalServiceImpl
 				userId, groupId, roleId);
 
 			userGroupRoles.add(userGroupRole);
+		}
+
+		Group group = groupPersistence.fetchByPrimaryKey(groupId);
+
+		if (group.isRegularSite()) {
+			groupPersistence.addUsers(groupId, userIds);
 		}
 
 		PermissionCacheUtil.clearCache();

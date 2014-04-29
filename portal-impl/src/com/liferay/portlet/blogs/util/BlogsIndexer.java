@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -36,11 +36,12 @@ import com.liferay.portal.util.PortletKeys;
 import com.liferay.portlet.blogs.model.BlogsEntry;
 import com.liferay.portlet.blogs.service.BlogsEntryLocalServiceUtil;
 import com.liferay.portlet.blogs.service.permission.BlogsEntryPermission;
-import com.liferay.portlet.blogs.service.persistence.BlogsEntryActionableDynamicQuery;
 
 import java.util.Date;
 import java.util.Locale;
 
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
 /**
@@ -56,6 +57,9 @@ public class BlogsIndexer extends BaseIndexer {
 	public static final String PORTLET_ID = PortletKeys.BLOGS;
 
 	public BlogsIndexer() {
+		setDefaultSelectedFieldNames(
+			Field.COMPANY_ID, Field.CONTENT, Field.ENTRY_CLASS_NAME,
+			Field.ENTRY_CLASS_PK, Field.TITLE, Field.UID);
 		setFilterSearch(true);
 		setPermissionAware(true);
 	}
@@ -119,8 +123,8 @@ public class BlogsIndexer extends BaseIndexer {
 
 	@Override
 	protected Summary doGetSummary(
-		Document document, Locale locale, String snippet,
-		PortletURL portletURL) {
+		Document document, Locale locale, String snippet, PortletURL portletURL,
+		PortletRequest portletRequest, PortletResponse portletResponse) {
 
 		String entryId = document.get(Field.ENTRY_CLASS_PK);
 
@@ -138,10 +142,6 @@ public class BlogsIndexer extends BaseIndexer {
 	@Override
 	protected void doReindex(Object obj) throws Exception {
 		BlogsEntry entry = (BlogsEntry)obj;
-
-		if (!entry.isApproved() && !entry.isInTrash()) {
-			return;
-		}
 
 		Document document = getDocument(entry);
 
@@ -171,38 +171,47 @@ public class BlogsIndexer extends BaseIndexer {
 	protected void reindexEntries(long companyId)
 		throws PortalException, SystemException {
 
-		ActionableDynamicQuery actionableDynamicQuery =
-			new BlogsEntryActionableDynamicQuery() {
+		final ActionableDynamicQuery actionableDynamicQuery =
+			BlogsEntryLocalServiceUtil.getActionableDynamicQuery();
 
-			@Override
-			protected void addCriteria(DynamicQuery dynamicQuery) {
-				Property displayDateProperty = PropertyFactoryUtil.forName(
-					"displayDate");
+		actionableDynamicQuery.setAddCriteriaMethod(
+			new ActionableDynamicQuery.AddCriteriaMethod() {
 
-				dynamicQuery.add(displayDateProperty.lt(new Date()));
+				@Override
+				public void addCriteria(DynamicQuery dynamicQuery) {
+					Property displayDateProperty = PropertyFactoryUtil.forName(
+						"displayDate");
 
-				Property statusProperty = PropertyFactoryUtil.forName("status");
+					dynamicQuery.add(displayDateProperty.lt(new Date()));
 
-				Integer[] statuses = {
-					WorkflowConstants.STATUS_APPROVED,
-					WorkflowConstants.STATUS_IN_TRASH
-				};
+					Property statusProperty = PropertyFactoryUtil.forName(
+						"status");
 
-				dynamicQuery.add(statusProperty.in(statuses));
-			}
+					Integer[] statuses = {
+						WorkflowConstants.STATUS_APPROVED,
+						WorkflowConstants.STATUS_IN_TRASH
+					};
 
-			@Override
-			protected void performAction(Object object) throws PortalException {
-				BlogsEntry entry = (BlogsEntry)object;
+					dynamicQuery.add(statusProperty.in(statuses));
+				}
 
-				Document document = getDocument(entry);
-
-				addDocument(document);
-			}
-
-		};
-
+			});
 		actionableDynamicQuery.setCompanyId(companyId);
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod() {
+
+				@Override
+				public void performAction(Object object)
+					throws PortalException {
+
+					BlogsEntry entry = (BlogsEntry)object;
+
+					Document document = getDocument(entry);
+
+					actionableDynamicQuery.addDocument(document);
+				}
+
+			});
 		actionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		actionableDynamicQuery.performActions();

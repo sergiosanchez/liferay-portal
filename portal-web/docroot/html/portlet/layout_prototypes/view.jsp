@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -49,17 +49,16 @@ portletURL.setParameter("struts_action", "/layout_prototypes/view");
 			keyProperty="layoutPrototypeId"
 			modelVar="layoutPrototype"
 		>
-			<liferay-portlet:renderURL varImpl="rowURL">
-				<portlet:param name="struts_action" value="/layout_prototypes/edit_layout_prototype" />
-				<portlet:param name="redirect" value="<%= searchContainer.getIteratorURL().toString() %>" />
-				<portlet:param name="backURL" value="<%= searchContainer.getIteratorURL().toString() %>" />
-				<portlet:param name="layoutPrototypeId" value="<%= String.valueOf(layoutPrototype.getLayoutPrototypeId()) %>" />
-			</liferay-portlet:renderURL>
-
 			<liferay-ui:search-container-column-text
 				name="name"
 				orderable="<%= true %>"
 			>
+				<liferay-portlet:renderURL varImpl="rowURL">
+					<portlet:param name="struts_action" value="/layout_prototypes/edit_layout_prototype" />
+					<portlet:param name="redirect" value="<%= searchContainer.getIteratorURL().toString() %>" />
+					<portlet:param name="backURL" value="<%= searchContainer.getIteratorURL().toString() %>" />
+					<portlet:param name="layoutPrototypeId" value="<%= String.valueOf(layoutPrototype.getLayoutPrototypeId()) %>" />
+				</liferay-portlet:renderURL>
 
 				<aui:a href="<%= rowURL.toString() %>"><%= layoutPrototype.getName(locale) %></aui:a>
 
@@ -76,7 +75,11 @@ portletURL.setParameter("struts_action", "/layout_prototypes/view");
 			</liferay-ui:search-container-column-text>
 
 			<liferay-ui:search-container-column-text
-				href="<%= rowURL %>"
+				name="description"
+				value="<%= layoutPrototype.getDescription(locale) %>"
+			/>
+
+			<liferay-ui:search-container-column-text
 				name="active"
 			>
 				<%= LanguageUtil.get(pageContext, layoutPrototype.isActive()? "yes" : "no") %>

@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -80,6 +80,7 @@ for (JournalArticle curArticle : articles) {
 	/>
 
 	<liferay-ui:error exception="<%= DuplicateFolderNameException.class %>" message="the-folder-you-selected-already-has-an-entry-with-this-name.-please-select-a-different-folder" />
+	<liferay-ui:error exception="<%= InvalidDDMStructureException.class %>" message="the-folder-you-selected-does-not-allow-this-type-of-structure.-please-select-a-different-folder" />
 	<liferay-ui:error exception="<%= NoSuchFolderException.class %>" message="please-enter-a-valid-folder" />
 
 	<c:if test="<%= !validMoveFolders.isEmpty() %>">
@@ -120,7 +121,7 @@ for (JournalArticle curArticle : articles) {
 				for (JournalFolder folder : invalidMoveFolders) {
 				%>
 
-					<li class="move-folder move-error">
+					<li class="move-error move-folder">
 						<span class="folder-title">
 							<%= folder.getName() %>
 						</span>
@@ -215,13 +216,11 @@ for (JournalArticle curArticle : articles) {
 		}
 		%>
 
-		<aui:field-wrapper label="new-folder">
-			<div class="input-append">
-				<liferay-ui:input-resource id="folderName" url="<%= folderName %>" />
+		<div class="control-group">
+			<aui:input label="new-folder" name="folderName" title="new-folder" type="resource" value="<%= folderName %>" />
 
-				<aui:button name="selectFolderButton" value="select" />
-			</div>
-		</aui:field-wrapper>
+			<aui:button name="selectFolderButton" value="select" />
+		</div>
 
 		<aui:button-row>
 			<aui:button type="submit" value="move" />
@@ -244,8 +243,9 @@ for (JournalArticle curArticle : articles) {
 				{
 					dialog: {
 						constrain: true,
+						destroyOnHide: true,
 						modal: true,
-						width: 680
+						width: 1024
 					},
 					id: '<portlet:namespace />selectFolder',
 					title: '<liferay-ui:message arguments="folder" key="select-x" />',

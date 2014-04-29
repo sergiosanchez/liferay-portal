@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -28,10 +28,13 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.lar.MissingReferences;
 import com.liferay.portal.kernel.lar.PortletDataException;
+import com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationConstants;
+import com.liferay.portal.kernel.lar.exportimportconfiguration.ExportImportConfigurationSettingsMapFactory;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.systemevent.SystemEventHierarchyEntry;
 import com.liferay.portal.kernel.systemevent.SystemEventHierarchyEntryThreadLocal;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -53,6 +56,7 @@ import com.liferay.portal.lar.backgroundtask.LayoutImportBackgroundTaskExecutor;
 import com.liferay.portal.lar.backgroundtask.PortletExportBackgroundTaskExecutor;
 import com.liferay.portal.lar.backgroundtask.PortletImportBackgroundTaskExecutor;
 import com.liferay.portal.model.BackgroundTask;
+import com.liferay.portal.model.ExportImportConfiguration;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Layout;
@@ -432,6 +436,12 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		layout.setLayoutSet(layoutSet);
 
+		// Asset
+
+		updateAsset(
+			userId, layout, serviceContext.getAssetCategoryIds(),
+			serviceContext.getAssetTagNames());
+
 		// Message boards
 
 		if (PropsValues.LAYOUT_COMMENTS_ENABLED) {
@@ -578,7 +588,8 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			layout.getLayoutId());
 
 		for (Layout childLayout : childLayouts) {
-			deleteLayout(childLayout, updateLayoutSet, serviceContext);
+			layoutLocalService.deleteLayout(
+				childLayout, updateLayoutSet, serviceContext);
 		}
 
 		// Layout friendly URLs
@@ -595,6 +606,11 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		subscriptionLocalService.deleteSubscriptions(
 			layout.getCompanyId(), Layout.class.getName(), layout.getPlid());
+
+		// Asset
+
+		assetEntryLocalService.deleteEntry(
+			Layout.class.getName(), layout.getPlid());
 
 		// Ratings
 
@@ -713,7 +729,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		Layout layout = layoutPersistence.findByG_P_L(
 			groupId, privateLayout, layoutId);
 
-		deleteLayout(layout, true, serviceContext);
+		layoutLocalService.deleteLayout(layout, true, serviceContext);
 	}
 
 	/**
@@ -732,7 +748,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		Layout layout = layoutPersistence.findByPrimaryKey(plid);
 
-		deleteLayout(layout, true, serviceContext);
+		layoutLocalService.deleteLayout(layout, true, serviceContext);
 	}
 
 	/**
@@ -764,7 +780,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 		for (Layout layout : layouts) {
 			try {
-				deleteLayout(layout, false, serviceContext);
+				layoutLocalService.deleteLayout(layout, false, serviceContext);
 			}
 			catch (NoSuchLayoutException nsle) {
 			}
@@ -900,16 +916,31 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			throw new LARFileNameException(fileName);
 		}
 
-		Map<String, Serializable> taskContextMap =
-			BackgroundTaskContextMapFactory.buildTaskContextMap(
+		Map<String, Serializable> settingsMap =
+			ExportImportConfigurationSettingsMapFactory.buildSettingsMap(
 				userId, groupId, privateLayout, layoutIds, parameterMap,
-				Constants.EXPORT, startDate, endDate, fileName);
+				startDate, endDate, null, null);
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		ExportImportConfiguration exportImportConfiguration =
+			exportImportConfigurationLocalService.addExportImportConfiguration(
+				userId, groupId, taskName, StringPool.BLANK,
+				ExportImportConfigurationConstants.TYPE_EXPORT_LAYOUT,
+				settingsMap, WorkflowConstants.STATUS_DRAFT, serviceContext);
+
+		Map<String, Serializable> taskContextMap =
+			new HashMap<String, Serializable>();
+
+		taskContextMap.put(
+			"exportImportConfigurationId",
+			exportImportConfiguration.getExportImportConfigurationId());
 
 		BackgroundTask backgroundTask =
 			backgroundTaskLocalService.addBackgroundTask(
 				userId, groupId, taskName, null,
 				LayoutExportBackgroundTaskExecutor.class, taskContextMap,
-				new ServiceContext());
+				serviceContext);
 
 		return backgroundTask.getBackgroundTaskId();
 	}
@@ -1118,7 +1149,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			List<Layout> layouts = layoutPersistence.findByGroupId(
 				groupId, 0, 1);
 
-			if (layouts.size() > 0) {
+			if (!layouts.isEmpty()) {
 				Layout layout = layouts.get(0);
 
 				return layout.getPlid();
@@ -1145,7 +1176,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			List<Layout> layouts = layoutPersistence.findByG_P(
 				groupId, privateLayout, 0, 1);
 
-			if (layouts.size() > 0) {
+			if (!layouts.isEmpty()) {
 				Layout layout = layouts.get(0);
 
 				return layout.getPlid();
@@ -1495,6 +1526,15 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		}
 
 		return count;
+	}
+
+	@Override
+	public int getLayoutsCount(
+			Group group, boolean privateLayout, long parentLayoutId)
+		throws SystemException {
+
+		return layoutPersistence.countByG_P_P(
+			group.getGroupId(), privateLayout, parentLayoutId);
 	}
 
 	@Override
@@ -2208,6 +2248,21 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		layoutSetLocalService.updatePageCount(groupId, privateLayout);
 	}
 
+	@Override
+	public void updateAsset(
+			long userId, Layout layout, long[] assetCategoryIds,
+			String[] assetTagNames)
+		throws PortalException, SystemException {
+
+		assetEntryLocalService.updateEntry(
+			userId, layout.getGroupId(), layout.getCreateDate(),
+			layout.getModifiedDate(), Layout.class.getName(), layout.getPlid(),
+			layout.getUuid(), 0, assetCategoryIds, assetTagNames, false, null,
+			null, null, ContentTypes.TEXT_HTML,
+			layout.getName(LocaleUtil.getDefault()), null, null, null, null, 0,
+			0, null, false);
+	}
+
 	/**
 	 * Updates the friendly URL of the layout.
 	 *
@@ -2404,6 +2459,13 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			layout.getUserId(), layout.getCompanyId(), layout.getGroupId(),
 			layout.getPlid(), layout.isPrivateLayout(), friendlyURLMap,
 			serviceContext);
+
+		// Asset
+
+		updateAsset(
+			serviceContext.getUserId(), layout,
+			serviceContext.getAssetCategoryIds(),
+			serviceContext.getAssetTagNames());
 
 		return layout;
 	}

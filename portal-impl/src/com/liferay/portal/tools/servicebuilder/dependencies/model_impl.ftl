@@ -664,17 +664,19 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 		<#assign methodName = textFormatter.format(variableName, 6)>
 		<#assign typeName = cacheField.getType().getGenericValue()>
 
-		public ${typeName} get${methodName}() {
-			<#if cacheField.getType().isPrimitive()>
-				<#if typeName == "boolean">
-					return false;
+		<#if methodName != "DefaultLanguageId">
+			public ${typeName} get${methodName}() {
+				<#if cacheField.getType().isPrimitive()>
+					<#if typeName == "boolean">
+						return false;
+					<#else>
+						return 0;
+					</#if>
 				<#else>
-					return 0;
+					return null;
 				</#if>
-			<#else>
-				return null;
-			</#if>
-		}
+			}
+		</#if>
 
 		public void set${methodName}(${typeName} ${variableName}) {
 		}
@@ -853,6 +855,21 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 			}
 
 			return false;
+		}
+
+		@Override
+		public boolean isInTrashImplicitly() throws SystemException {
+			if (!isInTrash()) {
+				return false;
+			}
+
+			TrashEntry trashEntry = TrashEntryLocalServiceUtil.fetchEntry(getModelClassName(), getTrashEntryClassPK());
+
+			if (trashEntry != null) {
+				return false;
+			}
+
+			return true;
 		}
 	</#if>
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -233,6 +233,19 @@ public class WikiPageLocalServiceWrapper implements WikiPageLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _wikiPageLocalService.getWikiPage(pageId);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _wikiPageLocalService.getActionableDynamicQuery();
+	}
+
+	@Override
+	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _wikiPageLocalService.getExportActionableDynamicQuery(portletDataContext);
 	}
 
 	@Override
@@ -851,6 +864,14 @@ public class WikiPageLocalServiceWrapper implements WikiPageLocalService,
 		return _wikiPageLocalService.getPagesCount(format);
 	}
 
+	@Override
+	public com.liferay.portlet.wiki.model.WikiPage getPreviousVersionPage(
+		com.liferay.portlet.wiki.model.WikiPage page)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _wikiPageLocalService.getPreviousVersionPage(page);
+	}
+
 	/**
 	* @deprecated As of 6.2.0, replaced by {@link #getRecentChanges(long, long,
 	int, int)}
@@ -906,6 +927,14 @@ public class WikiPageLocalServiceWrapper implements WikiPageLocalService,
 	}
 
 	@Override
+	public void moveDependentToTrash(
+		com.liferay.portlet.wiki.model.WikiPage page, long trashEntryId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_wikiPageLocalService.moveDependentToTrash(page, trashEntryId);
+	}
+
+	@Override
 	public void movePage(long userId, long nodeId, java.lang.String title,
 		java.lang.String newTitle, boolean strict,
 		com.liferay.portal.service.ServiceContext serviceContext)
@@ -958,6 +987,14 @@ public class WikiPageLocalServiceWrapper implements WikiPageLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _wikiPageLocalService.movePageToTrash(userId, page);
+	}
+
+	@Override
+	public void restoreDependentFromTrash(
+		com.liferay.portlet.wiki.model.WikiPage page, long trashEntryId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_wikiPageLocalService.restoreDependentFromTrash(page, trashEntryId);
 	}
 
 	@Override
@@ -1035,6 +1072,11 @@ public class WikiPageLocalServiceWrapper implements WikiPageLocalService,
 			status, serviceContext);
 	}
 
+	/**
+	* @deprecated As of 7.0.0, replaced by {@link #updateStatus(long, WikiPage,
+	int, ServiceContext, Map)}
+	*/
+	@Deprecated
 	@Override
 	public com.liferay.portlet.wiki.model.WikiPage updateStatus(long userId,
 		com.liferay.portlet.wiki.model.WikiPage page, int status,
@@ -1043,6 +1085,17 @@ public class WikiPageLocalServiceWrapper implements WikiPageLocalService,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _wikiPageLocalService.updateStatus(userId, page, status,
 			serviceContext);
+	}
+
+	@Override
+	public com.liferay.portlet.wiki.model.WikiPage updateStatus(long userId,
+		com.liferay.portlet.wiki.model.WikiPage page, int status,
+		com.liferay.portal.service.ServiceContext serviceContext,
+		java.util.Map<java.lang.String, java.io.Serializable> workflowContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _wikiPageLocalService.updateStatus(userId, page, status,
+			serviceContext, workflowContext);
 	}
 
 	@Override

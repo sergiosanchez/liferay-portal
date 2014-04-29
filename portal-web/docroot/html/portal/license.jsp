@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -362,7 +362,7 @@ dateFormatDateTime.setTimeZone(timeZone);
 
 					<div id="node_<%= clusterNode.getClusterNodeId() %>_serverInfo">
 						<div style="text-align: center;">
-							<img src="<%= themeDisplay.getPathThemeImages() %>/aui/loading_indicator.gif" />
+							<img alt="<liferay-ui:message key="loading" />" src="<%= themeDisplay.getPathThemeImages() %>/aui/loading_indicator.gif" />
 						</div>
 					</div>
 				</td>
@@ -398,7 +398,7 @@ dateFormatDateTime.setTimeZone(timeZone);
 
 					<div id="node_<%= clusterNode.getClusterNodeId() %>_licenseProperties">
 						<div style="text-align: center;">
-							<img src="<%= themeDisplay.getPathThemeImages() %>/aui/loading_indicator.gif" />
+							<img alt="<liferay-ui:message key="loading" />" src="<%= themeDisplay.getPathThemeImages() %>/aui/loading_indicator.gif" />
 						</div>
 					</div>
 				</td>

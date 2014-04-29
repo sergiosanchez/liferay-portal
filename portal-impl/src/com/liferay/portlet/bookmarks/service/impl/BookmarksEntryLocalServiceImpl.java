@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -28,9 +28,10 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Sort;
-import com.liferay.portal.kernel.transaction.TransactionCommitCallbackRegistryUtil;
+import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -40,14 +41,16 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.ResourceConstants;
+import com.liferay.portal.model.SystemEventConstants;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.ServiceContext;
-import com.liferay.portal.service.ServiceContextUtil;
+import com.liferay.portal.settings.LocalizedValuesMap;
 import com.liferay.portal.util.Portal;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.SubscriptionSender;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.model.AssetLinkConstants;
+import com.liferay.portlet.bookmarks.BookmarksSettings;
 import com.liferay.portlet.bookmarks.EntryURLException;
 import com.liferay.portlet.bookmarks.model.BookmarksEntry;
 import com.liferay.portlet.bookmarks.model.BookmarksFolder;
@@ -62,14 +65,8 @@ import com.liferay.portlet.social.model.SocialActivityConstants;
 import com.liferay.portlet.trash.model.TrashEntry;
 import com.liferay.portlet.trash.model.TrashVersion;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.Callable;
-
-import javax.portlet.PortletPreferences;
 
 /**
  * @author Brian Wing Shun Chan
@@ -170,6 +167,7 @@ public class BookmarksEntryLocalServiceImpl
 
 	@Indexable(type = IndexableType.DELETE)
 	@Override
+	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public BookmarksEntry deleteEntry(BookmarksEntry entry)
 		throws PortalException, SystemException {
 
@@ -219,7 +217,7 @@ public class BookmarksEntryLocalServiceImpl
 		BookmarksEntry entry = bookmarksEntryPersistence.findByPrimaryKey(
 			entryId);
 
-		return deleteEntry(entry);
+		return bookmarksEntryLocalService.deleteEntry(entry);
 	}
 
 	@Override
@@ -517,6 +515,11 @@ public class BookmarksEntryLocalServiceImpl
 		searchContext.setStart(start);
 		searchContext.setUserId(userId);
 
+		QueryConfig queryConfig = searchContext.getQueryConfig();
+
+		queryConfig.setHighlightEnabled(false);
+		queryConfig.setScoreEnabled(false);
+
 		return indexer.search(searchContext);
 	}
 
@@ -684,21 +687,6 @@ public class BookmarksEntryLocalServiceImpl
 		return folderId;
 	}
 
-	protected void notify(final SubscriptionSender subscriptionSender) {
-		TransactionCommitCallbackRegistryUtil.registerCallback(
-			new Callable<Void>() {
-
-				@Override
-				public Void call() throws Exception {
-					subscriptionSender.flushNotificationsAsync();
-
-					return null;
-				}
-
-			}
-		);
-	}
-
 	protected void notifySubscribers(
 			BookmarksEntry entry, ServiceContext serviceContext)
 		throws PortalException, SystemException {
@@ -709,25 +697,13 @@ public class BookmarksEntryLocalServiceImpl
 			return;
 		}
 
-		PortletPreferences preferences =
-			ServiceContextUtil.getPortletPreferences(serviceContext);
-
-		if (preferences == null) {
-			long ownerId = entry.getGroupId();
-			int ownerType = PortletKeys.PREFS_OWNER_TYPE_GROUP;
-			long plid = PortletKeys.PREFS_PLID_SHARED;
-			String portletId = PortletKeys.BOOKMARKS;
-			String defaultPreferences = null;
-
-			preferences = portletPreferencesLocalService.getPreferences(
-				entry.getCompanyId(), ownerId, ownerType, plid, portletId,
-				defaultPreferences);
-		}
+		BookmarksSettings bookmarksSettings =
+			BookmarksUtil.getBookmarksSettings(entry.getGroupId());
 
 		if ((serviceContext.isCommandAdd() &&
-			 !BookmarksUtil.getEmailEntryAddedEnabled(preferences)) ||
+			 !bookmarksSettings.getEmailEntryAddedEnabled()) ||
 			(serviceContext.isCommandUpdate() &&
-			 !BookmarksUtil.getEmailEntryUpdatedEnabled(preferences))) {
+			 !bookmarksSettings.getEmailEntryUpdatedEnabled())) {
 
 			return;
 		}
@@ -749,25 +725,22 @@ public class BookmarksEntryLocalServiceImpl
 			layoutFullURL + Portal.FRIENDLY_URL_SEPARATOR + "bookmarks" +
 				StringPool.SLASH + entry.getEntryId();
 
-		String fromAddress = BookmarksUtil.getEmailFromAddress(
-			preferences, entry.getCompanyId());
-		String fromName = BookmarksUtil.getEmailFromName(
-			preferences, entry.getCompanyId());
+		String fromName = bookmarksSettings.getEmailFromName();
+		String fromAddress = bookmarksSettings.getEmailFromAddress();
 
-		Map<Locale, String> localizedSubjectMap = null;
-		Map<Locale, String> localizedBodyMap = null;
+		LocalizedValuesMap subjectLocalizedValuesMap = null;
+		LocalizedValuesMap bodyLocalizedValuesMap = null;
 
 		if (serviceContext.isCommandUpdate()) {
-			localizedSubjectMap = BookmarksUtil.getEmailEntryUpdatedSubjectMap(
-				preferences);
-			localizedBodyMap = BookmarksUtil.getEmailEntryUpdatedBodyMap(
-				preferences);
+			subjectLocalizedValuesMap =
+				bookmarksSettings.getEmailEntryUpdatedSubject();
+			bodyLocalizedValuesMap =
+				bookmarksSettings.getEmailEntryUpdatedBody();
 		}
 		else {
-			localizedSubjectMap = BookmarksUtil.getEmailEntryAddedSubjectMap(
-				preferences);
-			localizedBodyMap = BookmarksUtil.getEmailEntryAddedBodyMap(
-				preferences);
+			subjectLocalizedValuesMap =
+				bookmarksSettings.getEmailEntryAddedSubject();
+			bodyLocalizedValuesMap = bookmarksSettings.getEmailEntryAddedBody();
 		}
 
 		SubscriptionSender subscriptionSender = new SubscriptionSender();
@@ -783,8 +756,8 @@ public class BookmarksEntryLocalServiceImpl
 		subscriptionSender.setEntryURL(entryURL);
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
-		subscriptionSender.setLocalizedBodyMap(localizedBodyMap);
-		subscriptionSender.setLocalizedSubjectMap(localizedSubjectMap);
+		subscriptionSender.setLocalizedBodyMap(bodyLocalizedValuesMap);
+		subscriptionSender.setLocalizedSubjectMap(subjectLocalizedValuesMap);
 		subscriptionSender.setMailId("bookmarks_entry", entry.getEntryId());
 
 		int notificationType =
@@ -805,17 +778,14 @@ public class BookmarksEntryLocalServiceImpl
 
 		BookmarksFolder folder = entry.getFolder();
 
-		List<Long> folderIds = new ArrayList<Long>();
-
 		if (folder != null) {
-			folderIds.add(folder.getFolderId());
-
-			folderIds.addAll(folder.getAncestorFolderIds());
-		}
-
-		for (long curFolderId : folderIds) {
 			subscriptionSender.addPersistedSubscribers(
-				BookmarksFolder.class.getName(), curFolderId);
+				BookmarksFolder.class.getName(), folder.getFolderId());
+
+			for (Long ancestorFolderId : folder.getAncestorFolderIds()) {
+				subscriptionSender.addPersistedSubscribers(
+					BookmarksFolder.class.getName(), ancestorFolderId);
+			}
 		}
 
 		subscriptionSender.addPersistedSubscribers(
@@ -824,7 +794,7 @@ public class BookmarksEntryLocalServiceImpl
 		subscriptionSender.addPersistedSubscribers(
 			BookmarksEntry.class.getName(), entry.getEntryId());
 
-		notify(subscriptionSender);
+		subscriptionSender.flushNotificationsAsync();
 	}
 
 	protected void validate(String url) throws PortalException {

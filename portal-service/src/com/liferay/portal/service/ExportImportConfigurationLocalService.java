@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -187,6 +187,10 @@ public interface ExportImportConfigurationLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException;
+
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public com.liferay.portal.model.PersistedModel getPersistedModel(
@@ -250,6 +254,14 @@ public interface ExportImportConfigurationLocalService extends BaseLocalService,
 		long userId, long groupId, java.lang.String name,
 		java.lang.String description, int type,
 		java.util.Map<java.lang.String, java.io.Serializable> settingsMap,
+		int status, com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public com.liferay.portal.model.ExportImportConfiguration addExportImportConfiguration(
+		long userId, long groupId, java.lang.String name,
+		java.lang.String description, int type,
+		java.util.Map<java.lang.String, java.io.Serializable> settingsMap,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
@@ -270,6 +282,10 @@ public interface ExportImportConfigurationLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.SystemException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getExportImportConfigurationsCount(long groupId)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getExportImportConfigurationsCount(long groupId, int type)
 		throws com.liferay.portal.kernel.exception.SystemException;
 
@@ -284,7 +300,7 @@ public interface ExportImportConfigurationLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	public com.liferay.portal.model.ExportImportConfiguration updateExportImportConfiguration(
-		long exportImportConfigurationId, java.lang.String name,
+		long userId, long exportImportConfigurationId, java.lang.String name,
 		java.lang.String description,
 		java.util.Map<java.lang.String, java.io.Serializable> settingsMap,
 		com.liferay.portal.service.ServiceContext serviceContext)

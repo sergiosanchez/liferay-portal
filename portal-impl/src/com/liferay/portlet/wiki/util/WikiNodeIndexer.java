@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -35,10 +35,11 @@ import com.liferay.portal.util.PortletKeys;
 import com.liferay.portlet.wiki.model.WikiNode;
 import com.liferay.portlet.wiki.service.WikiNodeLocalServiceUtil;
 import com.liferay.portlet.wiki.service.permission.WikiNodePermission;
-import com.liferay.portlet.wiki.service.persistence.WikiNodeActionableDynamicQuery;
 
 import java.util.Locale;
 
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
 /**
@@ -51,6 +52,9 @@ public class WikiNodeIndexer extends BaseIndexer {
 	public static final String PORTLET_ID = PortletKeys.WIKI;
 
 	public WikiNodeIndexer() {
+		setDefaultSelectedFieldNames(
+			Field.COMPANY_ID, Field.ENTRY_CLASS_NAME, Field.ENTRY_CLASS_PK,
+			Field.UID);
 		setFilterSearch(false);
 		setPermissionAware(false);
 	}
@@ -106,7 +110,8 @@ public class WikiNodeIndexer extends BaseIndexer {
 	@Override
 	protected Summary doGetSummary(
 			Document document, Locale locale, String snippet,
-			PortletURL portletURL)
+			PortletURL portletURL, PortletRequest portletRequest,
+			PortletResponse portletResponse)
 		throws Exception {
 
 		return null;
@@ -152,29 +157,37 @@ public class WikiNodeIndexer extends BaseIndexer {
 	protected void reindexEntries(long companyId)
 		throws PortalException, SystemException {
 
-		ActionableDynamicQuery actionableDynamicQuery =
-			new WikiNodeActionableDynamicQuery() {
+		final ActionableDynamicQuery actionableDynamicQuery =
+			WikiNodeLocalServiceUtil.getActionableDynamicQuery();
 
-			@Override
-			protected void addCriteria(DynamicQuery dynamicQuery) {
-				Property property = PropertyFactoryUtil.forName("status");
+		actionableDynamicQuery.setAddCriteriaMethod(
+			new ActionableDynamicQuery.AddCriteriaMethod() {
 
-				dynamicQuery.add(
-					property.eq(WorkflowConstants.STATUS_IN_TRASH));
-			}
+				@Override
+				public void addCriteria(DynamicQuery dynamicQuery) {
+					Property property = PropertyFactoryUtil.forName("status");
 
-			@Override
-			protected void performAction(Object object) throws PortalException {
-				WikiNode node = (WikiNode)object;
+					dynamicQuery.add(
+						property.eq(WorkflowConstants.STATUS_IN_TRASH));
+				}
 
-				Document document = getDocument(node);
-
-				addDocument(document);
-			}
-
-		};
-
+			});
 		actionableDynamicQuery.setCompanyId(companyId);
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod() {
+
+				@Override
+				public void performAction(Object object)
+					throws PortalException {
+
+					WikiNode node = (WikiNode)object;
+
+					Document document = getDocument(node);
+
+					actionableDynamicQuery.addDocument(document);
+				}
+
+			});
 		actionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		actionableDynamicQuery.performActions();

@@ -392,6 +392,20 @@
 			return columnId;
 		},
 
+		getGeolocation: function(callback) {
+			if (callback && navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(
+					function(position) {
+						callback.call(
+							this,
+							position.coords.latitude,
+							position.coords.longitude
+						);
+					}
+				);
+			}
+		},
+
 		getOpener: function() {
 			var openingWindow = Window._opener;
 
@@ -781,7 +795,7 @@
 			Liferay.Util.openWindow(
 				{
 					cache: false,
-					title: Liferay.Util.escapeHTML(event.title),
+					title: event.title,
 					uri: event.uri
 				}
 			);
@@ -1412,8 +1426,8 @@
 
 			ddmURL.setParameter('scopeTitle', config.title);
 
-			if ('showGlobalScope' in config) {
-				ddmURL.setParameter('showGlobalScope', config.showGlobalScope);
+			if ('showAncestorScopes' in config) {
+				ddmURL.setParameter('showAncestorScopes', config.showAncestorScopes);
 			}
 
 			if ('showHeader' in config) {
@@ -1964,6 +1978,13 @@
 
 				docBody.addClass(currentClass);
 
+				Liferay.fire(
+					'toggleControls',
+					{
+						enabled: (Liferay._editControlsState === 'visible')
+					}
+				);
+
 				trigger.on(
 					'gesturemovestart',
 					function(event) {
@@ -1981,6 +2002,14 @@
 								Liferay._editControlsState = (docBody.hasClass(visibleClass) ? 'visible' : 'hidden');
 
 								Liferay.Store('liferay_toggle_controls', Liferay._editControlsState);
+
+								Liferay.fire(
+									'toggleControls',
+									{
+										enabled: (Liferay._editControlsState === 'visible'),
+										src: 'ui'
+									}
+								);
 							}
 						);
 					}

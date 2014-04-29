@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -22,6 +22,8 @@ String[] mediaGalleryMimeTypes = (String[])request.getAttribute("view.jsp-mediaG
 SearchContainer searchContainer = (SearchContainer)request.getAttribute("view.jsp-searchContainer");
 
 List results = searchContainer.getResults();
+
+DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(request, dlPortletInstanceSettings);
 %>
 
 <c:choose>
@@ -59,7 +61,7 @@ List results = searchContainer.getResults();
 					thumbnailId = "entry_" + fileEntry.getFileEntryId();
 				}
 
-				DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(request, fileEntry);
+				DLFileEntryActionsDisplayContext dlFileEntryActionsDisplayContext = new DLFileEntryActionsDisplayContext(request, dlPortletInstanceSettings, fileEntry);
 				%>
 
 				<c:if test="<%= DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.VIEW) %>">
@@ -107,8 +109,8 @@ List results = searchContainer.getResults();
 
 					<div class="image-icon">
 						<a class="image-link preview" <%= (hasAudio || hasVideo) ? "data-options=\"height=" + playerHeight + "&thumbnailURL=" + HtmlUtil.escapeURL(DLUtil.getPreviewURL(fileEntry, fileVersion, themeDisplay, "&videoThumbnail=1")) + "&width=640" + dataOptions + "\"" : StringPool.BLANK %> href="<%= href %>" thumbnailId="<%= thumbnailId %>" title="<%= HtmlUtil.escape(fileEntry.getTitle()) + " - " + HtmlUtil.escape(fileEntry.getDescription()) %>">
-							<span class="image-thumbnail" style="<%= DLUtil.getThumbnailStyle(false, 4) %>">
-								<img alt="<%= HtmlUtil.escape(fileEntry.getTitle()) + " - " + HtmlUtil.escape(fileEntry.getDescription()) %>" border="no" src="<%= src %>" style="max-height: <%= PropsValues.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT %>px; max-width: <%= PropsValues.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH %>px;" />
+							<span class="image-thumbnail">
+								<img alt="<%= HtmlUtil.escape(fileEntry.getTitle()) + " - " + HtmlUtil.escape(fileEntry.getDescription()) %>" border="no" src="<%= src %>" style="<%= DLUtil.getThumbnailStyle(true, 0) %>" />
 
 								<c:if test="<%= fileShortcut != null %>">
 									<img alt="<liferay-ui:message key="shortcut" />" class="shortcut-icon" src="<%= themeDisplay.getPathThemeImages() %>/file_system/large/overlay_link.png" />
@@ -123,7 +125,7 @@ List results = searchContainer.getResults();
 						</a>
 					</div>
 
-					<c:if test="<%= showActions %>">
+					<c:if test="<%= dlActionsDisplayContext.isShowActions() %>">
 						<div class="hide" id="<portlet:namespace />buttonsContainer_<%= thumbnailId %>">
 							<div class="buttons-container float-container" id="<portlet:namespace />buttons_<%= thumbnailId %>">
 								<%@ include file="/html/portlet/image_gallery_display/image_action.jspf" %>
@@ -171,7 +173,7 @@ List results = searchContainer.getResults();
 							<div class="image-icon">
 								<a class="image-link" href="<%= viewFolderURL.toString() %>" title="<%= HtmlUtil.escape(curFolder.getName()) + " - " + HtmlUtil.escape(curFolder.getDescription()) %>">
 									<span class="image-thumbnail">
-										<img alt="" border="no" src="<%= folderImageSrc %>" style="max-height: <%= PropsValues.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT %>px; max-width: <%= PropsValues.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH %>px;" />
+										<img alt="<liferay-ui:message key="repository" />" border="no" src="<%= folderImageSrc %>" style="<%= DLUtil.getThumbnailStyle(true, 0) %>" />
 									</span>
 
 									<span class="image-title"><%= HtmlUtil.escape(StringUtil.shorten(curFolder.getName(), 60)) %></span>
@@ -186,7 +188,7 @@ List results = searchContainer.getResults();
 
 							<div class="image-icon">
 								<span class="image-thumbnail error" title="<%= LanguageUtil.get(pageContext, "an-unexpected-error-occurred-while-connecting-to-the-repository") %>">
-									<img alt="" border="no" src="<%= folderImageSrc %>" style="max-height: <%= PropsValues.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT %>px; max-width: <%= PropsValues.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH %>px;" />
+									<img alt="<liferay-ui:message key="error" />" border="no" src="<%= folderImageSrc %>" style="<%= DLUtil.getThumbnailStyle(true, 0) %>" />
 
 									<span class="image-title"><%= HtmlUtil.escape(StringUtil.shorten(curFolder.getName(), 60)) %></span>
 								</span>
@@ -221,7 +223,7 @@ List results = searchContainer.getResults();
 								%>
 
 								<span class="image-thumbnail">
-									<img alt="" border="no" src="<%= folderImageSrc %>" style="max-height: <%= PropsValues.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT %>px; max-width: <%= PropsValues.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH %>px;" />
+									<img alt="<liferay-ui:message key="folder" />" border="no" src="<%= folderImageSrc %>" style="<%= DLUtil.getThumbnailStyle(true, 0) %>" />
 								</span>
 
 								<span class="image-title"><%= HtmlUtil.escape(StringUtil.shorten(curFolder.getName(), 60)) %></span>
@@ -277,7 +279,7 @@ embeddedPlayerURL.setWindowState(LiferayWindowState.POP_UP);
 					}
 				}
 
-				<c:if test="<%= showActions %>">
+				<c:if test="<%= dlActionsDisplayContext.isShowActions() %>">
 					, load: function(event) {
 						var instance = this;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -15,6 +15,7 @@
 package com.liferay.portlet.trash.service.impl;
 
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.BaseActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
@@ -23,6 +24,7 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.trash.TrashHandler;
@@ -33,11 +35,9 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.SystemEvent;
 import com.liferay.portal.model.User;
-import com.liferay.portal.service.persistence.GroupActionableDynamicQuery;
 import com.liferay.portlet.trash.model.TrashEntry;
 import com.liferay.portlet.trash.model.TrashVersion;
 import com.liferay.portlet.trash.service.base.TrashEntryLocalServiceBaseImpl;
-import com.liferay.portlet.trash.util.Trash;
 import com.liferay.portlet.trash.util.TrashUtil;
 
 import java.util.Calendar;
@@ -59,6 +59,9 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 	 * @param  groupId the primary key of the entry's group
 	 * @param  className the class name of the entity
 	 * @param  classPK the primary key of the entity
+	 * @param  classUuid the UUID of the entity's class
+	 * @param  referrerClassName the referrer class name used to add a deletion
+	 *         {@link SystemEvent}
 	 * @param  status the status of the entity prior to being moved to trash
 	 * @param  statusOVPs the primary keys and statuses of any of the entry's
 	 *         versions (e.g., {@link
@@ -127,30 +130,41 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 
 	@Override
 	public void checkEntries() throws PortalException, SystemException {
+
 		ActionableDynamicQuery actionableDynamicQuery =
-			new GroupActionableDynamicQuery() {
+			groupLocalService.getActionableDynamicQuery();
 
-			@Override
-			protected void performAction(Object object)
-				throws PortalException, SystemException {
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod() {
 
-				Group group = (Group)object;
+				@Override
+				public void performAction(Object object)
+					throws PortalException, SystemException {
 
-				Date date = getMaxAge(group);
+					Group group = (Group)object;
 
-				List<TrashEntry> entries = trashEntryPersistence.findByG_LtCD(
-					group.getGroupId(), date);
+					if (!TrashUtil.isTrashEnabled(group.getGroupId())) {
+						return;
+					}
 
-				for (TrashEntry entry : entries) {
-					TrashHandler trashHandler =
-						TrashHandlerRegistryUtil.getTrashHandler(
-							entry.getClassName());
+					Date date = getMaxAge(group);
 
-					trashHandler.deleteTrashEntry(entry.getClassPK());
+					List<TrashEntry> entries =
+						trashEntryPersistence.findByG_LtCD(
+							group.getGroupId(), date);
+
+					for (TrashEntry entry : entries) {
+						TrashHandler trashHandler =
+							TrashHandlerRegistryUtil.getTrashHandler(
+								entry.getClassName());
+
+						trashHandler.deleteTrashEntry(entry.getClassPK());
+					}
 				}
-			}
 
-		};
+			});
+		actionableDynamicQuery.setTransactionAttribute(
+			BaseActionableDynamicQuery.REQUIRES_NEW_TRANSACTION_ATTRIBUTE);
 
 		actionableDynamicQuery.performActions();
 	}
@@ -380,8 +394,7 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 			SearchContext searchContext = buildSearchContext(
 				companyId, groupId, userId, keywords, start, end, sort);
 
-			Hits hits = indexer.search(
-				searchContext, Trash.SELECTED_FIELD_NAMES);
+			Hits hits = indexer.search(searchContext);
 
 			List<TrashEntry> trashEntries = TrashUtil.getEntries(hits);
 
@@ -410,6 +423,11 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 
 		searchContext.setStart(start);
 		searchContext.setUserId(userId);
+
+		QueryConfig queryConfig = searchContext.getQueryConfig();
+
+		queryConfig.setHighlightEnabled(false);
+		queryConfig.setScoreEnabled(false);
 
 		return searchContext;
 	}

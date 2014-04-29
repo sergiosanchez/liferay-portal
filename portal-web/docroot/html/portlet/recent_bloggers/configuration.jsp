@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -43,16 +43,12 @@ if (organizationId > 0) {
 			<aui:option label="scope" />
 		</aui:select>
 
-		<div id="<portlet:namespace />UsersSelectionOptions">
-			<aui:field-wrapper label="organization">
-				<div class="input-append">
-					<liferay-ui:input-resource id="organizationName" url="<%= HtmlUtil.escape(organizationName) %>" />
+		<div class="control-group" id="<portlet:namespace />UsersSelectionOptions">
+			<aui:input label="organization" name="organizationName" type="resource" value="<%= organizationName %>" />
 
-					<aui:button name="selectOrganizationButton" value="select" />
+			<aui:button name="selectOrganizationButton" value="select" />
 
-					<aui:button disabled="<%= organizationId <= 0 %>" name="removeOrganizationButton" onClick='<%= renderResponse.getNamespace() + "removeOrganization();" %>' value="remove" />
-				</div>
-			</aui:field-wrapper>
+			<aui:button disabled="<%= organizationId <= 0 %>" name="removeOrganizationButton" onClick='<%= renderResponse.getNamespace() + "removeOrganization();" %>' value="remove" />
 		</div>
 
 		<aui:select name="preferences--displayStyle--">

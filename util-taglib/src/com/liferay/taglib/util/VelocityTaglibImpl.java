@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -62,6 +62,7 @@ import com.liferay.taglib.ui.JournalContentSearchTag;
 import com.liferay.taglib.ui.LanguageTag;
 import com.liferay.taglib.ui.MySitesTag;
 import com.liferay.taglib.ui.PngImageTag;
+import com.liferay.taglib.ui.QuickAccessTag;
 import com.liferay.taglib.ui.RatingsTag;
 import com.liferay.taglib.ui.SearchTag;
 import com.liferay.taglib.ui.SitesDirectoryTag;
@@ -271,6 +272,7 @@ public class VelocityTaglibImpl implements VelocityTaglib {
 
 		setUp(breadcrumbTag);
 
+		breadcrumbTag.setDisplayStyle(displayStyle);
 		breadcrumbTag.setShowGuestGroup(showGuestGroup);
 		breadcrumbTag.setShowLayout(showLayout);
 		breadcrumbTag.setShowParentGroups(showParentGroups);
@@ -349,7 +351,7 @@ public class VelocityTaglibImpl implements VelocityTaglib {
 		throws Exception {
 
 		AssetCategoriesSummaryTag assetCategoriesSummaryTag =
-				new AssetCategoriesSummaryTag();
+			new AssetCategoriesSummaryTag();
 
 		setUp(assetCategoriesSummaryTag);
 
@@ -453,6 +455,15 @@ public class VelocityTaglibImpl implements VelocityTaglib {
 		setUp(pngImageTag);
 
 		return pngImageTag;
+	}
+
+	@Override
+	public QuickAccessTag getQuickAccessTag() throws Exception {
+		QuickAccessTag quickAccessTag = new QuickAccessTag();
+
+		setUp(quickAccessTag);
+
+		return quickAccessTag;
 	}
 
 	@Override
@@ -958,6 +969,26 @@ public class VelocityTaglibImpl implements VelocityTaglib {
 	}
 
 	@Override
+	public void quickAccess() throws Exception {
+		QuickAccessTag quickAccessTag = new QuickAccessTag();
+
+		setUp(quickAccessTag);
+
+		quickAccessTag.runTag();
+	}
+
+	@Override
+	public void quickAccess(String contentId) throws Exception {
+		QuickAccessTag quickAccessTag = new QuickAccessTag();
+
+		setUp(quickAccessTag);
+
+		quickAccessTag.setContentId(contentId);
+
+		quickAccessTag.runTag();
+	}
+
+	@Override
 	public void ratings(
 			String className, long classPK, int numberOfStars, String type,
 			String url)
@@ -1155,6 +1186,7 @@ public class VelocityTaglibImpl implements VelocityTaglib {
 	/**
 	 * @deprecated As of 7.0.0, replaced by {@link #stagingMenu}
 	 */
+	@Deprecated
 	@Override
 	public void staging() throws Exception {
 		stagingMenu();

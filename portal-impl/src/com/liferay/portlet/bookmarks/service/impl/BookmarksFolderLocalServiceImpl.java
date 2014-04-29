@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -108,18 +108,18 @@ public class BookmarksFolderLocalServiceImpl
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	@SystemEvent(
-		action = SystemEventConstants.ACTION_SKIP, send = false,
+		action = SystemEventConstants.ACTION_SKIP,
 		type = SystemEventConstants.TYPE_DELETE)
 	public BookmarksFolder deleteFolder(BookmarksFolder folder)
 		throws PortalException, SystemException {
 
-		return deleteFolder(folder, true);
+		return bookmarksFolderLocalService.deleteFolder(folder, true);
 	}
 
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	@SystemEvent(
-		action = SystemEventConstants.ACTION_SKIP, send = false,
+		action = SystemEventConstants.ACTION_SKIP,
 		type = SystemEventConstants.TYPE_DELETE)
 	public BookmarksFolder deleteFolder(
 			BookmarksFolder folder, boolean includeTrashedEntries)
@@ -130,7 +130,7 @@ public class BookmarksFolderLocalServiceImpl
 
 		for (BookmarksFolder curFolder : folders) {
 			if (includeTrashedEntries || !curFolder.isInTrashExplicitly()) {
-				deleteFolder(curFolder);
+				bookmarksFolderLocalService.deleteFolder(curFolder);
 			}
 		}
 
@@ -904,7 +904,8 @@ public class BookmarksFolderLocalServiceImpl
 				// Folders and entries
 
 				List<Object> curFoldersAndEntries = getFoldersAndEntries(
-					folder.getGroupId(), folder.getFolderId());
+					folder.getGroupId(), folder.getFolderId(),
+					WorkflowConstants.STATUS_IN_TRASH);
 
 				restoreDependentsFromTrash(curFoldersAndEntries, trashEntryId);
 

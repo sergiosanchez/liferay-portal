@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -16,8 +16,10 @@ package com.liferay.portal.deploy.hot;
 
 import com.liferay.portal.captcha.CaptchaImpl;
 import com.liferay.portal.events.EventsProcessorUtil;
+import com.liferay.portal.kernel.bean.BeanLocatorException;
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
+import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
 import com.liferay.portal.kernel.captcha.Captcha;
 import com.liferay.portal.kernel.captcha.CaptchaUtil;
 import com.liferay.portal.kernel.configuration.Configuration;
@@ -263,11 +265,13 @@ public class HookHotDeployListener
 		"servlet.session.destroy.events", "servlet.service.events.post",
 		"servlet.service.events.pre", "session.max.allowed",
 		"session.phishing.protected.attributes", "session.store.password",
-		"sites.form.add.advanced", "sites.form.add.main", "sites.form.add.seo",
+		"sites.form.add.advanced", "sites.form.add.main",
+		"sites.form.add.miscellaneous", "sites.form.add.seo",
 		"sites.form.update.advanced", "sites.form.update.main",
-		"sites.form.update.seo", "social.activity.sets.bundling.enabled",
-		"social.activity.sets.enabled", "social.activity.sets.selector",
-		"social.bookmark.*", "terms.of.use.required", "theme.css.fast.load",
+		"sites.form.update.miscellaneous", "sites.form.update.seo",
+		"social.activity.sets.bundling.enabled", "social.activity.sets.enabled",
+		"social.activity.sets.selector", "social.bookmark.*",
+		"terms.of.use.required", "theme.css.fast.load",
 		"theme.images.fast.load", "theme.jsp.override.enabled",
 		"theme.loader.new.theme.id.on.import", "theme.portlet.decorate.default",
 		"theme.portlet.sharing.default", "theme.shortcut.icon", "time.zones",
@@ -772,7 +776,8 @@ public class HookHotDeployListener
 				"model-listener-class");
 
 			ModelListener<BaseModel<?>> modelListener = initModelListener(
-				modelName, modelListenerClassName, portletClassLoader);
+				servletContextName, portletClassLoader, modelName,
+				modelListenerClassName);
 
 			if (modelListener != null) {
 				modelListenersContainer.registerModelListener(
@@ -912,7 +917,8 @@ public class HookHotDeployListener
 			_modelListenersContainerMap.remove(servletContextName);
 
 		if (modelListenersContainer != null) {
-			modelListenersContainer.unregisterModelListeners();
+			modelListenersContainer.unregisterModelListeners(
+				servletContextName);
 		}
 
 		Properties portalProperties = _portalPropertiesMap.remove(
@@ -987,7 +993,9 @@ public class HookHotDeployListener
 		return locale;
 	}
 
-	protected BasePersistence<?> getPersistence(String modelName) {
+	protected BasePersistence<?> getPersistence(
+		String servletContextName, String modelName) {
+
 		int pos = modelName.lastIndexOf(CharPool.PERIOD);
 
 		String entityName = modelName.substring(pos + 1);
@@ -996,8 +1004,16 @@ public class HookHotDeployListener
 
 		String packagePath = modelName.substring(0, pos);
 
-		return (BasePersistence<?>)PortalBeanLocatorUtil.locate(
-			packagePath + ".service.persistence." + entityName + "Persistence");
+		String beanName =
+			packagePath + ".service.persistence." + entityName + "Persistence";
+
+		try {
+			return (BasePersistence<?>)PortalBeanLocatorUtil.locate(beanName);
+		}
+		catch (BeanLocatorException ble) {
+			return (BasePersistence<?>)PortletBeanLocatorUtil.locate(
+				servletContextName, beanName);
+		}
 	}
 
 	protected File getPortalJspBackupFile(File portalJspFile) {
@@ -1563,8 +1579,8 @@ public class HookHotDeployListener
 
 	@SuppressWarnings("rawtypes")
 	protected ModelListener<BaseModel<?>> initModelListener(
-			String modelName, String modelListenerClassName,
-			ClassLoader portletClassLoader)
+			String servletContextName, ClassLoader portletClassLoader,
+			String modelName, String modelListenerClassName)
 		throws Exception {
 
 		ModelListener<BaseModel<?>> modelListener =
@@ -1572,7 +1588,8 @@ public class HookHotDeployListener
 				portletClassLoader, ModelListener.class,
 				modelListenerClassName);
 
-		BasePersistence persistence = getPersistence(modelName);
+		BasePersistence persistence = getPersistence(
+			servletContextName, modelName);
 
 		persistence.registerListener(modelListener);
 
@@ -1604,7 +1621,8 @@ public class HookHotDeployListener
 
 			for (String modelListenerClassName : modelListenerClassNames) {
 				ModelListener<BaseModel<?>> modelListener = initModelListener(
-					modelName, modelListenerClassName, portletClassLoader);
+					servletContextName, portletClassLoader, modelName,
+					modelListenerClassName);
 
 				if (modelListener != null) {
 					modelListenersContainer.registerModelListener(
@@ -2803,8 +2821,9 @@ public class HookHotDeployListener
 		"portlet.add.default.resource.check.whitelist",
 		"portlet.add.default.resource.check.whitelist.actions",
 		"session.phishing.protected.attributes", "sites.form.add.advanced",
-		"sites.form.add.main", "sites.form.add.seo",
-		"sites.form.update.advanced", "sites.form.update.main",
+		"sites.form.add.main", "sites.form.add.miscellaneous",
+		"sites.form.add.seo", "sites.form.update.advanced",
+		"sites.form.update.main", "sites.form.update.miscellaneous",
 		"sites.form.update.seo", "users.form.add.identification",
 		"users.form.add.main", "users.form.add.miscellaneous",
 		"users.form.my.account.identification", "users.form.my.account.main",
@@ -3337,7 +3356,7 @@ public class HookHotDeployListener
 		}
 
 		@SuppressWarnings("rawtypes")
-		public void unregisterModelListeners() {
+		public void unregisterModelListeners(String servletContextName) {
 			for (Map.Entry<String, List<ModelListener<BaseModel<?>>>> entry :
 					_modelListenersMap.entrySet()) {
 
@@ -3345,7 +3364,8 @@ public class HookHotDeployListener
 				List<ModelListener<BaseModel<?>>> modelListeners =
 					entry.getValue();
 
-				BasePersistence persistence = getPersistence(modelName);
+				BasePersistence persistence = getPersistence(
+					servletContextName, modelName);
 
 				for (ModelListener<BaseModel<?>> modelListener :
 						modelListeners) {

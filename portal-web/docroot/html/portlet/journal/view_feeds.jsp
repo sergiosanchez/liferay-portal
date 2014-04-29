@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -38,10 +38,44 @@ portletURL.setParameter("struts_action", "/journal/view_feeds");
 	searchContainer.setRowChecker(new RowChecker(renderResponse));
 	%>
 
-	<liferay-ui:search-form
-		page="/html/portlet/journal/feed_search.jsp"
-		searchContainer="<%= searchContainer %>"
-	/>
+	<aui:nav-bar>
+		<aui:nav>
+			<c:if test="<%= JournalPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_FEED) %>">
+				<portlet:renderURL var="editFeedURL">
+					<portlet:param name="struts_action" value="/journal/edit_feed" />
+					<portlet:param name="redirect" value="<%= currentURL %>" />
+				</portlet:renderURL>
+
+				<aui:nav-item
+					href="<%= editFeedURL %>"
+					iconCssClass="icon-plus"
+					label="add-feed"
+				/>
+			</c:if>
+
+			<c:if test="<%= JournalPermission.contains(permissionChecker, scopeGroupId, ActionKeys.PERMISSIONS) %>">
+				<liferay-security:permissionsURL
+					modelResource="com.liferay.portlet.journal"
+					modelResourceDescription="<%= HtmlUtil.escape(themeDisplay.getScopeGroupName()) %>"
+					resourcePrimKey="<%= String.valueOf(scopeGroupId) %>"
+					var="permissionsURL"
+					windowState="<%= LiferayWindowState.POP_UP.toString() %>"
+				/>
+
+				<aui:nav-item
+					href="<%= permissionsURL %>"
+					iconCssClass="icon-lock"
+					label="permissions"
+				/>
+			</c:if>
+		</aui:nav>
+
+		<aui:nav-bar-search
+			cssClass="pull-right"
+			file="/html/portlet/journal/feed_search.jsp"
+			searchContainer="<%= searchContainer %>"
+		/>
+	</aui:nav-bar>
 
 	<%
 	FeedSearchTerms searchTerms = (FeedSearchTerms)searchContainer.getSearchTerms();

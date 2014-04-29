@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,8 +14,11 @@
 
 package com.liferay.portal.kernel.nio.intraband.cache;
 
+import com.liferay.portal.bean.BeanLocatorImpl;
+import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.cache.CacheListener;
 import com.liferay.portal.kernel.cache.CacheListenerScope;
+import com.liferay.portal.kernel.cache.CacheManagerListener;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.PortalCacheException;
 import com.liferay.portal.kernel.cache.PortalCacheManager;
@@ -27,6 +30,7 @@ import com.liferay.portal.kernel.nio.intraband.MockRegistrationReference;
 import com.liferay.portal.kernel.nio.intraband.PortalExecutorManagerUtilAdvice;
 import com.liferay.portal.kernel.nio.intraband.SystemDataType;
 import com.liferay.portal.kernel.test.CodeCoverageAssertor;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.test.AdviseWith;
 import com.liferay.portal.test.AspectJMockingNewClassLoaderJUnitTestRunner;
@@ -35,8 +39,10 @@ import java.lang.reflect.Method;
 
 import java.net.URL;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -68,8 +74,19 @@ public class PortalCacheDatagramReceiveHandlerTest {
 
 	@Before
 	public void setUp() {
-		IntrabandPortalCacheManager.setPortalCacheManager(
-			_mockPortalCacheManager);
+		PortalBeanLocatorUtil.setBeanLocator(
+			new BeanLocatorImpl(null, null) {
+
+				@Override
+				public Object locate(String name) {
+					if (_MULTI_VM_PORTAL_CACHE_MANAGER_BEAN_NAME.equals(name)) {
+						return _mockPortalCacheManager;
+					}
+
+					return null;
+				}
+
+			});
 	}
 
 	@AdviseWith(adviceClasses = {PortalExecutorManagerUtilAdvice.class})
@@ -405,8 +422,9 @@ public class PortalCacheDatagramReceiveHandlerTest {
 
 			int ordinal = newPortalCacheActionTypes.length - 1;
 
-			newPortalCacheActionTypes[ordinal] = ReflectionUtil.newEnumElement(
-				PortalCacheActionType.class, "MOCK_VALUE", ordinal);
+			newPortalCacheActionTypes[ordinal] =
+				ReflectionTestUtil.newEnumElement(
+					PortalCacheActionType.class, "MOCK_VALUE", ordinal);
 
 			return newPortalCacheActionTypes;
 		}
@@ -432,6 +450,9 @@ public class PortalCacheDatagramReceiveHandlerTest {
 
 		return serializer;
 	}
+
+	private static final String _MULTI_VM_PORTAL_CACHE_MANAGER_BEAN_NAME =
+		"com.liferay.portal.kernel.cache.MultiVMPortalCacheManager";
 
 	private static final String _TEST_KEY = "testKey";
 
@@ -576,6 +597,29 @@ public class PortalCacheDatagramReceiveHandlerTest {
 		@Override
 		public void removeCache(String name) {
 			_portalCaches.remove(name);
+		}
+
+		@Override
+		public Set<CacheManagerListener> getCacheManagerListeners() {
+			return Collections.emptySet();
+		}
+
+		@Override
+		public boolean registerCacheManagerListener(
+			CacheManagerListener cacheManagerListener) {
+
+			return false;
+		}
+
+		@Override
+		public boolean unregisterCacheManagerListener(
+			CacheManagerListener cacheManagerListener) {
+
+			return false;
+		}
+
+		@Override
+		public void unregisterCacheManagerListeners() {
 		}
 
 		private URL _configurationURL;

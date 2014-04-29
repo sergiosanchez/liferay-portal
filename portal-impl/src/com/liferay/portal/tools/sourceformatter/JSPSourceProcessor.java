@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -294,7 +294,7 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 			compareAndAutoFixContent(file, fileName, content, newContent);
 
 			if (portalSource &&
-				!mainReleaseVersion.equals(MAIN_RELEASE_VERSION_6_1_0) &&
+				mainReleaseVersion.equals(MAIN_RELEASE_LATEST_VERSION) &&
 				fileName.endsWith("/init.jsp") &&
 				!fileName.endsWith("/common/init.jsp")) {
 
@@ -428,7 +428,10 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 			fileName, newContent, taglibSessionKeyPattern);
 
 		checkLanguageKeys(fileName, newContent, languageKeyPattern);
-		checkLanguageKeys(fileName, newContent, _taglibLanguageKeyPattern);
+		checkLanguageKeys(fileName, newContent, _taglibLanguageKeyPattern1);
+		checkLanguageKeys(fileName, newContent, _taglibLanguageKeyPattern2);
+		checkLanguageKeys(fileName, newContent, _taglibLanguageKeyPattern3);
+
 		checkXSS(fileName, newContent);
 
 		compareAndAutoFixContent(file, fileName, content, newContent);
@@ -488,6 +491,8 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 			String trimmedPreviousLine = StringUtil.trimLeading(previousLine);
 
 			checkStringBundler(trimmedLine, fileName, lineCount);
+
+			checkEmptyCollection(trimmedLine, fileName, lineCount);
 
 			if (trimmedLine.equals("<%") || trimmedLine.equals("<%!")) {
 				javaSource = true;
@@ -1117,8 +1122,10 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 			if ((delimeter != CharPool.APOSTROPHE) &&
 				(delimeter != CharPool.QUOTE)) {
 
-				processErrorMessage(
-					fileName, "delimeter: " + fileName + " " + lineCount);
+				if (delimeter != CharPool.AMPERSAND) {
+					processErrorMessage(
+						fileName, "delimeter: " + fileName + " " + lineCount);
+				}
 
 				return line;
 			}
@@ -1161,9 +1168,11 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 			if ((delimeter == CharPool.APOSTROPHE) &&
 				!value.contains(StringPool.QUOTE)) {
 
-				return StringUtil.replace(
+				line = StringUtil.replace(
 					line, StringPool.APOSTROPHE + value + StringPool.APOSTROPHE,
 					StringPool.QUOTE + value + StringPool.QUOTE);
+
+				return sortJSPAttributes(fileName, line, lineCount);
 			}
 
 			StringBundler sb = new StringBundler(5);
@@ -1187,6 +1196,8 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 					line = StringUtil.replaceLast(
 						line, currentAttributeAndValue,
 						previousAttributeAndValue);
+
+					return sortJSPAttributes(fileName, line, lineCount);
 				}
 
 				return line;
@@ -1194,10 +1205,24 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 
 			s = s.substring(y + 1);
 
-			s = StringUtil.trimLeading(s);
+			if (s.startsWith(StringPool.GREATER_THAN)) {
+				x = s.indexOf(StringPool.SPACE);
 
-			previousAttribute = attribute;
-			previousAttributeAndValue = currentAttributeAndValue;
+				if (x == -1) {
+					return line;
+				}
+
+				s = s.substring(x + 1);
+
+				previousAttribute = null;
+				previousAttributeAndValue = null;
+			}
+			else {
+				s = StringUtil.trimLeading(s);
+
+				previousAttribute = attribute;
+				previousAttributeAndValue = currentAttributeAndValue;
+			}
 		}
 	}
 
@@ -1295,9 +1320,17 @@ public class JSPSourceProcessor extends BaseSourceProcessor {
 		"(<.*\n*page.import=\".*>\n*)+", Pattern.MULTILINE);
 	private Pattern _jspIncludeFilePattern = Pattern.compile("/.*[.]jsp[f]?");
 	private boolean _stripJSPImports = true;
-	private Pattern _taglibLanguageKeyPattern = Pattern.compile(
+	private Pattern _taglibLanguageKeyPattern1 = Pattern.compile(
 		"(?:confirmation|label|(?:M|m)essage|message key|names|title)=\"[^A-Z" +
 			"<=%\\[\\s]+\"");
+	private Pattern _taglibLanguageKeyPattern2 = Pattern.compile(
+		"(aui:)(?:input|select|field-wrapper) (?!.*label=(?:'|\").+(?:'|\").*" +
+			"name=\"[^<=%\\[\\s]+\")(?!.*name=\"[^<=%\\[\\s]+\".*title=" +
+				"(?:'|\").+(?:'|\"))(?!.*name=\"[^<=%\\[\\s]+\".*type=\"" +
+					"hidden\").*name=\"([^<=%\\[\\s]+)\"");
+	private Pattern _taglibLanguageKeyPattern3 = Pattern.compile(
+		"(liferay-ui:)(?:input-resource) .*id=\"([^<=%\\[\\s]+)\"(?!.*title=" +
+			"(?:'|\").+(?:'|\"))");
 	private Properties _unusedVariablesExclusions;
 	private Pattern _xssPattern = Pattern.compile(
 		"\\s+([^\\s]+)\\s*=\\s*(Bean)?ParamUtil\\.getString\\(");

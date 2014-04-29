@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.blogs.util;
 
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
@@ -21,10 +22,15 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceTestUtil;
+import com.liferay.portal.util.TestPropsValues;
 import com.liferay.portlet.blogs.model.BlogsEntry;
 import com.liferay.portlet.blogs.service.BlogsEntryLocalServiceUtil;
 
 import java.io.InputStream;
+import java.io.Serializable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Assert;
 
@@ -32,6 +38,12 @@ import org.junit.Assert;
  * @author Zsolt Berentey
  */
 public class BlogsTestUtil {
+
+	public static BlogsEntry addEntry(Group group, boolean approved)
+		throws Exception {
+
+		return addEntry(TestPropsValues.getUserId(), group, approved);
+	}
 
 	public static BlogsEntry addEntry(
 			long userId, Group group, boolean approved)
@@ -54,6 +66,9 @@ public class BlogsTestUtil {
 		ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
 			group.getGroupId());
 
+		serviceContext.setCommand(Constants.ADD);
+		serviceContext.setLayoutFullURL("http://localhost");
+
 		return addEntry(userId, title, approved, serviceContext);
 	}
 
@@ -64,6 +79,9 @@ public class BlogsTestUtil {
 
 		ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
 			group.getGroupId());
+
+		serviceContext.setCommand(Constants.ADD);
+		serviceContext.setLayoutFullURL("http://localhost");
 
 		return addEntry(userId, title, approved, smallImage, serviceContext);
 	}
@@ -130,9 +148,7 @@ public class BlogsTestUtil {
 				smallImageInputStream, serviceContext);
 
 			if (approved) {
-				entry = BlogsEntryLocalServiceUtil.updateStatus(
-					userId, entry.getEntryId(),
-					WorkflowConstants.STATUS_APPROVED, serviceContext);
+				return updateStatus(entry, serviceContext);
 			}
 
 			return entry;
@@ -151,22 +167,70 @@ public class BlogsTestUtil {
 	}
 
 	public static void assertEquals(
-		BlogsEntry blogsEntry, BlogsEntry blogEntryOther) {
+		BlogsEntry expectedEntry, BlogsEntry actualEntry) {
 
-		Assert.assertEquals(blogsEntry.getUserId(), blogEntryOther.getUserId());
-		Assert.assertEquals(blogsEntry.getTitle(), blogEntryOther.getTitle());
+		Assert.assertEquals(expectedEntry.getUserId(), actualEntry.getUserId());
+		Assert.assertEquals(expectedEntry.getTitle(), actualEntry.getTitle());
 		Assert.assertEquals(
-			blogsEntry.getDescription(), blogEntryOther.getDescription());
+			expectedEntry.getDescription(), actualEntry.getDescription());
 		Assert.assertEquals(
-			blogsEntry.getContent(), blogEntryOther.getContent());
+			expectedEntry.getContent(), actualEntry.getContent());
 		Assert.assertEquals(
-			blogsEntry.getDisplayDate(), blogEntryOther.getDisplayDate());
+			expectedEntry.getDisplayDate(), actualEntry.getDisplayDate());
 		Assert.assertEquals(
-			blogsEntry.isAllowPingbacks(), blogEntryOther.isAllowPingbacks());
+			expectedEntry.isAllowPingbacks(), actualEntry.isAllowPingbacks());
 		Assert.assertEquals(
-			blogsEntry.isAllowTrackbacks(), blogEntryOther.isAllowTrackbacks());
+			expectedEntry.isAllowTrackbacks(), actualEntry.isAllowTrackbacks());
 		Assert.assertEquals(
-			blogsEntry.isSmallImage(), blogEntryOther.isSmallImage());
+			expectedEntry.isSmallImage(), actualEntry.isSmallImage());
+	}
+
+	public static BlogsEntry updateEntry(BlogsEntry entry, boolean approved)
+		throws Exception {
+
+		boolean workflowEnabled = WorkflowThreadLocal.isEnabled();
+
+		try {
+			WorkflowThreadLocal.setEnabled(true);
+
+			ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
+				entry.getGroupId());
+
+			serviceContext.setCommand(Constants.UPDATE);
+			serviceContext.setLayoutFullURL("http://localhost");
+			serviceContext.setWorkflowAction(
+				WorkflowConstants.ACTION_SAVE_DRAFT);
+
+			entry = BlogsEntryLocalServiceUtil.updateEntry(
+				entry.getUserId(), entry.getEntryId(),
+				ServiceTestUtil.randomString(), entry.getDescription(),
+				entry.getContent(), 1, 1, 2012, 12, 00, true, true,
+				new String[0], entry.getSmallImage(), entry.getSmallImageURL(),
+				StringPool.BLANK, null, serviceContext);
+
+			if (approved) {
+				return updateStatus(entry, serviceContext);
+			}
+
+			return entry;
+		}
+		finally {
+			WorkflowThreadLocal.setEnabled(workflowEnabled);
+		}
+	}
+
+	protected static BlogsEntry updateStatus(
+			BlogsEntry entry, ServiceContext serviceContext)
+		throws Exception {
+
+		Map<String, Serializable> workflowContext =
+			new HashMap<String, Serializable>();
+
+		workflowContext.put(WorkflowConstants.CONTEXT_URL, "http://localhost");
+
+		return BlogsEntryLocalServiceUtil.updateStatus(
+			entry.getUserId(), entry.getEntryId(),
+			WorkflowConstants.STATUS_APPROVED, serviceContext, workflowContext);
 	}
 
 }

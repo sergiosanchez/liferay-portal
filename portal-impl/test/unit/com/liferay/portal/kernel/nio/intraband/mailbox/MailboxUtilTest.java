@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -22,16 +22,15 @@ import com.liferay.portal.kernel.nio.intraband.MockIntraband;
 import com.liferay.portal.kernel.nio.intraband.MockRegistrationReference;
 import com.liferay.portal.kernel.nio.intraband.RegistrationReference;
 import com.liferay.portal.kernel.test.CodeCoverageAssertor;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtilAdvice;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.ThreadUtil;
 import com.liferay.portal.test.AdviseWith;
 import com.liferay.portal.test.AspectJMockingNewJVMJUnitTestRunner;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 
 import java.nio.ByteBuffer;
 
@@ -55,6 +54,12 @@ public class MailboxUtilTest {
 	@ClassRule
 	public static CodeCoverageAssertor codeCoverageAssertor =
 		new CodeCoverageAssertor();
+
+	@AdviseWith(adviceClasses = {PropsUtilAdvice.class})
+	@Test
+	public void testConstructor() {
+		new MailboxUtil();
+	}
 
 	@AdviseWith(
 		adviceClasses = {PropsUtilAdvice.class, ReceiptStubAdvice.class}
@@ -127,7 +132,9 @@ public class MailboxUtilTest {
 
 		Assert.assertTrue(reaperThread.isAlive());
 
-		BlockingQueue<Object> overdueMailQueue = getOverdueMailQueue();
+		BlockingQueue<Object> overdueMailQueue =
+			(BlockingQueue<Object>)ReflectionTestUtil.getFieldValue(
+				MailboxUtil.class, "_overdueMailQueue");
 
 		while (!overdueMailQueue.isEmpty());
 
@@ -291,13 +298,6 @@ public class MailboxUtilTest {
 		Constructor<?> constructor = clazz.getConstructor(long.class);
 
 		return constructor.newInstance(0);
-	}
-
-	protected BlockingQueue<Object> getOverdueMailQueue() throws Exception {
-		Field overdueMailQueueField = ReflectionUtil.getDeclaredField(
-			MailboxUtil.class, "_overdueMailQueue");
-
-		return (BlockingQueue<Object>)overdueMailQueueField.get(null);
 	}
 
 	private static class RecorderUncaughtExceptionHandler

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -21,14 +21,12 @@ import com.liferay.portal.kernel.nio.intraband.DatagramHelper;
 import com.liferay.portal.kernel.nio.intraband.MockIntraband;
 import com.liferay.portal.kernel.nio.intraband.MockRegistrationReference;
 import com.liferay.portal.kernel.nio.intraband.RegistrationReference;
+import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -76,8 +74,12 @@ public class IntrabandPortalCacheTest {
 		Assert.assertEquals(_testName, intrabandPortalCache.getName());
 		Assert.assertSame(
 			_mockRegistrationReference,
-			getRegistrationReference(intrabandPortalCache));
-		Assert.assertSame(_mockIntraband, getIntraband(intrabandPortalCache));
+			ReflectionTestUtil.getFieldValue(
+				intrabandPortalCache, "_registrationReference"));
+		Assert.assertSame(
+			_mockIntraband,
+			ReflectionTestUtil.getFieldValue(
+				intrabandPortalCache, "_intraband"));
 	}
 
 	@Test
@@ -143,31 +145,43 @@ public class IntrabandPortalCacheTest {
 
 		Assert.assertEquals(testValue, intrabandPortalCache.get(testKey));
 
-		// Unable to get, with log
+		CaptureHandler captureHandler = null;
 
-		List<LogRecord> logRecords = JDKLoggerTestUtil.configureJDKLogger(
-			IntrabandPortalCache.class.getName(), Level.WARNING);
+		try {
 
-		RuntimeException runtimeException = new RuntimeException();
+			// Unable to get, with log
 
-		runtimeExceptionReference.set(runtimeException);
+			captureHandler = JDKLoggerTestUtil.configureJDKLogger(
+				IntrabandPortalCache.class.getName(), Level.WARNING);
 
-		Assert.assertNull(intrabandPortalCache.get(testKey));
-		Assert.assertEquals(1, logRecords.size());
+			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-		LogRecord logRecord = logRecords.get(0);
+			RuntimeException runtimeException = new RuntimeException();
 
-		Assert.assertEquals(
-			"Unable to get, coverting to cache miss", logRecord.getMessage());
-		Assert.assertSame(runtimeException, logRecord.getThrown());
+			runtimeExceptionReference.set(runtimeException);
 
-		// Unable to get, without log
+			Assert.assertNull(intrabandPortalCache.get(testKey));
+			Assert.assertEquals(1, logRecords.size());
 
-		logRecords = JDKLoggerTestUtil.configureJDKLogger(
-			IntrabandPortalCache.class.getName(), Level.OFF);
+			LogRecord logRecord = logRecords.get(0);
 
-		Assert.assertNull(intrabandPortalCache.get(testKey));
-		Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertEquals(
+				"Unable to get, coverting to cache miss",
+				logRecord.getMessage());
+			Assert.assertSame(runtimeException, logRecord.getThrown());
+
+			// Unable to get, without log
+
+			logRecords = captureHandler.resetLogLevel(Level.OFF);
+
+			Assert.assertNull(intrabandPortalCache.get(testKey));
+			Assert.assertTrue(logRecords.isEmpty());
+		}
+		finally {
+			if (captureHandler != null) {
+				captureHandler.close();
+			}
+		}
 	}
 
 	@Test
@@ -179,11 +193,10 @@ public class IntrabandPortalCacheTest {
 			new IntrabandPortalCache<String, String>(
 				_testName, _mockRegistrationReference);
 
-		Method bridgePutMethod = ReflectionUtil.getBridgeMethod(
-			IntrabandPortalCache.class, "put", Serializable.class,
-			Object.class);
-
-		bridgePutMethod.invoke(intrabandPortalCache, testKey, testValue);
+		ReflectionTestUtil.invokeBridge(
+			intrabandPortalCache, "put",
+			new Class<?>[] {Serializable.class, Object.class}, testKey,
+			testValue);
 
 		Datagram datagram = _mockIntraband.getDatagram();
 
@@ -212,11 +225,10 @@ public class IntrabandPortalCacheTest {
 			new IntrabandPortalCache<String, String>(
 				_testName, _mockRegistrationReference);
 
-		Method bridgePutQuietMethod = ReflectionUtil.getBridgeMethod(
-			IntrabandPortalCache.class, "putQuiet", Serializable.class,
-			Object.class);
-
-		bridgePutQuietMethod.invoke(intrabandPortalCache, testKey, testValue);
+		ReflectionTestUtil.invokeBridge(
+			intrabandPortalCache, "putQuiet",
+			new Class<?>[] {Serializable.class, Object.class}, testKey,
+			testValue);
 
 		Datagram datagram = _mockIntraband.getDatagram();
 
@@ -347,27 +359,6 @@ public class IntrabandPortalCacheTest {
 			PortalCacheActionType.REMOVE_ALL,
 			portalCacheActionTypes[actionTypeOrdinal]);
 		Assert.assertEquals(_testName, deserializer.readString());
-	}
-
-	private static MockIntraband getIntraband(
-			IntrabandPortalCache<?, ?> intrabandPortalCache)
-		throws Exception {
-
-		Field intrabandField = ReflectionUtil.getDeclaredField(
-			IntrabandPortalCache.class, "_intraband");
-
-		return (MockIntraband)intrabandField.get(intrabandPortalCache);
-	}
-
-	private static MockRegistrationReference getRegistrationReference(
-			IntrabandPortalCache<?, ?> intrabandPortalCache)
-		throws Exception {
-
-		Field registrationReferenceField = ReflectionUtil.getDeclaredField(
-			IntrabandPortalCache.class, "_registrationReference");
-
-		return (MockRegistrationReference)registrationReferenceField.get(
-			intrabandPortalCache);
 	}
 
 	private MockIntraband _mockIntraband = new MockIntraband();

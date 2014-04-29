@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -103,7 +103,7 @@ Group scopeGroup = themeDisplay.getScopeGroup();
 		</c:if>
 	</aui:nav>
 
-	<c:if test="<%= showFoldersSearch %>">
+	<c:if test="<%= dlPortletInstanceSettings.getShowFoldersSearch() %>">
 		<aui:nav-bar-search cssClass="pull-right">
 			<div class="form-search">
 				<liferay-portlet:resourceURL varImpl="searchURL">
@@ -157,7 +157,7 @@ Group scopeGroup = themeDisplay.getScopeGroup();
 					destroyOnHide: true
 				},
 				refererPortletName: '<%= PortletKeys.DOCUMENT_LIBRARY %>',
-				showGlobalScope: true,
+				showAncestorScopes: true,
 				showManageTemplates: false,
 				title: '<%= UnicodeLanguageUtil.get(pageContext, "metadata-sets") %>'
 			}

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -23,18 +23,22 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.model.Layout;
+import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.theme.ThemeDisplay;
+import com.liferay.portlet.documentlibrary.DLPortletInstanceSettings;
+import com.liferay.portlet.documentlibrary.DLSettings;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.model.DLFileShortcut;
+import com.liferay.portlet.documentlibrary.model.DLFileVersion;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
+import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import javax.servlet.http.HttpServletRequest;
@@ -152,54 +156,52 @@ public class DLUtil {
 		return getDL().getDLFolderControlPanelLink(portletRequest, folderId);
 	}
 
-	public static Map<Locale, String> getEmailFileEntryAddedBodyMap(
-		PortletPreferences preferences) {
+	public static DLPortletInstanceSettings getDLPortletInstanceSettings(
+			Layout layout, String portletId)
+		throws PortalException, SystemException {
 
-		return getDL().getEmailFileEntryAddedBodyMap(preferences);
+		return getDL().getDLPortletInstanceSettings(layout, portletId);
 	}
 
-	public static boolean getEmailFileEntryAddedEnabled(
-		PortletPreferences preferences) {
+	public static DLPortletInstanceSettings getDLPortletInstanceSettings(
+			Layout layout, String portletId, HttpServletRequest request)
+		throws PortalException, SystemException {
 
-		return getDL().getEmailFileEntryAddedEnabled(preferences);
+		return getDL().getDLPortletInstanceSettings(layout, portletId, request);
 	}
 
-	public static Map<Locale, String> getEmailFileEntryAddedSubjectMap(
-		PortletPreferences preferences) {
+	public static DLSettings getDLSettings(long groupId)
+		throws PortalException, SystemException {
 
-		return getDL().getEmailFileEntryAddedSubjectMap(preferences);
+		return getDL().getDLSettings(groupId);
 	}
 
-	public static Map<Locale, String> getEmailFileEntryUpdatedBodyMap(
-		PortletPreferences preferences) {
+	public static DLSettings getDLSettings(
+			long groupId, HttpServletRequest request)
+		throws PortalException, SystemException {
 
-		return getDL().getEmailFileEntryUpdatedBodyMap(preferences);
+		return getDL().getDLSettings(groupId, request);
 	}
 
-	public static boolean getEmailFileEntryUpdatedEnabled(
-		PortletPreferences preferences) {
+	public static Map<String, String> getEmailDefinitionTerms(
+		RenderRequest request, String emailFromAddress, String emailFromName) {
 
-		return getDL().getEmailFileEntryUpdatedEnabled(preferences);
+		return getDL().getEmailDefinitionTerms(
+			request, emailFromAddress, emailFromName);
 	}
 
-	public static Map<Locale, String> getEmailFileEntryUpdatedSubjectMap(
-		PortletPreferences preferences) {
+	public static boolean getEmailFileEntryAnyEventEnabled(
+		DLSettings dlSettings) {
 
-		return getDL().getEmailFileEntryUpdatedSubjectMap(preferences);
+		return dlSettings.getEmailFileEntryAddedEnabled() ||
+			dlSettings.getEmailFileEntryUpdatedEnabled();
 	}
 
-	public static String getEmailFromAddress(
-			PortletPreferences preferences, long companyId)
-		throws SystemException {
+	public static Map<String, String> getEmailFromDefinitionTerms(
+		RenderRequest request, String emailFromAddress, String emailFromName) {
 
-		return getDL().getEmailFromAddress(preferences, companyId);
-	}
-
-	public static String getEmailFromName(
-			PortletPreferences preferences, long companyId)
-		throws SystemException {
-
-		return getDL().getEmailFromName(preferences, companyId);
+		return getDL().getEmailFromDefinitionTerms(
+			request, emailFromAddress, emailFromName);
 	}
 
 	public static List<Object> getEntries(Hits hits) {
@@ -239,13 +241,6 @@ public class DLUtil {
 		throws Exception {
 
 		return getDL().getImagePreviewURL(fileEntry, themeDisplay);
-	}
-
-	public static String[] getMediaGalleryMimeTypes(
-		PortletPreferences portletPreferences, PortletRequest portletRequest) {
-
-		return getDL().getMediaGalleryMimeTypes(
-			portletPreferences, portletRequest);
 	}
 
 	public static String getPreviewURL(
@@ -402,6 +397,15 @@ public class DLUtil {
 
 	public static boolean isValidVersion(String version) {
 		return getDL().isValidVersion(version);
+	}
+
+	public static void startWorkflowInstance(
+			long userId, DLFileVersion dlFileVersion, String syncEventType,
+			ServiceContext serviceContext)
+		throws PortalException, SystemException {
+
+		getDL().startWorkflowInstance(
+			userId, dlFileVersion, syncEventType, serviceContext);
 	}
 
 	public void setDL(DL dl) {

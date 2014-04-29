@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -20,11 +20,21 @@ import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBFactoryUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DefaultActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Projection;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
+import com.liferay.portal.kernel.lar.ManifestSummary;
+import com.liferay.portal.kernel.lar.PortletDataContext;
+import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
+import com.liferay.portal.kernel.lar.StagedModelType;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -48,6 +58,8 @@ import com.liferay.portlet.dynamicdatamapping.service.persistence.DDMStructureLi
 import com.liferay.portlet.dynamicdatamapping.service.persistence.DDMStructurePersistence;
 import com.liferay.portlet.dynamicdatamapping.service.persistence.DDMTemplateFinder;
 import com.liferay.portlet.dynamicdatamapping.service.persistence.DDMTemplatePersistence;
+import com.liferay.portlet.journal.service.persistence.JournalFolderFinder;
+import com.liferay.portlet.journal.service.persistence.JournalFolderPersistence;
 
 import java.io.Serializable;
 
@@ -271,6 +283,97 @@ public abstract class DDMStructureLocalServiceBaseImpl
 	public DDMStructure getDDMStructure(long structureId)
 		throws PortalException, SystemException {
 		return ddmStructurePersistence.findByPrimaryKey(structureId);
+	}
+
+	@Override
+	public ActionableDynamicQuery getActionableDynamicQuery()
+		throws SystemException {
+		ActionableDynamicQuery actionableDynamicQuery = new DefaultActionableDynamicQuery();
+
+		actionableDynamicQuery.setBaseLocalService(com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil.getService());
+		actionableDynamicQuery.setClass(DDMStructure.class);
+		actionableDynamicQuery.setClassLoader(getClassLoader());
+
+		actionableDynamicQuery.setPrimaryKeyPropertyName("structureId");
+
+		return actionableDynamicQuery;
+	}
+
+	protected void initActionableDynamicQuery(
+		ActionableDynamicQuery actionableDynamicQuery)
+		throws SystemException {
+		actionableDynamicQuery.setBaseLocalService(com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil.getService());
+		actionableDynamicQuery.setClass(DDMStructure.class);
+		actionableDynamicQuery.setClassLoader(getClassLoader());
+
+		actionableDynamicQuery.setPrimaryKeyPropertyName("structureId");
+	}
+
+	@Override
+	public ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		final PortletDataContext portletDataContext) throws SystemException {
+		final ExportActionableDynamicQuery exportActionableDynamicQuery = new ExportActionableDynamicQuery() {
+				@Override
+				public long performCount()
+					throws PortalException, SystemException {
+					ManifestSummary manifestSummary = portletDataContext.getManifestSummary();
+
+					StagedModelType stagedModelType = getStagedModelType();
+
+					long modelAdditionCount = super.performCount();
+
+					manifestSummary.addModelAdditionCount(stagedModelType.toString(),
+						modelAdditionCount);
+
+					long modelDeletionCount = ExportImportHelperUtil.getModelDeletionCount(portletDataContext,
+							stagedModelType);
+
+					manifestSummary.addModelDeletionCount(stagedModelType.toString(),
+						modelDeletionCount);
+
+					return modelAdditionCount;
+				}
+			};
+
+		initActionableDynamicQuery(exportActionableDynamicQuery);
+
+		exportActionableDynamicQuery.setAddCriteriaMethod(new ActionableDynamicQuery.AddCriteriaMethod() {
+				@Override
+				public void addCriteria(DynamicQuery dynamicQuery) {
+					portletDataContext.addDateRangeCriteria(dynamicQuery,
+						"modifiedDate");
+
+					StagedModelType stagedModelType = exportActionableDynamicQuery.getStagedModelType();
+
+					if (stagedModelType.getReferrerClassNameId() >= 0) {
+						Property classNameIdProperty = PropertyFactoryUtil.forName(
+								"classNameId");
+
+						dynamicQuery.add(classNameIdProperty.eq(
+								stagedModelType.getReferrerClassNameId()));
+					}
+				}
+			});
+
+		exportActionableDynamicQuery.setCompanyId(portletDataContext.getCompanyId());
+
+		exportActionableDynamicQuery.setGroupId(portletDataContext.getScopeGroupId());
+
+		exportActionableDynamicQuery.setPerformActionMethod(new ActionableDynamicQuery.PerformActionMethod() {
+				@Override
+				@SuppressWarnings("unused")
+				public void performAction(Object object)
+					throws PortalException, SystemException {
+					DDMStructure stagedModel = (DDMStructure)object;
+
+					StagedModelDataHandlerUtil.exportStagedModel(portletDataContext,
+						stagedModel);
+				}
+			});
+		exportActionableDynamicQuery.setStagedModelType(new StagedModelType(
+				PortalUtil.getClassNameId(DDMStructure.class.getName())));
+
+		return exportActionableDynamicQuery;
 	}
 
 	@Override
@@ -505,6 +608,153 @@ public abstract class DDMStructureLocalServiceBaseImpl
 		long[] structureIds) throws SystemException {
 		dlFileEntryTypePersistence.setDDMStructures(fileEntryTypeId,
 			structureIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void addJournalFolderDDMStructure(long folderId, long structureId)
+		throws SystemException {
+		journalFolderPersistence.addDDMStructure(folderId, structureId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void addJournalFolderDDMStructure(long folderId,
+		DDMStructure ddmStructure) throws SystemException {
+		journalFolderPersistence.addDDMStructure(folderId, ddmStructure);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void addJournalFolderDDMStructures(long folderId, long[] structureIds)
+		throws SystemException {
+		journalFolderPersistence.addDDMStructures(folderId, structureIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void addJournalFolderDDMStructures(long folderId,
+		List<DDMStructure> DDMStructures) throws SystemException {
+		journalFolderPersistence.addDDMStructures(folderId, DDMStructures);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void clearJournalFolderDDMStructures(long folderId)
+		throws SystemException {
+		journalFolderPersistence.clearDDMStructures(folderId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void deleteJournalFolderDDMStructure(long folderId, long structureId)
+		throws SystemException {
+		journalFolderPersistence.removeDDMStructure(folderId, structureId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void deleteJournalFolderDDMStructure(long folderId,
+		DDMStructure ddmStructure) throws SystemException {
+		journalFolderPersistence.removeDDMStructure(folderId, ddmStructure);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void deleteJournalFolderDDMStructures(long folderId,
+		long[] structureIds) throws SystemException {
+		journalFolderPersistence.removeDDMStructures(folderId, structureIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void deleteJournalFolderDDMStructures(long folderId,
+		List<DDMStructure> DDMStructures) throws SystemException {
+		journalFolderPersistence.removeDDMStructures(folderId, DDMStructures);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public List<DDMStructure> getJournalFolderDDMStructures(long folderId)
+		throws SystemException {
+		return journalFolderPersistence.getDDMStructures(folderId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public List<DDMStructure> getJournalFolderDDMStructures(long folderId,
+		int start, int end) throws SystemException {
+		return journalFolderPersistence.getDDMStructures(folderId, start, end);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public List<DDMStructure> getJournalFolderDDMStructures(long folderId,
+		int start, int end, OrderByComparator orderByComparator)
+		throws SystemException {
+		return journalFolderPersistence.getDDMStructures(folderId, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public int getJournalFolderDDMStructuresCount(long folderId)
+		throws SystemException {
+		return journalFolderPersistence.getDDMStructuresSize(folderId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public boolean hasJournalFolderDDMStructure(long folderId, long structureId)
+		throws SystemException {
+		return journalFolderPersistence.containsDDMStructure(folderId,
+			structureId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public boolean hasJournalFolderDDMStructures(long folderId)
+		throws SystemException {
+		return journalFolderPersistence.containsDDMStructures(folderId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	@Override
+	public void setJournalFolderDDMStructures(long folderId, long[] structureIds)
+		throws SystemException {
+		journalFolderPersistence.setDDMStructures(folderId, structureIds);
 	}
 
 	/**
@@ -940,6 +1190,81 @@ public abstract class DDMStructureLocalServiceBaseImpl
 	}
 
 	/**
+	 * Returns the journal folder local service.
+	 *
+	 * @return the journal folder local service
+	 */
+	public com.liferay.portlet.journal.service.JournalFolderLocalService getJournalFolderLocalService() {
+		return journalFolderLocalService;
+	}
+
+	/**
+	 * Sets the journal folder local service.
+	 *
+	 * @param journalFolderLocalService the journal folder local service
+	 */
+	public void setJournalFolderLocalService(
+		com.liferay.portlet.journal.service.JournalFolderLocalService journalFolderLocalService) {
+		this.journalFolderLocalService = journalFolderLocalService;
+	}
+
+	/**
+	 * Returns the journal folder remote service.
+	 *
+	 * @return the journal folder remote service
+	 */
+	public com.liferay.portlet.journal.service.JournalFolderService getJournalFolderService() {
+		return journalFolderService;
+	}
+
+	/**
+	 * Sets the journal folder remote service.
+	 *
+	 * @param journalFolderService the journal folder remote service
+	 */
+	public void setJournalFolderService(
+		com.liferay.portlet.journal.service.JournalFolderService journalFolderService) {
+		this.journalFolderService = journalFolderService;
+	}
+
+	/**
+	 * Returns the journal folder persistence.
+	 *
+	 * @return the journal folder persistence
+	 */
+	public JournalFolderPersistence getJournalFolderPersistence() {
+		return journalFolderPersistence;
+	}
+
+	/**
+	 * Sets the journal folder persistence.
+	 *
+	 * @param journalFolderPersistence the journal folder persistence
+	 */
+	public void setJournalFolderPersistence(
+		JournalFolderPersistence journalFolderPersistence) {
+		this.journalFolderPersistence = journalFolderPersistence;
+	}
+
+	/**
+	 * Returns the journal folder finder.
+	 *
+	 * @return the journal folder finder
+	 */
+	public JournalFolderFinder getJournalFolderFinder() {
+		return journalFolderFinder;
+	}
+
+	/**
+	 * Sets the journal folder finder.
+	 *
+	 * @param journalFolderFinder the journal folder finder
+	 */
+	public void setJournalFolderFinder(JournalFolderFinder journalFolderFinder) {
+		this.journalFolderFinder = journalFolderFinder;
+	}
+
+	/**
 	 * Returns the d d m structure link local service.
 	 *
 	 * @return the d d m structure link local service
@@ -1160,6 +1485,14 @@ public abstract class DDMStructureLocalServiceBaseImpl
 	protected DLFileEntryTypePersistence dlFileEntryTypePersistence;
 	@BeanReference(type = DLFileEntryTypeFinder.class)
 	protected DLFileEntryTypeFinder dlFileEntryTypeFinder;
+	@BeanReference(type = com.liferay.portlet.journal.service.JournalFolderLocalService.class)
+	protected com.liferay.portlet.journal.service.JournalFolderLocalService journalFolderLocalService;
+	@BeanReference(type = com.liferay.portlet.journal.service.JournalFolderService.class)
+	protected com.liferay.portlet.journal.service.JournalFolderService journalFolderService;
+	@BeanReference(type = JournalFolderPersistence.class)
+	protected JournalFolderPersistence journalFolderPersistence;
+	@BeanReference(type = JournalFolderFinder.class)
+	protected JournalFolderFinder journalFolderFinder;
 	@BeanReference(type = com.liferay.portlet.dynamicdatamapping.service.DDMStructureLinkLocalService.class)
 	protected com.liferay.portlet.dynamicdatamapping.service.DDMStructureLinkLocalService ddmStructureLinkLocalService;
 	@BeanReference(type = DDMStructureLinkPersistence.class)

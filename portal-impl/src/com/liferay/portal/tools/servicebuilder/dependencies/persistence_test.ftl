@@ -19,6 +19,7 @@ package ${packagePath}.service.persistence;
 import ${packagePath}.${noSuchEntity}Exception;
 import ${packagePath}.model.${entity.name};
 import ${packagePath}.model.impl.${entity.name}ModelImpl;
+import ${packagePath}.service.${entity.name}LocalServiceUtil;
 
 import ${beanLocatorUtil};
 import com.liferay.portal.kernel.dao.jdbc.OutputBlob;
@@ -39,6 +40,7 @@ import com.liferay.portal.kernel.util.OrderByComparatorFactoryUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.model.ModelListener;
 import com.liferay.portal.service.ServiceTestUtil;
 import com.liferay.portal.service.persistence.BasePersistence;
 import com.liferay.portal.service.persistence.PersistenceExecutionTestListener;
@@ -69,6 +71,15 @@ import org.junit.Test;
 @RunWith(LiferayPersistenceIntegrationJUnitTestRunner.class)
 public class ${entity.name}PersistenceTest {
 
+	@Before
+	public void setUp() {
+		_modelListeners = _persistence.getListeners();
+
+		for (ModelListener<${entity.name}> modelListener : _modelListeners) {
+			_persistence.unregisterListener(modelListener);
+		}
+	}
+
 	@After
 	public void tearDown() throws Exception {
 		Map<Serializable, BasePersistence<?>> basePersistences = _transactionalPersistenceAdvice.getBasePersistences();
@@ -89,6 +100,10 @@ public class ${entity.name}PersistenceTest {
 		}
 
 		_transactionalPersistenceAdvice.reset();
+
+		for (ModelListener<${entity.name}> modelListener : _modelListeners) {
+			_persistence.registerListener(modelListener);
+		}
 	}
 
 	@Test
@@ -545,18 +560,21 @@ public class ${entity.name}PersistenceTest {
 		public void testActionableDynamicQuery() throws Exception {
 			final IntegerWrapper count = new IntegerWrapper();
 
-			ActionableDynamicQuery actionableDynamicQuery = new ${entity.name}ActionableDynamicQuery() {
+			ActionableDynamicQuery actionableDynamicQuery = ${entity.name}LocalServiceUtil.getActionableDynamicQuery();
 
-				@Override
-				protected void performAction(Object object) {
-					${entity.name} ${entity.varName} = (${entity.name})object;
+			actionableDynamicQuery.setPerformActionMethod(
+				new ActionableDynamicQuery.PerformActionMethod() {
 
-					Assert.assertNotNull(${entity.varName});
+					@Override
+					public void performAction(Object object) {
+						${entity.name} ${entity.varName} = (${entity.name})object;
 
-					count.increment();
-				}
+						Assert.assertNotNull(${entity.varName});
 
-			};
+						count.increment();
+					}
+
+				});
 
 			actionableDynamicQuery.performActions();
 
@@ -1046,6 +1064,7 @@ public class ${entity.name}PersistenceTest {
 
 	private static Log _log = LogFactoryUtil.getLog(${entity.name}PersistenceTest.class);
 
+	private ModelListener<${entity.name}>[] _modelListeners;
 	private ${entity.name}Persistence _persistence = (${entity.name}Persistence)${beanLocatorUtilShortName}.locate(${entity.name}Persistence.class.getName());
 	private TransactionalPersistenceAdvice _transactionalPersistenceAdvice = (TransactionalPersistenceAdvice)${beanLocatorUtilShortName}.locate(TransactionalPersistenceAdvice.class.getName());
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -228,6 +228,17 @@ public class LayoutLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService().getLayout(plid);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getActionableDynamicQuery();
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getExportActionableDynamicQuery(portletDataContext);
 	}
 
 	public static com.liferay.portal.model.PersistedModel getPersistedModel(
@@ -1096,6 +1107,12 @@ public class LayoutLocalServiceUtil {
 				   .getLayoutsCount(group, privateLayout, includeUserGroups);
 	}
 
+	public static int getLayoutsCount(com.liferay.portal.model.Group group,
+		boolean privateLayout, long parentLayoutId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getLayoutsCount(group, privateLayout, parentLayoutId);
+	}
+
 	public static int getLayoutsCount(com.liferay.portal.model.User user,
 		boolean privateLayout)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -1474,6 +1491,14 @@ public class LayoutLocalServiceUtil {
 		getService()
 			.setLayouts(groupId, privateLayout, parentLayoutId, layoutIds,
 			serviceContext);
+	}
+
+	public static void updateAsset(long userId,
+		com.liferay.portal.model.Layout layout, long[] assetCategoryIds,
+		java.lang.String[] assetTagNames)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		getService().updateAsset(userId, layout, assetCategoryIds, assetTagNames);
 	}
 
 	/**

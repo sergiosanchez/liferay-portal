@@ -1577,6 +1577,12 @@
 			<type>boolean</type>
 		</attribute>
 		<attribute>
+			<name>localized</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
+		</attribute>
+		<attribute>
 			<name>max</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
@@ -1762,6 +1768,12 @@
 			<type>java.lang.String</type>
 		</attribute>
 		<attribute>
+			<name>searchContainer</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>com.liferay.portal.kernel.dao.search.SearchContainer</type>
+		</attribute>
+		<attribute>
 			<name>useNamespace</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
@@ -1919,6 +1931,12 @@
 		</attribute>
 		<attribute>
 			<name>toggle</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
+		</attribute>
+		<attribute>
+			<name>toggleTouch</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>boolean</type>

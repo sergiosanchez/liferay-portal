@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -239,6 +239,19 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _dlFileEntryLocalService.getDLFileEntry(fileEntryId);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _dlFileEntryLocalService.getActionableDynamicQuery();
+	}
+
+	@Override
+	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _dlFileEntryLocalService.getExportActionableDynamicQuery(portletDataContext);
 	}
 
 	@Override
@@ -645,6 +658,17 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 
 	@Override
 	public java.util.List<com.liferay.portlet.documentlibrary.model.DLFileEntry> getFileEntries(
+		long groupId, long userId,
+		java.util.List<java.lang.Long> repositoryIds,
+		java.util.List<java.lang.Long> folderIds, java.lang.String[] mimeTypes,
+		com.liferay.portal.kernel.dao.orm.QueryDefinition queryDefinition)
+		throws java.lang.Exception {
+		return _dlFileEntryLocalService.getFileEntries(groupId, userId,
+			repositoryIds, folderIds, mimeTypes, queryDefinition);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portlet.documentlibrary.model.DLFileEntry> getFileEntries(
 		long groupId, long userId, java.util.List<java.lang.Long> folderIds,
 		java.lang.String[] mimeTypes,
 		com.liferay.portal.kernel.dao.orm.QueryDefinition queryDefinition)
@@ -686,6 +710,16 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _dlFileEntryLocalService.getFileEntriesCount(groupId, folderId,
 			status);
+	}
+
+	@Override
+	public int getFileEntriesCount(long groupId, long userId,
+		java.util.List<java.lang.Long> repositoryIds,
+		java.util.List<java.lang.Long> folderIds, java.lang.String[] mimeTypes,
+		com.liferay.portal.kernel.dao.orm.QueryDefinition queryDefinition)
+		throws java.lang.Exception {
+		return _dlFileEntryLocalService.getFileEntriesCount(groupId, userId,
+			repositoryIds, folderIds, mimeTypes, queryDefinition);
 	}
 
 	@Override
@@ -908,12 +942,12 @@ public class DLFileEntryLocalServiceWrapper implements DLFileEntryLocalService,
 	@Override
 	public com.liferay.portlet.documentlibrary.model.DLFileEntry updateStatus(
 		long userId, long fileVersionId, int status,
-		java.util.Map<java.lang.String, java.io.Serializable> workflowContext,
-		com.liferay.portal.service.ServiceContext serviceContext)
+		com.liferay.portal.service.ServiceContext serviceContext,
+		java.util.Map<java.lang.String, java.io.Serializable> workflowContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _dlFileEntryLocalService.updateStatus(userId, fileVersionId,
-			status, workflowContext, serviceContext);
+			status, serviceContext, workflowContext);
 	}
 
 	@Override

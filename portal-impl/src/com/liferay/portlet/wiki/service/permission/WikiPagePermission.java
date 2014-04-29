@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -67,7 +67,7 @@ public class WikiPagePermission implements BaseModelPermissionChecker {
 
 	public static void check(
 			PermissionChecker permissionChecker, WikiPage page, String actionId)
-		throws PortalException {
+		throws PortalException, SystemException {
 
 		if (!contains(permissionChecker, page, actionId)) {
 			throw new PrincipalException();
@@ -125,7 +125,8 @@ public class WikiPagePermission implements BaseModelPermissionChecker {
 	}
 
 	public static boolean contains(
-		PermissionChecker permissionChecker, WikiPage page, String actionId) {
+			PermissionChecker permissionChecker, WikiPage page, String actionId)
+		throws SystemException {
 
 		Boolean hasPermission = StagingPermissionUtil.hasPermission(
 			permissionChecker, page.getGroupId(), WikiPage.class.getName(),
@@ -166,7 +167,7 @@ public class WikiPagePermission implements BaseModelPermissionChecker {
 		}
 
 		if (actionId.equals(ActionKeys.VIEW)) {
-			WikiPage redirectPage = page.getRedirectPage();
+			WikiPage redirectPage = page.fetchRedirectPage();
 
 			if (redirectPage != null) {
 				page = redirectPage;
@@ -186,7 +187,7 @@ public class WikiPagePermission implements BaseModelPermissionChecker {
 						return false;
 					}
 
-					page = page.getParentPage();
+					page = page.fetchParentPage();
 				}
 
 				return true;

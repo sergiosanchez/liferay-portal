@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -26,6 +26,78 @@ import org.junit.Test;
  * @author Olaf Kock
  */
 public class ListUtilTest {
+
+	@Test
+	public void testFilterWithoutOutputList() {
+		List<String> expectedOutputList = new ArrayList<String>();
+
+		expectedOutputList.add("a");
+		expectedOutputList.add("c");
+
+		PredicateFilter<String> predicateFilter =
+			new PredicateFilter<String>() {
+
+			@Override
+			public boolean filter(String string) {
+				if (!string.equals("b")) {
+					return true;
+				}
+
+				return false;
+			}
+
+		};
+
+		List<String> inputList = new ArrayList<String>();
+
+		inputList.add("a");
+		inputList.add("b");
+		inputList.add("c");
+
+		List<String> actualOutputList = ListUtil.filter(
+			inputList, predicateFilter);
+
+		Assert.assertEquals(expectedOutputList, actualOutputList);
+	}
+
+	@Test
+	public void testFilterWithOutputList() {
+		List<String> expectedOutputList = new ArrayList<String>();
+
+		expectedOutputList.add("0");
+		expectedOutputList.add("a");
+		expectedOutputList.add("c");
+
+		List<String> inputList = new ArrayList<String>();
+
+		inputList.add("a");
+		inputList.add("b");
+		inputList.add("c");
+
+		List<String> outputList = new ArrayList<String>();
+
+		outputList.add("0");
+
+		PredicateFilter<String> predicateFilter =
+			new PredicateFilter<String>() {
+
+			@Override
+			public boolean filter(String string) {
+				if (!string.equals("b")) {
+					return true;
+				}
+
+				return false;
+			}
+
+		};
+
+		List<String> actualOutputList = ListUtil.filter(
+			inputList, outputList, predicateFilter);
+
+		Assert.assertSame(outputList, actualOutputList);
+		Assert.assertEquals(expectedOutputList, actualOutputList);
+	}
 
 	@Test
 	public void testRemoveEmptyElement() {

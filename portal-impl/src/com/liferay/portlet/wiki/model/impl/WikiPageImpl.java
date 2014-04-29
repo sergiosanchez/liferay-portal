@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -77,6 +77,26 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 		_attachmentsFolderId = folder.getFolderId();
 
 		return folder;
+	}
+
+	@Override
+	public WikiPage fetchParentPage() throws SystemException {
+		if (Validator.isNull(getParentTitle())) {
+			return null;
+		}
+
+		return WikiPageLocalServiceUtil.fetchPage(
+			getNodeId(), getParentTitle());
+	}
+
+	@Override
+	public WikiPage fetchRedirectPage() throws SystemException {
+		if (Validator.isNull(getRedirectTitle())) {
+			return null;
+		}
+
+		return WikiPageLocalServiceUtil.fetchPage(
+			getNodeId(), getRedirectTitle());
 	}
 
 	@Override
@@ -230,27 +250,19 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 	}
 
 	@Override
-	public WikiPage getParentPage() {
+	public WikiPage getParentPage() throws PortalException, SystemException {
 		if (Validator.isNull(getParentTitle())) {
 			return null;
 		}
 
-		try {
-			return WikiPageLocalServiceUtil.getPage(
-				getNodeId(), getParentTitle());
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-
-			return null;
-		}
+		return WikiPageLocalServiceUtil.getPage(getNodeId(), getParentTitle());
 	}
 
 	@Override
-	public List<WikiPage> getParentPages() {
+	public List<WikiPage> getParentPages() throws SystemException {
 		List<WikiPage> parentPages = new ArrayList<WikiPage>();
 
-		WikiPage parentPage = getParentPage();
+		WikiPage parentPage = fetchParentPage();
 
 		if (parentPage != null) {
 			parentPages.addAll(parentPage.getParentPages());
@@ -261,20 +273,13 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 	}
 
 	@Override
-	public WikiPage getRedirectPage() {
+	public WikiPage getRedirectPage() throws PortalException, SystemException {
 		if (Validator.isNull(getRedirectTitle())) {
 			return null;
 		}
 
-		try {
-			return WikiPageLocalServiceUtil.getPage(
-				getNodeId(), getRedirectTitle());
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-
-			return null;
-		}
+		return WikiPageLocalServiceUtil.getPage(
+			getNodeId(), getRedirectTitle());
 	}
 
 	@Override

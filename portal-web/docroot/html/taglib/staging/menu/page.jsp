@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -98,7 +98,7 @@ String publishMessage = LanguageUtil.get(pageContext, publishDialogTitle);
 
 <liferay-portlet:renderURL plid="<%= plid %>" portletMode="<%= PortletMode.VIEW.toString() %>" portletName="<%= PortletKeys.LAYOUTS_ADMIN %>" varImpl="publishRenderURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
 	<liferay-portlet:param name="struts_action" value="/layouts_admin/publish_layouts" />
-	<liferay-portlet:param name="<%= Constants.CMD %>" value="publish_to_live" />
+	<liferay-portlet:param name="<%= Constants.CMD %>" value="<%= Constants.PUBLISH_TO_LIVE %>" />
 	<liferay-portlet:param name="tabs1" value='<%= (privateLayout) ? "private-pages" : "public-pages" %>' />
 	<liferay-portlet:param name="closeRedirect" value="<%= currentURL %>" />
 	<liferay-portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" />

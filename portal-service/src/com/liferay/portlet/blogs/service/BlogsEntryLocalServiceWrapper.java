@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -242,6 +242,19 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 	}
 
 	@Override
+	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _blogsEntryLocalService.getActionableDynamicQuery();
+	}
+
+	@Override
+	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _blogsEntryLocalService.getExportActionableDynamicQuery(portletDataContext);
+	}
+
+	@Override
 	public com.liferay.portal.model.PersistedModel getPersistedModel(
 		java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -422,10 +435,11 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 	}
 
 	@Override
-	public void deleteEntry(com.liferay.portlet.blogs.model.BlogsEntry entry)
+	public com.liferay.portlet.blogs.model.BlogsEntry deleteEntry(
+		com.liferay.portlet.blogs.model.BlogsEntry entry)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_blogsEntryLocalService.deleteEntry(entry);
+		return _blogsEntryLocalService.deleteEntry(entry);
 	}
 
 	@Override
@@ -824,16 +838,18 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 	*
 	* @param userId the primary key of the user restoring the blogs entry
 	* @param entryId the primary key of the blogs entry to be restored
+	* @return the restored blogs entry from the recycle bin
 	* @throws PortalException if a user or blogs entry with the primary key
 	could not be found or if the blogs entry owner's social activity
 	counter could not be updated
 	* @throws SystemException if a system exception occurred
 	*/
 	@Override
-	public void restoreEntryFromTrash(long userId, long entryId)
+	public com.liferay.portlet.blogs.model.BlogsEntry restoreEntryFromTrash(
+		long userId, long entryId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_blogsEntryLocalService.restoreEntryFromTrash(userId, entryId);
+		return _blogsEntryLocalService.restoreEntryFromTrash(userId, entryId);
 	}
 
 	@Override
@@ -891,6 +907,11 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 			guestPermissions);
 	}
 
+	/**
+	* @deprecated As of 7.0.0, replaced by {@link #updateStatus(long, long,
+	int, ServiceContext, Map)}
+	*/
+	@Deprecated
 	@Override
 	public com.liferay.portlet.blogs.model.BlogsEntry updateStatus(
 		long userId, long entryId, int status,
@@ -899,6 +920,17 @@ public class BlogsEntryLocalServiceWrapper implements BlogsEntryLocalService,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _blogsEntryLocalService.updateStatus(userId, entryId, status,
 			serviceContext);
+	}
+
+	@Override
+	public com.liferay.portlet.blogs.model.BlogsEntry updateStatus(
+		long userId, long entryId, int status,
+		com.liferay.portal.service.ServiceContext serviceContext,
+		java.util.Map<java.lang.String, java.io.Serializable> workflowContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _blogsEntryLocalService.updateStatus(userId, entryId, status,
+			serviceContext, workflowContext);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -78,14 +78,14 @@ public class StagingUtil {
 	}
 
 	public static void copyFromLive(PortletRequest PortletRequest)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().copyFromLive(PortletRequest);
 	}
 
 	public static void copyFromLive(
 			PortletRequest PortletRequest, Portlet portlet)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().copyFromLive(PortletRequest, portlet);
 	}
@@ -94,7 +94,7 @@ public class StagingUtil {
 			PortletRequest PortletRequest, long sourceGroupId,
 			long targetGroupId, long sourcePlid, long targetPlid,
 			String portletId)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().copyPortlet(
 			PortletRequest, sourceGroupId, targetGroupId, sourcePlid,
@@ -107,7 +107,7 @@ public class StagingUtil {
 			String remoteAddress, int remotePort, String remotePathContext,
 			boolean secureConnection, long remoteGroupId,
 			boolean remotePrivateLayout, Date startDate, Date endDate)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().copyRemoteLayouts(
 			sourceGroupId, privateLayout, layoutIdMap, parameterMap,
@@ -351,13 +351,15 @@ public class StagingUtil {
 		return getStaging().isIncomplete(layout, layoutSetBranchId);
 	}
 
-	public static void lockGroup(long userId, long groupId) throws Exception {
+	public static void lockGroup(long userId, long groupId)
+		throws PortalException, SystemException {
+
 		getStaging().lockGroup(userId, groupId);
 	}
 
 	public static void publishLayout(
 			long userId, long plid, long liveGroupId, boolean includeChildren)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().publishLayout(userId, plid, liveGroupId, includeChildren);
 	}
@@ -373,6 +375,11 @@ public class StagingUtil {
 			parameterMap, startDate, endDate);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link #publishLayouts(long, long,
+	 *             long, boolean, long[], Map, Date, Date)}
+	 */
+	@Deprecated
 	public static void publishLayouts(
 			long userId, long sourceGroupId, long targetGroupId,
 			boolean privateLayout, Map<Long, Boolean> layoutIdMap,
@@ -396,38 +403,38 @@ public class StagingUtil {
 	}
 
 	public static void publishToLive(PortletRequest PortletRequest)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().publishToLive(PortletRequest);
 	}
 
 	public static void publishToLive(
 			PortletRequest PortletRequest, Portlet portlet)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().publishToLive(PortletRequest, portlet);
 	}
 
 	public static void publishToRemote(PortletRequest PortletRequest)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().publishToRemote(PortletRequest);
 	}
 
 	public static void scheduleCopyFromLive(PortletRequest PortletRequest)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().scheduleCopyFromLive(PortletRequest);
 	}
 
 	public static void schedulePublishToLive(PortletRequest PortletRequest)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().schedulePublishToLive(PortletRequest);
 	}
 
 	public static void schedulePublishToRemote(PortletRequest PortletRequest)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().schedulePublishToRemote(PortletRequest);
 	}
@@ -490,19 +497,19 @@ public class StagingUtil {
 	}
 
 	public static void unscheduleCopyFromLive(PortletRequest PortletRequest)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().unscheduleCopyFromLive(PortletRequest);
 	}
 
 	public static void unschedulePublishToLive(PortletRequest PortletRequest)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().unschedulePublishToLive(PortletRequest);
 	}
 
 	public static void unschedulePublishToRemote(PortletRequest PortletRequest)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().unschedulePublishToRemote(PortletRequest);
 	}
@@ -510,7 +517,7 @@ public class StagingUtil {
 	public static void updateLastImportSettings(
 			Element layoutElement, Layout layout,
 			PortletDataContext portletDataContext)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().updateLastImportSettings(
 			layoutElement, layout, portletDataContext);
@@ -518,7 +525,7 @@ public class StagingUtil {
 
 	public static void updateLastPublishDate(
 			long sourceGroupId, boolean privateLayout, Date lastPublishDate)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().updateLastPublishDate(
 			sourceGroupId, privateLayout, lastPublishDate);
@@ -527,7 +534,7 @@ public class StagingUtil {
 	public static void updateLastPublishDate(
 			String portletId, PortletPreferences portletPreferences,
 			Date lastPublishDate)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().updateLastPublishDate(
 			portletId, portletPreferences, lastPublishDate);
@@ -535,11 +542,27 @@ public class StagingUtil {
 
 	public static void updateStaging(
 			PortletRequest PortletRequest, Group liveGroup)
-		throws Exception {
+		throws PortalException, SystemException {
 
 		getStaging().updateStaging(PortletRequest, liveGroup);
 	}
 
+	public static void validateRemote(
+			long groupId, String remoteAddress, int remotePort,
+			String remotePathContext, boolean secureConnection,
+			long remoteGroupId)
+		throws PortalException {
+
+		getStaging().validateRemote(
+			groupId, remoteAddress, remotePort, remotePathContext,
+			secureConnection, remoteGroupId);
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link #validateRemote(long, String,
+	 *             int, String, boolean, long)}
+	 */
+	@Deprecated
 	public static void validateRemote(
 			String remoteAddress, int remotePort, String remotePathContext,
 			boolean secureConnection, long remoteGroupId)

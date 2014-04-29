@@ -1,4 +1,6 @@
 <definition component-name="portal-wcm">
+	<property name="testray.main.component.name" value="WCM" />
+
 	<var name="portletName" value="Site Templates" />
 	<var name="siteName" value="Site Name" />
 	<var name="siteTemplateName" value="Site Template Name" />
@@ -61,7 +63,7 @@
 		</execute>
 	</command>
 
-	<command name="EditSiteTemplate" priority="5">
+	<command name="EditSiteTemplateStatus" priority="5">
 		<var name="siteTemplateActive" value="Yes" />
 		<var name="siteTemplateActiveEdit" value="No" />
 
@@ -86,7 +88,7 @@
 			<var name="portletName" value="${portletName}" />
 		</execute>
 
-		<execute macro="SiteTemplates#editCP">
+		<execute macro="SiteTemplates#editTemplateStatusCP">
 			<var name="siteTemplateActiveEdit" value="${siteTemplateActiveEdit}" />
 			<var name="siteTemplateName" value="${siteTemplateName}" />
 		</execute>
@@ -95,9 +97,40 @@
 			<var name="portletName" value="${portletName}" />
 		</execute>
 
-		<execute macro="SiteTemplates#viewEditCP">
+		<execute macro="SiteTemplates#viewTemplateStatusCP">
 			<var name="siteTemplateActiveEdit" value="${siteTemplateActiveEdit}" />
 			<var name="siteTemplateName" value="${siteTemplateName}" />
+		</execute>
+	</command>
+
+	<command name="ResetPageChanges" priority="5">
+		<execute macro="Page#gotoCP">
+			<var name="portletName" value="Sites" />
+		</execute>
+
+		<execute macro="Site#addCommunityCP">
+			<var name="siteName" value="Site Name" />
+		</execute>
+
+		<execute macro="Page#openURL">
+			<var name="siteName" value="Site Name" />
+			<var name="siteURL" value="true" />
+		</execute>
+
+		<execute macro="Portlet#dragAndDropPortletToColumnPG">
+			<var name="columnNumberFrom" value="2" />
+			<var name="columnNumberTo" value="1" />
+			<var name="portletName" value="Polls Display" />
+		</execute>
+
+		<execute macro="SiteTemplates#resetPageChanges">
+			<var name="columnNumberTo" value="1" />
+			<var name="portletName" value="Polls Display" />
+		</execute>
+
+		<execute macro="SiteTemplates#viewResetPageChanges">
+			<var name="columnNumberFrom" value="2" />
+			<var name="portletName" value="Polls Display" />
 		</execute>
 	</command>
 </definition>

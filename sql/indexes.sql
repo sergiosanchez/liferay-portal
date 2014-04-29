@@ -248,6 +248,7 @@ create unique index IX_D27B03E7 on ExpandoValue (tableId, columnId, classPK);
 create index IX_B71E92D5 on ExpandoValue (tableId, rowId_);
 
 create index IX_1827A2E5 on ExportImportConfiguration (companyId);
+create index IX_38FA468D on ExportImportConfiguration (groupId, status);
 create index IX_47CC6234 on ExportImportConfiguration (groupId, type_, status);
 
 create unique index IX_D0D5E397 on Group_ (companyId, classNameId, classPK);
@@ -321,6 +322,9 @@ create unique index IX_65026705 on JournalFolder (groupId, parentFolderId, name)
 create index IX_EFD9CAC on JournalFolder (groupId, parentFolderId, status);
 create index IX_54F89E1F on JournalFolder (uuid_, companyId);
 create unique index IX_E002061 on JournalFolder (uuid_, groupId);
+
+create index IX_96F1BE5F on JournalFolders_DDMStructures (folderId);
+create index IX_6159D3DC on JournalFolders_DDMStructures (structureId);
 
 create index IX_C7FBC998 on Layout (companyId);
 create unique index IX_BC2C4231 on Layout (groupId, privateLayout, friendlyURL);

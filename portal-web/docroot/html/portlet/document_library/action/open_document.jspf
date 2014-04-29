@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,12 +14,12 @@
  */
 --%>
 
-<c:if test="<%= dlActionsDisplayContext.isOpenInMsOfficeButtonVisible() %>">
+<c:if test="<%= dlFileEntryActionsDisplayContext.isOpenInMsOfficeButtonVisible() %>">
 
 	<%
-	String webDavUrl = DLUtil.getWebDavURL(themeDisplay, fileEntry.getFolder(), fileEntry, PropsValues.DL_FILE_ENTRY_OPEN_IN_MS_OFFICE_MANUAL_CHECK_IN_REQUIRED, true);
+	String webDavURL = DLUtil.getWebDavURL(themeDisplay, fileEntry.getFolder(), fileEntry, PropsValues.DL_FILE_ENTRY_OPEN_IN_MS_OFFICE_MANUAL_CHECK_IN_REQUIRED, true);
 
-	String taglibOnClick = "javascript:" + liferayPortletResponse.getNamespace() + "openDocument('" + webDavUrl + "');";
+	String taglibOnClick = "javascript:" + liferayPortletResponse.getNamespace() + "openDocument('" + webDavURL + "');";
 	%>
 
 	<liferay-ui:icon

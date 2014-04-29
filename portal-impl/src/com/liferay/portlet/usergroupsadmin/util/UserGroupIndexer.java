@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.service.UserGroupLocalServiceUtil;
-import com.liferay.portal.service.persistence.UserGroupActionableDynamicQuery;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PropsValues;
 
@@ -40,6 +39,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
 /**
@@ -52,6 +53,8 @@ public class UserGroupIndexer extends BaseIndexer {
 	public static final String PORTLET_ID = PortletKeys.USER_GROUPS_ADMIN;
 
 	public UserGroupIndexer() {
+		setDefaultSelectedFieldNames(
+			Field.COMPANY_ID, Field.UID, Field.USER_GROUP_ID);
 		setIndexerEnabled(PropsValues.USER_GROUPS_INDEXER_ENABLED);
 		setPermissionAware(true);
 		setStagingAware(false);
@@ -123,8 +126,8 @@ public class UserGroupIndexer extends BaseIndexer {
 
 	@Override
 	protected Summary doGetSummary(
-		Document document, Locale locale, String snippet,
-		PortletURL portletURL) {
+		Document document, Locale locale, String snippet, PortletURL portletURL,
+		PortletRequest portletRequest, PortletResponse portletResponse) {
 
 		String title = document.get("name");
 
@@ -227,21 +230,25 @@ public class UserGroupIndexer extends BaseIndexer {
 	protected void reindexUserGroups(long companyId)
 		throws PortalException, SystemException {
 
-		ActionableDynamicQuery actionableDynamicQuery =
-			new UserGroupActionableDynamicQuery() {
-
-			@Override
-			protected void performAction(Object object) throws PortalException {
-				UserGroup userGroup = (UserGroup)object;
-
-				Document document = getDocument(userGroup);
-
-				addDocument(document);
-			}
-
-		};
+		final ActionableDynamicQuery actionableDynamicQuery =
+			UserGroupLocalServiceUtil.getActionableDynamicQuery();
 
 		actionableDynamicQuery.setCompanyId(companyId);
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod() {
+
+				@Override
+				public void performAction(Object object)
+					throws PortalException {
+
+					UserGroup userGroup = (UserGroup)object;
+
+					Document document = getDocument(userGroup);
+
+					actionableDynamicQuery.addDocument(document);
+				}
+
+			});
 		actionableDynamicQuery.setSearchEngineId(getSearchEngineId());
 
 		actionableDynamicQuery.performActions();

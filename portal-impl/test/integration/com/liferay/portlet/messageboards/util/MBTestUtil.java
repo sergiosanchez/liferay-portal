@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,10 +14,12 @@
 
 package com.liferay.portlet.messageboards.util;
 
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceTestUtil;
@@ -28,6 +30,7 @@ import com.liferay.portlet.messageboards.model.MBCategory;
 import com.liferay.portlet.messageboards.model.MBCategoryConstants;
 import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.portlet.messageboards.model.MBMessageConstants;
+import com.liferay.portlet.messageboards.model.MBMessageDisplay;
 import com.liferay.portlet.messageboards.model.MBThread;
 import com.liferay.portlet.messageboards.model.MBThreadFlag;
 import com.liferay.portlet.messageboards.service.MBBanLocalServiceUtil;
@@ -36,10 +39,13 @@ import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBThreadFlagLocalServiceUtil;
 
 import java.io.InputStream;
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Eudaldo Alonso
@@ -100,6 +106,38 @@ public class MBTestUtil {
 			ServiceTestUtil.randomString(), serviceContext);
 	}
 
+	public static MBMessage addDiscussionMessage(
+			long groupId, String className, long classPK)
+		throws Exception {
+
+		return addDiscussionMessage(
+			TestPropsValues.getUser(), groupId, className, classPK);
+	}
+
+	public static MBMessage addDiscussionMessage(
+			User user, long groupId, String className, long classPK)
+		throws Exception {
+
+		MBMessageDisplay messageDisplay =
+			MBMessageLocalServiceUtil.getDiscussionMessageDisplay(
+				user.getUserId(), groupId, className, classPK,
+				WorkflowConstants.STATUS_APPROVED);
+
+		MBThread thread =  messageDisplay.getThread();
+
+		ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
+			groupId);
+
+		serviceContext.setCommand(Constants.ADD);
+		serviceContext.setLayoutFullURL("http://localhost");
+
+		return MBMessageLocalServiceUtil.addDiscussionMessage(
+			user.getUserId(), user.getFullName(), groupId, className, classPK,
+			thread.getThreadId(), thread.getRootMessageId(),
+			ServiceTestUtil.randomString(), ServiceTestUtil.randomString(50),
+			serviceContext);
+	}
+
 	public static MBMessage addMessage(long groupId) throws Exception {
 		return addMessage(
 			groupId, MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID);
@@ -109,6 +147,20 @@ public class MBTestUtil {
 		throws Exception {
 
 		return addMessage(groupId, categoryId, 0, 0);
+	}
+
+	public static MBMessage addMessage(
+			long groupId, long categoryId, boolean approved)
+		throws Exception {
+
+		ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
+			groupId);
+
+		serviceContext.setCommand(Constants.ADD);
+		serviceContext.setLayoutFullURL("http://localhost");
+
+		return addMessage(
+			categoryId, StringPool.BLANK, approved, serviceContext);
 	}
 
 	public static MBMessage addMessage(
@@ -160,9 +212,7 @@ public class MBTestUtil {
 			categoryId, subject, body, serviceContext);
 
 		if (!approved) {
-			return MBMessageLocalServiceUtil.updateStatus(
-				message.getStatusByUserId(), message.getMessageId(),
-				WorkflowConstants.STATUS_DRAFT, serviceContext);
+			message = updateStatus(message, serviceContext);
 		}
 
 		return message;
@@ -235,6 +285,67 @@ public class MBTestUtil {
 		return inputStreamOVPs;
 	}
 
+	public static MBMessage updateDiscussionMessage(
+			long userId, long groupId, long messageId, String className,
+			long classPK)
+		throws Exception {
+
+		ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
+			groupId);
+
+		serviceContext.setCommand(Constants.UPDATE);
+		serviceContext.setLayoutFullURL("http://localhost");
+
+		return MBMessageLocalServiceUtil.updateDiscussionMessage(
+			userId, messageId, className, classPK,
+			ServiceTestUtil.randomString(), ServiceTestUtil.randomString(50),
+			serviceContext);
+	}
+
+	public static MBMessage updateDiscussionMessage(
+			long groupId, long messageId, String className, long classPK)
+		throws Exception {
+
+		return updateDiscussionMessage(
+			TestPropsValues.getUserId(), groupId, messageId, className,
+			classPK);
+	}
+
+	public static MBMessage updateMessage(MBMessage message, boolean approved)
+		throws Exception {
+
+		boolean workflowEnabled = WorkflowThreadLocal.isEnabled();
+
+		try {
+			WorkflowThreadLocal.setEnabled(true);
+
+			ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
+				message.getGroupId());
+
+			serviceContext.setCommand(Constants.UPDATE);
+			serviceContext.setLayoutFullURL("http://localhost");
+			serviceContext.setWorkflowAction(
+				WorkflowConstants.ACTION_SAVE_DRAFT);
+
+			message = MBMessageLocalServiceUtil.updateMessage(
+				TestPropsValues.getUserId(), message.getMessageId(),
+				ServiceTestUtil.randomString(),
+				ServiceTestUtil.randomString(50),
+				Collections.<ObjectValuePair<String, InputStream>>emptyList(),
+				Collections.<String>emptyList(), message.getPriority(),
+				message.isAllowPingbacks(), serviceContext);
+
+			if (approved) {
+				message = updateStatus(message, serviceContext);
+			}
+
+			return message;
+		}
+		finally {
+			WorkflowThreadLocal.setEnabled(workflowEnabled);
+		}
+	}
+
 	protected static MBMessage addMessage(
 			long groupId, long categoryId, boolean workflowEnabled,
 			boolean approved,
@@ -258,12 +369,13 @@ public class MBTestUtil {
 		}
 
 		if (workflowEnabled) {
-			serviceContext.setWorkflowAction(
-				WorkflowConstants.ACTION_SAVE_DRAFT);
-
 			if (approved) {
 				serviceContext.setWorkflowAction(
 					WorkflowConstants.ACTION_PUBLISH);
+			}
+			else {
+				serviceContext.setWorkflowAction(
+					WorkflowConstants.ACTION_SAVE_DRAFT);
 			}
 		}
 
@@ -273,6 +385,22 @@ public class MBTestUtil {
 			allowPingbacks, serviceContext);
 
 		return MBMessageLocalServiceUtil.getMessage(message.getMessageId());
+	}
+
+	protected static MBMessage updateStatus(
+			MBMessage message, ServiceContext serviceContext)
+		throws Exception {
+
+		Map<String, Serializable> workflowContext =
+			new HashMap<String, Serializable>();
+
+		workflowContext.put(WorkflowConstants.CONTEXT_URL, "http://localhost");
+
+		message = MBMessageLocalServiceUtil.updateStatus(
+			message.getUserId(), message.getMessageId(),
+			WorkflowConstants.STATUS_APPROVED, serviceContext, workflowContext);
+
+		return message;
 	}
 
 }

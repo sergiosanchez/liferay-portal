@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -98,13 +98,15 @@ else {
 
 boolean showWhenSingleIcon = false;
 
-if ((row == null) || portletId.equals(PortletKeys.DOCUMENT_LIBRARY)) {
+DLActionsDisplayContext dlActionsDisplayContext = new DLActionsDisplayContext(request, dlPortletInstanceSettings);
+
+if ((row == null) || dlActionsDisplayContext.isShowWhenSingleIconActionButton()) {
 	showWhenSingleIcon = true;
 }
 
 boolean view = false;
 
-if ((row == null) && ((portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) && !showMinimalActionButtons) || portletName.equals(PortletKeys.MEDIA_GALLERY_DISPLAY))) {
+if ((row == null) && ((portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) && !dlActionsDisplayContext.isShowMinimalActionsButton()) || portletName.equals(PortletKeys.MEDIA_GALLERY_DISPLAY))) {
 	view = true;
 }
 
@@ -112,8 +114,8 @@ String iconMenuId = null;
 %>
 
 <liferay-util:buffer var="iconMenu">
-	<liferay-ui:icon-menu direction='<%= showMinimalActionButtons ? "down" : "left" %>' extended="<%= showMinimalActionButtons ? false : true %>" icon="<%= showMinimalActionButtons ? StringPool.BLANK : null %>" message='<%= showMinimalActionButtons ? StringPool.BLANK : "actions" %>' showExpanded="<%= view %>" showWhenSingleIcon="<%= showWhenSingleIcon %>" triggerCssClass="btn">
-		<c:if test="<%= showActions %>">
+	<liferay-ui:icon-menu direction='<%= dlActionsDisplayContext.isShowMinimalActionsButton() ? "down" : "left" %>' extended="<%= dlActionsDisplayContext.isShowMinimalActionsButton() ? false : true %>" icon="<%= dlActionsDisplayContext.isShowMinimalActionsButton() ? StringPool.BLANK : null %>" message='<%= dlActionsDisplayContext.isShowMinimalActionsButton() ? StringPool.BLANK : "actions" %>' showExpanded="<%= view %>" showWhenSingleIcon="<%= showWhenSingleIcon %>" triggerCssClass="btn">
+		<c:if test="<%= dlActionsDisplayContext.isShowActions() %>">
 			<c:choose>
 				<c:when test="<%= folder != null %>">
 
@@ -152,9 +154,9 @@ String iconMenuId = null;
 
 					<c:if test="<%= hasUpdatePermission && !folder.isMountPoint() %>">
 						<portlet:renderURL var="moveURL">
-							<portlet:param name="struts_action" value="/document_library/move_folder" />
+							<portlet:param name="struts_action" value="/document_library/move_entry" />
 							<portlet:param name="redirect" value="<%= redirect %>" />
-							<portlet:param name="folderId" value="<%= String.valueOf(folderId) %>" />
+							<portlet:param name="folderIds" value="<%= String.valueOf(folderId) %>" />
 							<portlet:param name="repositoryId" value="<%= String.valueOf(repositoryId) %>" />
 						</portlet:renderURL>
 
@@ -305,7 +307,7 @@ String iconMenuId = null;
 
 		<c:choose>
 			<c:when test="<%= portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) || portletName.equals(PortletKeys.MEDIA_GALLERY_DISPLAY) %>">
-				<c:if test="<%= showActions && DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.ADD_DOCUMENT) && ((folder == null) || !folder.isMountPoint()) %>">
+				<c:if test="<%= dlActionsDisplayContext.isShowActions() && DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.ADD_DOCUMENT) && ((folder == null) || !folder.isMountPoint()) %>">
 					<c:if test="<%= ((folder == null) || folder.isSupportsMultipleUpload()) %>">
 						<portlet:renderURL var="editFileEntryURL">
 							<portlet:param name="struts_action" value="/document_library/upload_multiple_file_entries" />
@@ -324,7 +326,7 @@ String iconMenuId = null;
 					</c:if>
 
 					<%
-					int fileEntryTypesCount = DLFileEntryTypeServiceUtil.getFileEntryTypesCount(PortalUtil.getSiteAndCompanyGroupIds(themeDisplay));
+					int fileEntryTypesCount = DLFileEntryTypeServiceUtil.getFileEntryTypesCount(PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId));
 					%>
 
 					<liferay-portlet:renderURL var="editFileEntryURL" windowState="<%= (((folder == null) || folder.isSupportsMetadata()) && (fileEntryTypesCount > 0)) ? LiferayWindowState.POP_UP.toString() : WindowState.NORMAL.toString() %>">
@@ -355,7 +357,7 @@ String iconMenuId = null;
 					/>
 				</c:if>
 
-				<c:if test="<%= showActions && ((folder == null) || (!folder.isMountPoint() && folder.isSupportsShortcuts())) && DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.ADD_SHORTCUT) %>">
+				<c:if test="<%= dlActionsDisplayContext.isShowActions() && ((folder == null) || (!folder.isMountPoint() && folder.isSupportsShortcuts())) && DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.ADD_SHORTCUT) %>">
 					<portlet:renderURL var="editFileShortcutURL">
 						<portlet:param name="struts_action" value="/document_library_display/edit_file_shortcut" />
 						<portlet:param name="redirect" value="<%= currentURL %>" />
@@ -367,29 +369,6 @@ String iconMenuId = null;
 						image="add_instance"
 						message="add-shortcut"
 						url="<%= editFileShortcutURL %>"
-					/>
-				</c:if>
-			</c:when>
-			<c:when test="<%= portletName.equals(PortletKeys.TRASH) %>">
-
-				<%
-				boolean hasUpdatePermission = DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.UPDATE);
-				%>
-
-				<c:if test="<%= hasUpdatePermission && ((folder == null) || !folder.isMountPoint()) %>">
-					<liferay-portlet:renderURL portletName="<%= PortletKeys.DOCUMENT_LIBRARY %>" var="moveURL">
-						<portlet:param name="struts_action" value="/document_library/move_folder" />
-						<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.MOVE_FROM_TRASH %>" />
-						<portlet:param name="redirect" value="<%= redirect %>" />
-						<portlet:param name="folderId" value="<%= String.valueOf(folderId) %>" />
-						<portlet:param name="parentFolderId" value="<%= String.valueOf(DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) %>" />
-						<portlet:param name="repositoryId" value="<%= String.valueOf(repositoryId) %>" />
-					</liferay-portlet:renderURL>
-
-					<liferay-ui:icon
-						image="submit"
-						message="move"
-						url="<%= moveURL %>"
 					/>
 				</c:if>
 			</c:when>
@@ -412,7 +391,7 @@ String iconMenuId = null;
 </liferay-util:buffer>
 
 <c:choose>
-	<c:when test="<%= (portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) || portletName.equals(PortletKeys.MEDIA_GALLERY_DISPLAY)) && !showMinimalActionButtons %>">
+	<c:when test="<%= (portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) || portletName.equals(PortletKeys.MEDIA_GALLERY_DISPLAY)) && !dlActionsDisplayContext.isShowMinimalActionsButton() %>">
 
 		<%= iconMenu %>
 
@@ -444,14 +423,7 @@ String iconMenuId = null;
 
 		<br /><br />
 
-		<div class="file-entry-field">
-			<label><liferay-ui:message key="webdav-url" /></label>
-
-			<liferay-ui:input-resource
-				cssClass="webdav-url-resource"
-				url="<%= DLUtil.getWebDavURL(themeDisplay, folder, null) %>"
-			/>
-		</div>
+		<aui:input cssClass="webdav-url-resource" name="webDavURL" type="resource" value="<%= DLUtil.getWebDavURL(themeDisplay, folder, null) %>" />
 	</div>
 </div>
 

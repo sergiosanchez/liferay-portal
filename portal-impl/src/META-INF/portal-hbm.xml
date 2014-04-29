@@ -1186,6 +1186,7 @@
 		<property name="userId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 		<property name="type" type="com.liferay.portal.dao.orm.hibernate.StringType" column="type_" />
 		<property name="timestamp" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+		<property name="deliveryType" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
 		<property name="deliverBy" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 		<property name="delivered" type="com.liferay.portal.dao.orm.hibernate.BooleanType" />
 		<property name="payload" type="com.liferay.portal.dao.orm.hibernate.StringType" />
@@ -2069,6 +2070,7 @@
 		<property name="treePath" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="name" type="com.liferay.portal.dao.orm.hibernate.StringType" />
 		<property name="description" type="com.liferay.portal.dao.orm.hibernate.StringType" />
+		<property name="overrideDDMStructures" type="com.liferay.portal.dao.orm.hibernate.BooleanType" />
 		<property name="status" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
 		<property name="statusByUserId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
 		<property name="statusByUserName" type="com.liferay.portal.dao.orm.hibernate.StringType" />

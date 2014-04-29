@@ -10,7 +10,7 @@
 
 <#assign finderFieldSQLSuffix = "_SQL">
 
-package ${packagePath}.service.persistence;
+package ${packagePath}.service.persistence.impl;
 
 <#assign noSuchEntity = serviceBuilder.getNoSuchEntityException(entity)>
 
@@ -18,6 +18,11 @@ import ${packagePath}.${noSuchEntity}Exception;
 import ${packagePath}.model.${entity.name};
 import ${packagePath}.model.impl.${entity.name}Impl;
 import ${packagePath}.model.impl.${entity.name}ModelImpl;
+import ${packagePath}.service.persistence.${entity.name}Persistence;
+
+<#if entity.hasCompoundPK()>
+	import ${packagePath}.service.persistence.${entity.PKClassName};
+</#if>
 
 import com.liferay.portal.NoSuchModelException;
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -53,7 +58,6 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.UnmodifiableList;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.CacheModel;
@@ -895,7 +899,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 
 					Collections.sort(list);
 
-					list = new UnmodifiableList<${entity.name}>(list);
+					list = Collections.unmodifiableList(list);
 				}
 				else {
 					list = (List<${entity.name}>)QueryUtil.list(q, getDialect(), start, end);
@@ -1356,6 +1360,12 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 				EntityCacheUtil.clearCache(${entity.name}Impl.class);
 				FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
 				FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+				if (<#if pluginName != "">_SPRING_HIBERNATE_SESSION_DELEGATED<#else>com.liferay.portal.util.PropsValues.SPRING_HIBERNATE_SESSION_DELEGATED</#if>) {
+					Session session = getCurrentSession();
+
+					session.clear();
+				}
 			}
 
 			${entity.varName}.setLeft${pkColumn.methodName}(left${pkColumn.methodName});
@@ -1493,6 +1503,12 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 			EntityCacheUtil.clearCache(${entity.name}Impl.class);
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
 			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+
+			if (<#if pluginName != "">_SPRING_HIBERNATE_SESSION_DELEGATED<#else>com.liferay.portal.util.PropsValues.SPRING_HIBERNATE_SESSION_DELEGATED</#if>) {
+				Session session = getCurrentSession();
+
+				session.clear();
+			}
 		}
 
 		protected void updateChildrenTree(long ${scopeColumn.name}, List<Long> children${pkColumn.methodNames}, long delta) {
@@ -1687,6 +1703,10 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 	</#if>
 
 	private static final boolean _HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE = <#if pluginName != "">GetterUtil.getBoolean(PropsUtil.get(PropsKeys.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE))<#else>com.liferay.portal.util.PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE</#if>;
+
+	<#if entity.isHierarchicalTree() && pluginName != "">
+		private static final boolean _SPRING_HIBERNATE_SESSION_DELEGATED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.SPRING_HIBERNATE_SESSION_DELEGATED));
+	</#if>
 
 	private static Log _log = LogFactoryUtil.getLog(${entity.name}PersistenceImpl.class);
 

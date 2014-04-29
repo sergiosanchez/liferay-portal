@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -101,7 +101,7 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 			{ "version", Types.DOUBLE },
 			{ "title", Types.VARCHAR },
 			{ "urlTitle", Types.VARCHAR },
-			{ "description", Types.VARCHAR },
+			{ "description", Types.CLOB },
 			{ "content", Types.CLOB },
 			{ "type_", Types.VARCHAR },
 			{ "structureId", Types.VARCHAR },
@@ -119,7 +119,7 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 			{ "statusByUserName", Types.VARCHAR },
 			{ "statusDate", Types.TIMESTAMP }
 		};
-	public static final String TABLE_SQL_CREATE = "create table JournalArticle (uuid_ VARCHAR(75) null,id_ LONG not null primary key,resourcePrimKey LONG,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,folderId LONG,classNameId LONG,classPK LONG,treePath STRING null,articleId VARCHAR(75) null,version DOUBLE,title STRING null,urlTitle VARCHAR(150) null,description STRING null,content TEXT null,type_ VARCHAR(75) null,structureId VARCHAR(75) null,templateId VARCHAR(75) null,layoutUuid VARCHAR(75) null,displayDate DATE null,expirationDate DATE null,reviewDate DATE null,indexable BOOLEAN,smallImage BOOLEAN,smallImageId LONG,smallImageURL STRING null,status INTEGER,statusByUserId LONG,statusByUserName VARCHAR(75) null,statusDate DATE null)";
+	public static final String TABLE_SQL_CREATE = "create table JournalArticle (uuid_ VARCHAR(75) null,id_ LONG not null primary key,resourcePrimKey LONG,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,folderId LONG,classNameId LONG,classPK LONG,treePath STRING null,articleId VARCHAR(75) null,version DOUBLE,title STRING null,urlTitle VARCHAR(150) null,description TEXT null,content TEXT null,type_ VARCHAR(75) null,structureId VARCHAR(75) null,templateId VARCHAR(75) null,layoutUuid VARCHAR(75) null,displayDate DATE null,expirationDate DATE null,reviewDate DATE null,indexable BOOLEAN,smallImage BOOLEAN,smallImageId LONG,smallImageURL STRING null,status INTEGER,statusByUserId LONG,statusByUserName VARCHAR(75) null,statusDate DATE null)";
 	public static final String TABLE_SQL_DROP = "drop table JournalArticle";
 	public static final String ORDER_BY_JPQL = " ORDER BY journalArticle.articleId ASC, journalArticle.version DESC";
 	public static final String ORDER_BY_SQL = " ORDER BY JournalArticle.articleId ASC, JournalArticle.version DESC";
@@ -1394,6 +1394,16 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 		_statusDate = statusDate;
 	}
 
+	public void setDefaultLanguageId(java.lang.String defaultLanguageId) {
+	}
+
+	public com.liferay.portal.kernel.xml.Document getDocument() {
+		return null;
+	}
+
+	public void setDocument(com.liferay.portal.kernel.xml.Document document) {
+	}
+
 	@Override
 	public StagedModelType getStagedModelType() {
 		return new StagedModelType(PortalUtil.getClassNameId(
@@ -1505,6 +1515,22 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean isInTrashImplicitly() throws SystemException {
+		if (!isInTrash()) {
+			return false;
+		}
+
+		TrashEntry trashEntry = TrashEntryLocalServiceUtil.fetchEntry(getModelClassName(),
+				getTrashEntryClassPK());
+
+		if (trashEntry != null) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -1868,6 +1894,10 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 
 		journalArticleModelImpl._setOriginalStatus = false;
 
+		setDefaultLanguageId(null);
+
+		setDocument(null);
+
 		journalArticleModelImpl._columnBitmask = 0;
 	}
 
@@ -2068,6 +2098,10 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 		else {
 			journalArticleCacheModel.statusDate = Long.MIN_VALUE;
 		}
+
+		journalArticleCacheModel._defaultLanguageId = getDefaultLanguageId();
+
+		journalArticleCacheModel._document = getDocument();
 
 		return journalArticleCacheModel;
 	}

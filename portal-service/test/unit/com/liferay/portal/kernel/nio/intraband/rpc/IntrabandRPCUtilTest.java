@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -27,17 +27,16 @@ import com.liferay.portal.kernel.nio.intraband.rpc.IntrabandRPCUtil.FutureComple
 import com.liferay.portal.kernel.nio.intraband.rpc.IntrabandRPCUtil.FutureResult;
 import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.test.CodeCoverageAssertor;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.io.IOException;
 import java.io.Serializable;
 
-import java.lang.reflect.Method;
-
 import java.nio.ByteBuffer;
 
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -53,7 +52,14 @@ public class IntrabandRPCUtilTest {
 
 	@ClassRule
 	public static CodeCoverageAssertor codeCoverageAssertor =
-		new CodeCoverageAssertor();
+		new CodeCoverageAssertor() {
+
+			@Override
+			public void appendAssertClasses(List<Class<?>> assertClasses) {
+				assertClasses.add(RPCResponse.class);
+			}
+
+		};
 
 	@Test
 	public void testConstructor() {
@@ -66,7 +72,7 @@ public class IntrabandRPCUtilTest {
 	}
 
 	@Test
-	public void testExecuteFail() {
+	public void testExecuteFail() throws Exception {
 		PortalClassLoaderUtil.setClassLoader(getClass().getClassLoader());
 
 		MockIntraband mockIntraband = new MockIntraband() {
@@ -93,6 +99,52 @@ public class IntrabandRPCUtilTest {
 
 			Assert.assertSame(RuntimeException.class, throwable.getClass());
 		}
+
+		final Exception exception = new Exception("Execution error");
+
+		mockIntraband = new MockIntraband() {
+
+			@Override
+			protected void doSendDatagram(
+				RegistrationReference registrationReference,
+				Datagram datagram) {
+
+				try {
+					Serializer serializer = new Serializer();
+
+					serializer.writeObject(new RPCResponse(exception));
+
+					CompletionHandler<Object> completionHandler =
+						DatagramHelper.getCompletionHandler(datagram);
+
+					completionHandler.replied(
+						null,
+						Datagram.createResponseDatagram(
+							datagram, serializer.toByteBuffer()));
+				}
+				catch (Exception e) {
+					Assert.fail(e.getMessage());
+				}
+			}
+
+		};
+
+		MockRegistrationReference mockRegistrationReference =
+			new MockRegistrationReference(mockIntraband);
+
+		Future<String> futureResult = IntrabandRPCUtil.execute(
+			mockRegistrationReference, new TestProcessCallable());
+
+		try {
+			futureResult.get();
+
+			Assert.fail();
+		}
+		catch (ExecutionException ee) {
+			Throwable t = ee.getCause();
+
+			Assert.assertEquals(exception.getMessage(), t.getMessage());
+		}
 	}
 
 	@Test
@@ -110,14 +162,13 @@ public class IntrabandRPCUtilTest {
 					datagram.getDataByteBuffer());
 
 				try {
+					Serializer serializer = new Serializer();
+
 					ProcessCallable<Serializable> processCallable =
 						deserializer.readObject();
 
-					Serializable result = processCallable.call();
-
-					Serializer serializer = new Serializer();
-
-					serializer.writeObject(result);
+					serializer.writeObject(
+						new RPCResponse(processCallable.call()));
 
 					CompletionHandler<Object> completionHandler =
 						DatagramHelper.getCompletionHandler(datagram);
@@ -224,14 +275,12 @@ public class IntrabandRPCUtilTest {
 
 		// Bridge set
 
-		Method bridgeSetMethod = ReflectionUtil.getDeclaredBridgeMethod(
-			FutureResult.class, "set", Serializable.class);
-
 		FutureResult<String> futureResult = new FutureResult<String>();
 
 		String s = new String();
 
-		bridgeSetMethod.invoke(futureResult, s);
+		ReflectionTestUtil.invokeBridge(
+			futureResult, "set", new Class<?>[] {Serializable.class}, s);
 
 		Assert.assertSame(s, futureResult.get());
 

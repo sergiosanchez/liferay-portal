@@ -1,4 +1,5 @@
 @import "compass";
+@import "mixins";
 
 /* ---------- Portlet wrapper and icons ---------- */
 
@@ -94,9 +95,9 @@ body.portlet {
 }
 
 .portlet-nested-portlets .portlet-boundary {
+	left: 0 !important;
 	position: relative !important;
 	top: 0 !important;
-	left: 0 !important;
 }
 
 %portlet-action-bar {
@@ -142,7 +143,7 @@ body.portlet {
 
 		padding: 2px 7px;
 
-		.taglib-text {
+		.lfr-icon-menu-text, .taglib-text {
 			color: #FFF;
 			display: none;
 			font-weight: bold;
@@ -151,22 +152,28 @@ body.portlet {
 			vertical-align: middle;
 		}
 
-		.lfr-icon-action a {
-			background: url() no-repeat 0 50%;
-			display: inline-block;
-			margin-left: 5px;
-			vertical-align: top;
+		.lfr-icon-action {
+			a {
+				background: url() no-repeat 0 50%;
+				display: inline-block;
+				margin-left: 5px;
+				vertical-align: top;
 
-			&:hover {
-				text-decoration: none;
+				&:hover {
+					text-decoration: none;
 
-				span {
-					text-decoration: underline;
+					span {
+						text-decoration: underline;
+					}
+				}
+
+				img {
+					visibility: hidden;
 				}
 			}
 
-			img {
-				visibility: hidden;
+			&.lfr-icon-menu .btn.dropdown-toggle {
+				text-align: left;
 			}
 		}
 
@@ -186,13 +193,6 @@ body.portlet {
 			background-image: url(../images/common/configuration_white.png);
 		}
 	}
-
-	.lfr-url-error {
-		display: inline-block;
-		white-space: normal;
-
-		@include word-break(break-all);
-	}
 }
 
 /* ---------- Borderless portlet ---------- */
@@ -211,7 +211,12 @@ body.portlet {
 	position: absolute;
 	right: 0;
 	top: 0;
+
 	z-index: 200;
+
+	@include respond-to(phone, tablet) {
+		position: static;
+	}
 
 	a {
 		background: url() no-repeat 0 50%;
@@ -228,6 +233,19 @@ body.portlet {
 		float: left;
 		margin-right: 10px;
 		overflow: hidden;
+
+		@include respond-to(phone, tablet) {
+			float: right;
+			margin-right: 0;
+
+			.portlet-action, .portlet-options {
+				display: inline-block;
+			}
+
+			.portlet-close a {
+				margin-top: -3px;
+			}
+		}
 	}
 
 	.portlet-actions, .portlet-title-default {
@@ -295,11 +313,24 @@ body.portlet {
 	}
 }
 
+@include respond-to(phone, tablet) {
+	.portlet-borderless-container .portlet-title-default {
+		float: none;
+	}
+}
+
 .portlet-title-default {
 	display: inline-block;
 	float: right;
 	font-weight: bold;
 	text-transform: uppercase;
+
+	@include respond-to(phone, tablet) {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		width: 74%;
+	}
 }
 
 .portlet-draggable {
@@ -629,11 +660,55 @@ body.portlet {
 
 /* ---------- Miscellaneous component styles ---------- */
 
+/* ---------- Journal/Dynamic data list display portlet ---------- */
+
+.portlet-journal .journal-article-container, .portlet-dynamic-data-list-display {
+	.lfr-ddm-container .field-wrapper {
+		&[data-repeatable="true"], .field-wrapper {
+			border: 1px solid #D0D0D0;
+			border-left-width: 10px;
+			padding: 7px 10px 10px;
+
+			&[data-repeatable="true"]:nth-of-type(even) {
+				background-color: #F5F5F5;
+			}
+
+			&, .field-wrapper {
+				margin: 15px 0 0;
+			}
+		}
+	}
+}
+
 /* ---------- Add content dialog ---------- */
 
 .lfr-portlet-item {
 	&, & p a {
 		font-size: 1em;
+	}
+}
+
+/* ---------- Breadcrumb taglib ---------- */
+
+.breadcrumb.breadcrumb-vertical {
+	display: inline-block;
+	text-align: center;
+
+	li {
+		display: block;
+
+		&.last, &.only {
+			background: none;
+		}
+	}
+
+	.divider {
+		background: url(@theme_image_path@/arrows/07_down.png) no-repeat 50% 100%;
+		display: block;
+
+		@include hide-text(right);
+
+		height: 10px;
 	}
 }
 
@@ -689,7 +764,7 @@ body.portlet {
 	}
 }
 
-/* ---------- navbar form search ---------- */
+/* ---------- Navbar form search ---------- */
 
 .navbar form {
 	margin: 0;

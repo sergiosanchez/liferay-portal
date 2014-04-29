@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -79,6 +79,10 @@ public class SystemEventHierarchyEntryThreadLocal {
 		return null;
 	}
 
+	public static SystemEventHierarchyEntry pop(String className) {
+		return pop(PortalUtil.getClassNameId(className), 0);
+	}
+
 	public static SystemEventHierarchyEntry pop(
 		String className, long classPK) {
 
@@ -156,6 +160,12 @@ public class SystemEventHierarchyEntryThreadLocal {
 				parentSystemEventId, systemEventSetKey, action);
 
 		return systemEventHierarchyEntries.push(systemEventHierarchyEntry);
+	}
+
+	public static SystemEventHierarchyEntry push(String className)
+		throws SystemException {
+
+		return push(className, 0, SystemEventConstants.ACTION_SKIP);
 	}
 
 	public static SystemEventHierarchyEntry push(

@@ -388,7 +388,7 @@
 		<field name="name" type="String" localized="true">
 			<validator name="required" />
 		</field>
-		<field name="description" type="String">
+		<field name="description" type="String" localized="true">
 			<hint-collection name="TEXTAREA" />
 		</field>
 		<field name="settings" type="String">
@@ -508,7 +508,7 @@
 			<hint name="max-length">4000</hint>
 			<validator name="required" />
 		</field>
-		<field name="description" type="String">
+		<field name="description" type="String" localized="true">
 			<hint-collection name="TEXTAREA" />
 		</field>
 		<field name="settings" type="String">
@@ -1097,6 +1097,7 @@
 		<field name="userId" type="long" />
 		<field name="type" type="String" />
 		<field name="timestamp" type="long" />
+		<field name="deliveryType" type="int" />
 		<field name="deliverBy" type="long" />
 		<field name="delivered" type="boolean" />
 		<field name="payload" type="String">
@@ -1297,10 +1298,10 @@
 			<hint name="max-length">4000</hint>
 		</field>
 		<field name="description" type="String" localized="true">
-			<hint-collection name="TEXTAREA" />
+			<hint-collection name="CLOB" />
 		</field>
 		<field name="summary" type="String" localized="true">
-			<hint-collection name="TEXTAREA" />
+			<hint-collection name="CLOB" />
 		</field>
 		<field name="url" type="String">
 			<hint-collection name="URL" />
@@ -1886,7 +1887,7 @@
 		<field name="classNameId" type="long" />
 		<field name="classPK" type="long" />
 		<field name="data" type="String">
-			<hint-collection name="TEXTAREA" />
+			<hint-collection name="CLOB" />
 		</field>
 	</model>
 	<model name="com.liferay.portlet.journal.model.JournalArticle">
@@ -1916,7 +1917,7 @@
 			<hint name="max-length">150</hint>
 		</field>
 		<field name="description" type="String" localized="true">
-			<hint-collection name="TEXTAREA" />
+			<hint-collection name="CLOB" />
 			<hint name="display-height">40</hint>
 		</field>
 		<field name="content" type="String">
@@ -2037,6 +2038,7 @@
 		<field name="description" type="String">
 			<hint-collection name="TEXTAREA" />
 		</field>
+		<field name="overrideDDMStructures" type="boolean" />
 		<field name="status" type="int" />
 		<field name="statusByUserId" type="long" />
 		<field name="statusByUserName" type="String" />

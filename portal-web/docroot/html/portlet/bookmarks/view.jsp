@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -125,7 +125,7 @@ if (folder != null) {
 						<liferay-ui:panel collapsible="<%= true %>" extended="<%= true %>" id="bookmarksEntriesFoldersListingPanel" persistState="<%= true %>" title='<%= (folder != null) ? "subfolders" : "folders" %>'>
 							<liferay-ui:search-container
 								curParam="cur1"
-								delta="<%= foldersPerPage %>"
+								delta="<%= bookmarksSettings.getFoldersPerPage() %>"
 								deltaConfigurable="<%= false %>"
 								headerNames="<%= StringUtil.merge(folderColumns) %>"
 								iteratorURL="<%= portletURL %>"
@@ -183,7 +183,7 @@ if (folder != null) {
 		</aui:row>
 
 		<%
-		if (!defaultFolderView && (folder != null) && portletName.equals(PortletKeys.BOOKMARKS)) {
+		if (!defaultFolderView && (folder != null) && (portletName.equals(PortletKeys.BOOKMARKS) || portletName.equals(PortletKeys.BOOKMARKS_ADMIN))) {
 			PortalUtil.setPageSubtitle(folder.getName(), request);
 			PortalUtil.setPageDescription(folder.getDescription(), request);
 		}
@@ -205,7 +205,7 @@ if (folder != null) {
 			%>
 
 			<liferay-ui:search-container
-				delta="<%= entriesPerPage %>"
+				delta="<%= bookmarksSettings.getEntriesPerPage() %>"
 				deltaConfigurable="<%= false %>"
 				emptyResultsMessage="there-are-no-entries"
 				iteratorURL="<%= portletURL %>"

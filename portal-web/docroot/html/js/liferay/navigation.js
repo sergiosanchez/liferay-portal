@@ -109,6 +109,8 @@ AUI.add(
 
 							var navItemSelector = Liferay.Data.NAV_ITEM_SELECTOR || navListSelector + '> li';
 
+							var navItemChildToggleSelector = Liferay.Data.NAV_ITEM_CHILD_TOGGLE_SELECTOR || '> span';
+
 							var navList = navBlock.one(navListSelector);
 
 							var items = navBlock.all(navItemSelector);
@@ -145,6 +147,7 @@ AUI.add(
 								}
 							);
 
+							instance._navItemChildToggleSelector = navItemChildToggleSelector;
 							instance._navItemSelector = navItemSelector;
 							instance._navListSelector = navListSelector;
 
@@ -165,6 +168,12 @@ AUI.add(
 
 							navBlock.delegate('keypress', A.bind('_onKeypress', instance), 'input');
 						}
+					},
+
+					_afterMakeSortable: function(sortable) {
+						var instance = this;
+
+						sortable.delegate.dd.removeInvalid('a');
 					},
 
 					_cancelPage: function(event) {
@@ -638,8 +647,6 @@ AUI.add(
 				var instance = this;
 
 				if (instance.get('isSortable')) {
-					var navBlock = instance.get('navBlock');
-
 					var sortable = new A.Sortable(
 						{
 							container: instance._navList,
@@ -672,7 +679,7 @@ AUI.add(
 						}
 					);
 
-					sortable.delegate.dd.removeInvalid('a');
+					instance._afterMakeSortable(sortable);
 				}
 			},
 			['dd-constrain', 'sortable'],
@@ -792,7 +799,11 @@ AUI.add(
 							onSuccess = function(event, id, obj) {
 								var doc = A.getDoc();
 
+								var navChildToggle = textNode.all(instance._navItemChildToggleSelector);
+
 								textNode.text(pageTitle);
+
+								textNode.append(navChildToggle);
 
 								actionNode.show();
 
@@ -918,6 +929,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-component']
+		requires: ['aui-component', 'event-mouseenter']
 	}
 );

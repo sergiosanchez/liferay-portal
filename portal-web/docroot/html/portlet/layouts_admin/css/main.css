@@ -226,6 +226,16 @@
 		border-color: #BBB;
 	}
 
+	.export-configuration-user-column {
+		text-align: center;
+		vertical-align: middle;
+		width: 30px;
+
+		.avatar {
+			width: 30px;
+		}
+	}
+
 	.process-list {
 		.background-task-status-column {
 			width: 700px;
@@ -265,6 +275,16 @@
 
 			.progress-current-item {
 				font-size: 0.7em;
+			}
+		}
+
+		.background-task-user-column {
+			text-align: center;
+			vertical-align: middle;
+			width: 30px;
+
+			.avatar {
+				width: 30px;
 			}
 		}
 	}

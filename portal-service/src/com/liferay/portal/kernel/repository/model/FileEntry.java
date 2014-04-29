@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,6 +18,7 @@ import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.util.Accessor;
 import com.liferay.portal.model.Lock;
 import com.liferay.portal.security.permission.PermissionChecker;
@@ -30,6 +31,7 @@ import java.util.List;
 /**
  * @author Alexander Chow
  */
+@JSON
 @ProviderType
 public interface FileEntry extends RepositoryModel<FileEntry> {
 
@@ -40,6 +42,16 @@ public interface FileEntry extends RepositoryModel<FileEntry> {
 			@Override
 			public Long get(FileEntry fileEntry) {
 				return fileEntry.getFileEntryId();
+			}
+
+			@Override
+			public Class<Long> getAttributeClass() {
+				return Long.class;
+			}
+
+			@Override
+			public Class<FileEntry> getTypeClass() {
+				return FileEntry.class;
 			}
 
 		};
@@ -62,6 +74,7 @@ public interface FileEntry extends RepositoryModel<FileEntry> {
 	 * @throws SystemException if a system exception occurred
 	 * @see    #getFileVersion()
 	 */
+	@JSON(include = false)
 	public InputStream getContentStream()
 		throws PortalException, SystemException;
 

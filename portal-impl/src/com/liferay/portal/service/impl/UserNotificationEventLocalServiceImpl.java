@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -17,8 +17,14 @@ package com.liferay.portal.service.impl;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.messaging.DestinationNames;
+import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.notifications.NotificationEvent;
+import com.liferay.portal.kernel.notifications.NotificationEventFactoryUtil;
+import com.liferay.portal.kernel.transaction.TransactionCommitCallbackRegistryUtil;
 import com.liferay.portal.model.User;
+import com.liferay.portal.model.UserNotificationDeliveryConstants;
 import com.liferay.portal.model.UserNotificationEvent;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.base.UserNotificationEventLocalServiceBaseImpl;
@@ -26,6 +32,7 @@ import com.liferay.portal.service.base.UserNotificationEventLocalServiceBaseImpl
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * @author Edward Han
@@ -47,15 +54,17 @@ public class UserNotificationEventLocalServiceImpl
 
 		return addUserNotificationEvent(
 			userId, notificationEvent.getType(),
-			notificationEvent.getTimestamp(), notificationEvent.getDeliverBy(),
-			payloadJSONObject.toString(), notificationEvent.isArchived(),
-			serviceContext);
+			notificationEvent.getTimestamp(),
+			notificationEvent.getDeliveryType(),
+			notificationEvent.getDeliverBy(), payloadJSONObject.toString(),
+			notificationEvent.isArchived(), serviceContext);
 	}
 
 	@Override
 	public UserNotificationEvent addUserNotificationEvent(
-			long userId, String type, long timestamp, long deliverBy,
-			String payload, boolean archived, ServiceContext serviceContext)
+			long userId, String type, long timestamp, int deliveryType,
+			long deliverBy, String payload, boolean archived,
+			ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
 		User user = userPersistence.findByPrimaryKey(userId);
@@ -70,6 +79,7 @@ public class UserNotificationEventLocalServiceImpl
 		userNotificationEvent.setUserId(userId);
 		userNotificationEvent.setType(type);
 		userNotificationEvent.setTimestamp(timestamp);
+		userNotificationEvent.setDeliveryType(deliveryType);
 		userNotificationEvent.setDeliverBy(deliverBy);
 		userNotificationEvent.setDelivered(false);
 		userNotificationEvent.setPayload(payload);
@@ -78,6 +88,23 @@ public class UserNotificationEventLocalServiceImpl
 		userNotificationEventPersistence.update(userNotificationEvent);
 
 		return userNotificationEvent;
+	}
+
+	/**
+	 * @deprecated As of 7.0.0 {@link #addUserNotificationEvent(long, String,
+	 *             long, int, long, String, boolean, ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public UserNotificationEvent addUserNotificationEvent(
+			long userId, String type, long timestamp, long deliverBy,
+			String payload, boolean archived, ServiceContext serviceContext)
+		throws PortalException, SystemException {
+
+		return addUserNotificationEvent(
+			userId, type, timestamp,
+			UserNotificationDeliveryConstants.TYPE_WEBSITE, deliverBy, payload,
+			archived, serviceContext);
 	}
 
 	@Override
@@ -227,6 +254,29 @@ public class UserNotificationEventLocalServiceImpl
 	}
 
 	@Override
+	public UserNotificationEvent sendUserNotificationEvents(
+			long userId, String portletId, int deliveryType,
+			JSONObject notificationEventJSONObject)
+		throws PortalException, SystemException {
+
+		NotificationEvent notificationEvent =
+			NotificationEventFactoryUtil.createNotificationEvent(
+				System.currentTimeMillis(), portletId,
+				notificationEventJSONObject);
+
+		notificationEvent.setDeliveryType(deliveryType);
+
+		UserNotificationEvent userNotificationEvent = addUserNotificationEvent(
+			userId, notificationEvent);
+
+		if (deliveryType == UserNotificationDeliveryConstants.TYPE_PUSH) {
+			sendPushNotification(notificationEvent);
+		}
+
+		return userNotificationEvent;
+	}
+
+	@Override
 	public UserNotificationEvent updateUserNotificationEvent(
 			String uuid, long companyId, boolean archive)
 		throws SystemException {
@@ -262,6 +312,27 @@ public class UserNotificationEventLocalServiceImpl
 		}
 
 		return userNotificationEvents;
+	}
+
+	protected void sendPushNotification(
+		final NotificationEvent notificationEvent) {
+
+		TransactionCommitCallbackRegistryUtil.registerCallback(
+			new Callable<Void>() {
+
+				@Override
+				public Void call() throws Exception {
+					Message message = new Message();
+
+					message.setPayload(notificationEvent.getPayload());
+
+					MessageBusUtil.sendMessage(
+						DestinationNames.PUSH_NOTIFICATION, message);
+
+					return null;
+				}
+
+			});
 	}
 
 }

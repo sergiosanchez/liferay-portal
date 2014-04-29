@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -33,6 +33,7 @@ import com.liferay.portlet.asset.model.BaseAssetRendererFactory;
 import com.liferay.portlet.assetpublisher.util.AssetPublisherUtil;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
+import com.liferay.portlet.documentlibrary.model.DLFileEntryTypeConstants;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeServiceUtil;
@@ -61,6 +62,11 @@ import javax.portlet.WindowStateException;
 public class DLFileEntryAssetRendererFactory extends BaseAssetRendererFactory {
 
 	public static final String TYPE = "document";
+
+	public DLFileEntryAssetRendererFactory() {
+		setLinkable(true);
+		setSupportsClassTypes(true);
+	}
 
 	@Override
 	public AssetRenderer getAssetRenderer(long classPK, int type)
@@ -138,6 +144,15 @@ public class DLFileEntryAssetRendererFactory extends BaseAssetRendererFactory {
 
 		Map<Long, String> classTypes = new HashMap<Long, String>();
 
+		DLFileEntryType basicDocumentDLFileEntryType =
+			DLFileEntryTypeLocalServiceUtil.fetchDLFileEntryType(
+				DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT);
+
+		classTypes.put(
+			basicDocumentDLFileEntryType.getFileEntryTypeId(),
+			LanguageUtil.get(
+				locale, DLFileEntryTypeConstants.NAME_BASIC_DOCUMENT));
+
 		List<DLFileEntryType> dlFileEntryTypes =
 			DLFileEntryTypeServiceUtil.getFileEntryTypes(groupIds);
 
@@ -156,12 +171,16 @@ public class DLFileEntryAssetRendererFactory extends BaseAssetRendererFactory {
 	}
 
 	@Override
-	public String getTypeName(Locale locale, boolean hasSubtypes) {
-		if (hasSubtypes) {
-			return LanguageUtil.get(locale, "basic-document");
-		}
+	public String getTypeName(Locale locale, long subtypeId) {
+		try {
+			DLFileEntryType dlFileEntryType =
+				DLFileEntryTypeLocalServiceUtil.getFileEntryType(subtypeId);
 
-		return super.getTypeName(locale, hasSubtypes);
+			return dlFileEntryType.getName(locale);
+		}
+		catch (Exception e) {
+			return super.getTypeName(locale, subtypeId);
+		}
 	}
 
 	@Override
@@ -228,15 +247,8 @@ public class DLFileEntryAssetRendererFactory extends BaseAssetRendererFactory {
 	}
 
 	@Override
-	public boolean isLinkable() {
-		return _LINKABLE;
-	}
-
-	@Override
 	protected String getIconPath(ThemeDisplay themeDisplay) {
 		return themeDisplay.getPathThemeImages() + "/common/clip.png";
 	}
-
-	private static final boolean _LINKABLE = true;
 
 }

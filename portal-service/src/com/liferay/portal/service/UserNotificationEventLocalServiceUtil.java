@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -219,6 +219,11 @@ public class UserNotificationEventLocalServiceUtil {
 		return getService().getUserNotificationEvent(userNotificationEventId);
 	}
 
+	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getActionableDynamicQuery();
+	}
+
 	public static com.liferay.portal.model.PersistedModel getPersistedModel(
 		java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -311,6 +316,22 @@ public class UserNotificationEventLocalServiceUtil {
 		return getService().addUserNotificationEvent(userId, notificationEvent);
 	}
 
+	public static com.liferay.portal.model.UserNotificationEvent addUserNotificationEvent(
+		long userId, java.lang.String type, long timestamp, int deliveryType,
+		long deliverBy, java.lang.String payload, boolean archived,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .addUserNotificationEvent(userId, type, timestamp,
+			deliveryType, deliverBy, payload, archived, serviceContext);
+	}
+
+	/**
+	* @deprecated As of 7.0.0 {@link #addUserNotificationEvent(long, String,
+	long, int, long, String, boolean, ServiceContext)}
+	*/
+	@Deprecated
 	public static com.liferay.portal.model.UserNotificationEvent addUserNotificationEvent(
 		long userId, java.lang.String type, long timestamp, long deliverBy,
 		java.lang.String payload, boolean archived,
@@ -432,6 +453,16 @@ public class UserNotificationEventLocalServiceUtil {
 		boolean archived)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getService().getUserNotificationEventsCount(userId, archived);
+	}
+
+	public static com.liferay.portal.model.UserNotificationEvent sendUserNotificationEvents(
+		long userId, java.lang.String portletId, int deliveryType,
+		com.liferay.portal.kernel.json.JSONObject notificationEventJSONObject)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .sendUserNotificationEvents(userId, portletId, deliveryType,
+			notificationEventJSONObject);
 	}
 
 	public static com.liferay.portal.model.UserNotificationEvent updateUserNotificationEvent(

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -213,6 +213,15 @@ public interface JournalFolderLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public com.liferay.portal.model.PersistedModel getPersistedModel(
@@ -286,6 +295,117 @@ public interface JournalFolderLocalService extends BaseLocalService,
 	*/
 	public com.liferay.portlet.journal.model.JournalFolder updateJournalFolder(
 		com.liferay.portlet.journal.model.JournalFolder journalFolder)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addDDMStructureJournalFolder(long structureId, long folderId)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addDDMStructureJournalFolder(long structureId,
+		com.liferay.portlet.journal.model.JournalFolder journalFolder)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addDDMStructureJournalFolders(long structureId, long[] folderIds)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addDDMStructureJournalFolders(long structureId,
+		java.util.List<com.liferay.portlet.journal.model.JournalFolder> JournalFolders)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void clearDDMStructureJournalFolders(long structureId)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteDDMStructureJournalFolder(long structureId, long folderId)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteDDMStructureJournalFolder(long structureId,
+		com.liferay.portlet.journal.model.JournalFolder journalFolder)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteDDMStructureJournalFolders(long structureId,
+		long[] folderIds)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteDDMStructureJournalFolders(long structureId,
+		java.util.List<com.liferay.portlet.journal.model.JournalFolder> JournalFolders)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public java.util.List<com.liferay.portlet.journal.model.JournalFolder> getDDMStructureJournalFolders(
+		long structureId)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public java.util.List<com.liferay.portlet.journal.model.JournalFolder> getDDMStructureJournalFolders(
+		long structureId, int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public java.util.List<com.liferay.portlet.journal.model.JournalFolder> getDDMStructureJournalFolders(
+		long structureId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getDDMStructureJournalFoldersCount(long structureId)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public boolean hasDDMStructureJournalFolder(long structureId, long folderId)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public boolean hasDDMStructureJournalFolders(long structureId)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void setDDMStructureJournalFolders(long structureId, long[] folderIds)
 		throws com.liferay.portal.kernel.exception.SystemException;
 
 	/**
@@ -431,6 +551,11 @@ public interface JournalFolderLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.SystemException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public long getOverridedDDMStructuresFolderId(long folderId)
+		throws com.liferay.portal.kernel.exception.SystemException,
+			com.liferay.portlet.journal.NoSuchFolderException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public void getSubfolderIds(java.util.List<java.lang.Long> folderIds,
 		long groupId, long folderId)
 		throws com.liferay.portal.kernel.exception.SystemException;
@@ -459,6 +584,14 @@ public interface JournalFolderLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
+	public void subscribe(long userId, long groupId, long folderId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public void unsubscribe(long userId, long groupId, long folderId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
 	public void updateAsset(long userId,
 		com.liferay.portlet.journal.model.JournalFolder folder,
 		long[] assetCategoryIds, java.lang.String[] assetTagNames,
@@ -473,9 +606,26 @@ public interface JournalFolderLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
+	public com.liferay.portlet.journal.model.JournalFolder updateFolder(
+		long userId, long folderId, long parentFolderId, java.lang.String name,
+		java.lang.String description, long[] ddmStructureIds,
+		boolean overrideDDMStructures, boolean mergeWithParentFolder,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public void updateFolderDDMStructures(
+		com.liferay.portlet.journal.model.JournalFolder folder,
+		long[] ddmStructureIdsArray)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
 	public com.liferay.portlet.journal.model.JournalFolder updateStatus(
 		long userId, com.liferay.portlet.journal.model.JournalFolder folder,
 		int status)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public void validateFolderDDMStructures(long folderId, long parentFolderId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 }

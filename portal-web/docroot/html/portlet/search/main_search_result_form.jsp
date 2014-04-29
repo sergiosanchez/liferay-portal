@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -100,7 +100,7 @@ Summary summary = null;
 if (indexer != null) {
 	String snippet = document.get(Field.SNIPPET);
 
-	summary = indexer.getSummary(document, locale, snippet, viewFullContentURL);
+	summary = indexer.getSummary(document, snippet, viewFullContentURL, renderRequest, renderResponse);
 }
 else if (assetRenderer != null) {
 	summary = new Summary(locale, assetRenderer.getTitle(locale), assetRenderer.getSearchSummary(locale), viewFullContentURL);
@@ -206,7 +206,7 @@ if (summary != null) {
 
 							PortletURL categoryURL = PortletURLUtil.clone(portletURL, renderResponse);
 
-							categoryURL.setParameter(Field.ASSET_CATEGORY_TITLES, assetCategory.getTitle(LocaleUtil.getDefault()));
+							categoryURL.setParameter(Field.ASSET_CATEGORY_IDS, String.valueOf(assetCategory.getCategoryId()));
 						%>
 
 							<c:if test="<%= i == 0 %>">

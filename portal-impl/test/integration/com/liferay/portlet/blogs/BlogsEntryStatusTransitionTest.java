@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -22,6 +22,7 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.ServiceTestUtil;
+import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.test.LiferayIntegrationJUnitTestRunner;
 import com.liferay.portal.test.MainServletExecutionTestListener;
 import com.liferay.portal.test.Sync;
@@ -37,8 +38,11 @@ import com.liferay.portlet.blogs.util.BlogsTestUtil;
 import com.liferay.portlet.social.model.SocialActivity;
 import com.liferay.portlet.social.service.SocialActivityLocalServiceUtil;
 
+import java.io.Serializable;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.After;
@@ -65,7 +69,7 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 
 		group = GroupTestUtil.addGroup();
 
-		User user = UserTestUtil.addUser(
+		user = UserTestUtil.addUser(
 			ServiceTestUtil.randomString(), group.getGroupId());
 
 		entry = BlogsTestUtil.addEntry(user.getUserId(), group, false);
@@ -74,17 +78,19 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 	@After
 	public void tearDown() throws Exception {
 		GroupLocalServiceUtil.deleteGroup(group);
+
+		UserLocalServiceUtil.deleteUser(user);
 	}
 
 	@Test
 	public void testApprovedToDraft() throws Exception {
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_DRAFT,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
@@ -94,11 +100,11 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 	public void testApprovedToTrash() throws Exception {
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_IN_TRASH,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
@@ -108,7 +114,7 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 	public void testDraftToApprovedByAdd() throws Exception {
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertTrue(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(1, searchBlogsEntriesCount(group.getGroupId()));
@@ -120,15 +126,15 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 	public void testDraftToApprovedByUpdate() throws Exception {
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_DRAFT,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertTrue(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(1, searchBlogsEntriesCount(group.getGroupId()));
@@ -148,7 +154,7 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
@@ -164,11 +170,11 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 	public void testDraftToScheduledUpdate() throws Exception {
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		entry = BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_DRAFT,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Calendar displayDate = new GregorianCalendar();
 
@@ -180,7 +186,7 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
@@ -196,7 +202,7 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 	public void testDraftToTrash() throws Exception {
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_IN_TRASH,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
@@ -214,7 +220,7 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 
 		entry = BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		displayDate.add(Calendar.DATE, -2);
 
@@ -232,7 +238,7 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 	public void testScheduledByUpdateToApproved() throws Exception {
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Calendar displayDate = new GregorianCalendar();
 
@@ -245,7 +251,7 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 
 		entry = BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		checkSocialActivity(BlogsActivityKeys.UPDATE_ENTRY, 1);
 
@@ -267,15 +273,15 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 	public void testTrashToApproved() throws Exception {
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_IN_TRASH,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertTrue(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(1, searchBlogsEntriesCount(group.getGroupId()));
@@ -287,30 +293,30 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 	public void testTrashToDraft() throws Exception {
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_IN_TRASH,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_DRAFT,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_APPROVED,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_DRAFT,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_IN_TRASH,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		BlogsEntryLocalServiceUtil.updateStatus(
 			getUserId(), entry.getEntryId(), WorkflowConstants.STATUS_DRAFT,
-			getServiceContext(entry));
+			getServiceContext(entry), new HashMap<String, Serializable>());
 
 		Assert.assertFalse(isAssetEntryVisible(entry.getEntryId()));
 		Assert.assertEquals(0, searchBlogsEntriesCount(group.getGroupId()));
@@ -342,5 +348,6 @@ public class BlogsEntryStatusTransitionTest extends BaseBlogsEntryTestCase {
 
 	protected BlogsEntry entry;
 	protected Group group;
+	protected User user;
 
 }

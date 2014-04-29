@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceTestUtil;
@@ -45,6 +46,7 @@ import com.liferay.portlet.expando.model.ExpandoColumnConstants;
 import com.liferay.portlet.expando.model.ExpandoValue;
 import com.liferay.portlet.expando.util.ExpandoTestUtil;
 import com.liferay.portlet.wiki.DuplicatePageException;
+import com.liferay.portlet.wiki.NoSuchPageResourceException;
 import com.liferay.portlet.wiki.model.WikiNode;
 import com.liferay.portlet.wiki.model.WikiPage;
 import com.liferay.portlet.wiki.util.WikiTestUtil;
@@ -59,6 +61,7 @@ import org.testng.Assert;
 
 /**
  * @author Manuel de la Peña
+ * @author Roberto Díaz
  */
 @ExecutionTestListeners(
 	listeners = {
@@ -77,9 +80,7 @@ public class WikiPageLocalServiceTest {
 
 		_group = GroupTestUtil.addGroup();
 
-		_node = WikiTestUtil.addNode(
-			TestPropsValues.getUserId(), _group.getGroupId(),
-			ServiceTestUtil.randomString(), ServiceTestUtil.randomString(50));
+		_node = WikiTestUtil.addNode(_group.getGroupId());
 	}
 
 	@Test
@@ -95,8 +96,7 @@ public class WikiPageLocalServiceTest {
 	@Test
 	public void testCopyPage() throws Exception {
 		WikiPage page = WikiTestUtil.addPage(
-			TestPropsValues.getUserId(), _group.getGroupId(), _node.getNodeId(),
-			ServiceTestUtil.randomString(), true);
+			_group.getGroupId(), _node.getNodeId(), true);
 
 		WikiTestUtil.addWikiAttachment(
 			page.getUserId(), page.getNodeId(), page.getTitle(), getClass());
@@ -124,11 +124,173 @@ public class WikiPageLocalServiceTest {
 		Assert.assertEquals(fileEntry.getSize(), copyFileEntry.getSize());
 	}
 
+	@Test(expected = NoSuchPageResourceException.class)
+	public void testDeletePage() throws Exception {
+		WikiPage page = WikiTestUtil.addPage(
+			TestPropsValues.getUserId(), _group.getGroupId(), _node.getNodeId(),
+			"TestPage", true);
+
+		WikiPageLocalServiceUtil.deletePage(page);
+
+		WikiPageLocalServiceUtil.getPage(page.getResourcePrimKey());
+	}
+
+	@Test
+	public void testDeleteTrashedPageWithExplicitTrashedRedirectPage()
+		throws Exception {
+
+		WikiPage[] pages = WikiTestUtil.addTrashedPageWithTrashedRedirectPage(
+			_group.getGroupId(), _node.getNodeId(), true);
+
+		WikiPage page = pages[0];
+		WikiPage redirectPage = pages[1];
+
+		WikiPageLocalServiceUtil.deletePage(page);
+
+		try {
+			WikiPageLocalServiceUtil.getPage(page.getResourcePrimKey());
+
+			Assert.fail("Page should be deleted");
+		}
+		catch (NoSuchPageResourceException nspre) {
+			redirectPage = WikiPageLocalServiceUtil.getPage(
+				redirectPage.getResourcePrimKey());
+
+			Assert.assertNull(redirectPage.fetchRedirectPage());
+		}
+	}
+
+	@Test(expected = NoSuchPageResourceException.class)
+	public void testDeleteTrashedPageWithImplicitTrashedRedirectPage()
+		throws Exception {
+
+		WikiPage[] pages = WikiTestUtil.addTrashedPageWithTrashedRedirectPage(
+			_group.getGroupId(), _node.getNodeId(), false);
+
+		WikiPage page = pages[0];
+		WikiPage redirectPage = pages[1];
+
+		WikiPageLocalServiceUtil.deletePage(page);
+
+		try {
+			WikiPageLocalServiceUtil.getPage(page.getResourcePrimKey());
+
+			Assert.fail("Page should be deleted");
+		}
+		catch (NoSuchPageResourceException nsrpe) {
+			WikiPageLocalServiceUtil.getPage(redirectPage.getResourcePrimKey());
+		}
+	}
+
+	@Test
+	public void testDeleteTrashedPageWithRestoredChildPage() throws Exception {
+		WikiPage[] pages = WikiTestUtil.addTrashedPageWithTrashedChildPage(
+			_group.getGroupId(), _node.getNodeId(), true);
+
+		WikiPage parentPage = pages[0];
+		WikiPage childPage = pages[1];
+
+		WikiPageLocalServiceUtil.restorePageFromTrash(
+			TestPropsValues.getUserId(), childPage);
+
+		WikiPageLocalServiceUtil.deletePage(parentPage);
+
+		try {
+			WikiPageLocalServiceUtil.getPage(parentPage.getResourcePrimKey());
+
+			Assert.fail("Parent page should be deleted");
+		}
+		catch (NoSuchPageResourceException nspre) {
+			childPage = WikiPageLocalServiceUtil.getPage(
+				childPage.getResourcePrimKey());
+
+			Assert.assertNull(childPage.fetchParentPage());
+			Assert.assertEquals(
+				childPage.getStatus(), WorkflowConstants.STATUS_APPROVED);
+		}
+	}
+
+	@Test
+	public void testDeleteTrashedPageWithRestoredRedirectPage()
+		throws Exception {
+
+		WikiPage[] pages = WikiTestUtil.addTrashedPageWithTrashedRedirectPage(
+			_group.getGroupId(), _node.getNodeId(), true);
+
+		WikiPage page = pages[0];
+		WikiPage redirectPage = pages[1];
+
+		WikiPageLocalServiceUtil.restorePageFromTrash(
+			TestPropsValues.getUserId(), redirectPage);
+
+		WikiPageLocalServiceUtil.deletePage(page);
+
+		try {
+			WikiPageLocalServiceUtil.getPage(page.getResourcePrimKey());
+
+			Assert.fail("Page should be deleted");
+		}
+		catch (NoSuchPageResourceException nspre) {
+			redirectPage = WikiPageLocalServiceUtil.getPageByPageId(
+				redirectPage.getPageId());
+
+			Assert.assertNull(redirectPage.fetchRedirectPage());
+			Assert.assertEquals(
+				redirectPage.getStatus(), WorkflowConstants.STATUS_APPROVED);
+		}
+	}
+
+	@Test
+	public void testDeleteTrashedParentPageWithExplicitTrashedChildPage()
+		throws Exception {
+
+		WikiPage[] pages = WikiTestUtil.addTrashedPageWithTrashedChildPage(
+			_group.getGroupId(), _node.getNodeId(), true);
+
+		WikiPage parentPage = pages[0];
+		WikiPage childPage = pages[1];
+
+		WikiPageLocalServiceUtil.deletePage(parentPage);
+
+		try {
+			WikiPageLocalServiceUtil.getPage(parentPage.getResourcePrimKey());
+
+			Assert.fail("Parent page should be deleted");
+		}
+		catch (NoSuchPageResourceException nspre) {
+			childPage = WikiPageLocalServiceUtil.getPageByPageId(
+				childPage.getPageId());
+
+			Assert.assertNull(childPage.fetchParentPage());
+		}
+	}
+
+	@Test(expected = NoSuchPageResourceException.class)
+	public void testDeleteTrashedParentPageWithImplicitTrashedChildPage()
+		throws Exception {
+
+		WikiPage[] pages = WikiTestUtil.addTrashedPageWithTrashedChildPage(
+			_group.getGroupId(), _node.getNodeId(), false);
+
+		WikiPage parentPage = pages[0];
+		WikiPage childPage = pages[1];
+
+		WikiPageLocalServiceUtil.deletePage(parentPage);
+
+		try {
+			WikiPageLocalServiceUtil.getPage(parentPage.getResourcePrimKey());
+
+			Assert.fail("Parent page should be deleted");
+		}
+		catch (NoSuchPageResourceException nspre) {
+			WikiPageLocalServiceUtil.getPage(childPage.getResourcePrimKey());
+		}
+	}
+
 	@Test
 	public void testGetPage() throws Exception {
 		WikiPage page = WikiTestUtil.addPage(
-			TestPropsValues.getUserId(), _group.getGroupId(), _node.getNodeId(),
-			ServiceTestUtil.randomString(), true);
+			_group.getGroupId(), _node.getNodeId(), true);
 
 		WikiPage retrievedPage = WikiPageLocalServiceUtil.getPage(
 			page.getResourcePrimKey());
@@ -178,8 +340,7 @@ public class WikiPageLocalServiceTest {
 	@Test(expected = DuplicatePageException.class)
 	public void testMovePageSameName() throws Exception {
 		WikiPage page = WikiTestUtil.addPage(
-			TestPropsValues.getUserId(), _group.getGroupId(), _node.getNodeId(),
-			ServiceTestUtil.randomString(), true);
+			_group.getGroupId(), _node.getNodeId(), true);
 
 		ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
 			_group.getGroupId());
@@ -266,16 +427,14 @@ public class WikiPageLocalServiceTest {
 
 	protected void testChangeParent(boolean hasExpandoValues) throws Exception {
 		WikiPage page = WikiTestUtil.addPage(
-			TestPropsValues.getUserId(), _group.getGroupId(), _node.getNodeId(),
-			ServiceTestUtil.randomString(), true);
+			_group.getGroupId(), _node.getNodeId(), true);
 
 		if (hasExpandoValues) {
 			addExpandoValueToPage(page);
 		}
 
 		WikiPage parentPage = WikiTestUtil.addPage(
-			TestPropsValues.getUserId(), _group.getGroupId(), _node.getNodeId(),
-			ServiceTestUtil.randomString(), true);
+			_group.getGroupId(), _node.getNodeId(), true);
 
 		ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
 			_group.getGroupId());
@@ -293,8 +452,7 @@ public class WikiPageLocalServiceTest {
 
 	protected void testMovePage(boolean hasExpandoValues) throws Exception {
 		WikiPage page = WikiTestUtil.addPage(
-			TestPropsValues.getUserId(), _group.getGroupId(), _node.getNodeId(),
-			ServiceTestUtil.randomString(), true);
+			_group.getGroupId(), _node.getNodeId(), true);
 
 		if (hasExpandoValues) {
 			addExpandoValueToPage(page);
@@ -320,8 +478,7 @@ public class WikiPageLocalServiceTest {
 		throws Exception {
 
 		WikiPage page = WikiTestUtil.addPage(
-			TestPropsValues.getUserId(), _group.getGroupId(), _node.getNodeId(),
-			ServiceTestUtil.randomString(), true);
+			_group.getGroupId(), _node.getNodeId(), true);
 
 		if (hasExpandoValues) {
 			addExpandoValueToPage(page);

@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -66,7 +66,7 @@ String selectStyle = (String)request.getAttribute("configuration.jsp-selectStyle
 					Arrays.sort(classNameIds);
 					%>
 
-					<aui:select label="" name="preferences--anyAssetType--">
+					<aui:select label="" name="preferences--anyAssetType--" title="asset-type">
 						<aui:option label="any" selected="<%= assetPublisherDisplayContext.isAnyAssetType() %>" value="<%= true %>" />
 						<aui:option label='<%= LanguageUtil.get(pageContext, "select-more-than-one") + StringPool.TRIPLE_PERIOD %>' selected="<%= !assetPublisherDisplayContext.isAnyAssetType() && (classNameIds.length > 1) %>" value="<%= false %>" />
 
@@ -109,8 +109,10 @@ String selectStyle = (String)request.getAttribute("configuration.jsp-selectStyle
 					</div>
 
 					<%
-					for (AssetRendererFactory assetRendererFactory : AssetRendererFactoryRegistryUtil.getAssetRendererFactories(company.getCompanyId())) {
-						Map<Long, String> assetAvailableClassTypes = assetRendererFactory.getClassTypes(new long[] {themeDisplay.getCompanyGroupId(), scopeGroupId}, themeDisplay.getLocale());
+					List <AssetRendererFactory> assetRendererFactories = ListUtil.sort(AssetRendererFactoryRegistryUtil.getAssetRendererFactories(company.getCompanyId()), new AssetRendererFactoryTypeNameComparator(locale));
+
+					for (AssetRendererFactory assetRendererFactory : assetRendererFactories) {
+						Map<Long, String> assetAvailableClassTypes = assetRendererFactory.getClassTypes(PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId), themeDisplay.getLocale());
 
 						if (assetAvailableClassTypes.isEmpty()) {
 							continue;
@@ -388,7 +390,7 @@ String selectStyle = (String)request.getAttribute("configuration.jsp-selectStyle
 							String orderByType1 = assetPublisherDisplayContext.getOrderByType1();
 							%>
 
-							<aui:select inlineField="<%= true %>" label="" name="preferences--orderByType1--" value="<%= orderByType1 %>">
+							<aui:select inlineField="<%= true %>" label="" name="preferences--orderByType1--" title="order-by-type" value="<%= orderByType1 %>">
 								<aui:option label="ascending" value="ASC" />
 								<aui:option label="descending" value="DESC" />
 							</aui:select>
@@ -418,7 +420,7 @@ String selectStyle = (String)request.getAttribute("configuration.jsp-selectStyle
 							String orderByType2 = assetPublisherDisplayContext.getOrderByType2();
 							%>
 
-							<aui:select inlineField="<%= true %>" label="" name="preferences--orderByType2--">
+							<aui:select inlineField="<%= true %>" label="" name="preferences--orderByType2--" title="order-by-type">
 								<aui:option label="ascending" selected='<%= orderByType2.equals("ASC") %>' value="ASC" />
 								<aui:option label="descending" selected='<%= orderByType2.equals("DESC") %>' value="DESC" />
 							</aui:select>
@@ -574,7 +576,7 @@ String selectStyle = (String)request.getAttribute("configuration.jsp-selectStyle
 		}
 
 		<%
-		Map<Long, String> assetAvailableClassTypes = curRendererFactory.getClassTypes(new long[] {themeDisplay.getCompanyGroupId(), scopeGroupId}, themeDisplay.getLocale());
+		Map<Long, String> assetAvailableClassTypes = curRendererFactory.getClassTypes(PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId), themeDisplay.getLocale());
 
 		if (assetAvailableClassTypes.isEmpty()) {
 			continue;

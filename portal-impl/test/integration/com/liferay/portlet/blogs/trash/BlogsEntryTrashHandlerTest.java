@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -30,6 +30,9 @@ import com.liferay.portlet.blogs.service.BlogsEntryLocalServiceUtil;
 import com.liferay.portlet.trash.BaseTrashHandlerTestCase;
 
 import java.io.InputStream;
+import java.io.Serializable;
+
+import java.util.HashMap;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -77,6 +80,13 @@ public class BlogsEntryTrashHandlerTest extends BaseTrashHandlerTestCase {
 	@Override
 	@Test
 	public void testTrashDuplicate() throws Exception {
+	}
+
+	@Ignore()
+	@Override
+	@Test
+	public void testTrashGrandparentBaseModelAndRestoreParentModel()
+		throws Exception {
 	}
 
 	@Ignore()
@@ -199,7 +209,8 @@ public class BlogsEntryTrashHandlerTest extends BaseTrashHandlerTestCase {
 		if (approved) {
 			entry = BlogsEntryLocalServiceUtil.updateStatus(
 				TestPropsValues.getUserId(), entry.getEntryId(),
-				WorkflowConstants.STATUS_APPROVED, serviceContext);
+				WorkflowConstants.STATUS_APPROVED, serviceContext,
+				new HashMap<String, Serializable>());
 		}
 
 		return entry;

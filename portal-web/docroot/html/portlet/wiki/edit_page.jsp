@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -237,9 +237,7 @@ if (Validator.isNull(redirect)) {
 				</c:if>
 
 				<c:if test="<%= Validator.isNotNull(parentTitle) %>">
-					<aui:field-wrapper label="parent">
-						<liferay-ui:input-resource url="<%= parentTitle %>" />
-					</aui:field-wrapper>
+					<aui:input name="parent" type="resource" value="<%= parentTitle %>" />
 				</c:if>
 
 				<c:choose>
@@ -495,13 +493,14 @@ if (Validator.isNull(redirect)) {
 	}
 
 	function <portlet:namespace />moveToTrashPage() {
+		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = "<%= Constants.MOVE_TO_TRASH %>";
+
 		<portlet:renderURL var="nodeURL">
 			<portlet:param name="struts_action" value="/wiki/view" />
 			<portlet:param name="title" value="<%= WikiPageConstants.FRONT_PAGE %>" />
 			<portlet:param name="tag" value="<%= StringPool.BLANK %>" />
 		</portlet:renderURL>
 
-		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = "<%= Constants.MOVE_TO_TRASH %>";
 		document.<portlet:namespace />fm.<portlet:namespace />redirect.value = "<%= nodeURL.toString() %>";
 
 		submitForm(document.<portlet:namespace />fm);

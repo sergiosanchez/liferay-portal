@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -247,6 +247,20 @@ public class JournalFolderServiceWrapper implements JournalFolderService,
 	}
 
 	@Override
+	public void subscribe(long groupId, long folderId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_journalFolderService.subscribe(groupId, folderId);
+	}
+
+	@Override
+	public void unsubscribe(long groupId, long folderId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_journalFolderService.unsubscribe(groupId, folderId);
+	}
+
+	@Override
 	public com.liferay.portlet.journal.model.JournalFolder updateFolder(
 		long folderId, long parentFolderId, java.lang.String name,
 		java.lang.String description, boolean mergeWithParentFolder,
@@ -255,6 +269,19 @@ public class JournalFolderServiceWrapper implements JournalFolderService,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _journalFolderService.updateFolder(folderId, parentFolderId,
 			name, description, mergeWithParentFolder, serviceContext);
+	}
+
+	@Override
+	public com.liferay.portlet.journal.model.JournalFolder updateFolder(
+		long folderId, long parentFolderId, java.lang.String name,
+		java.lang.String description, long[] ddmStructureIds,
+		boolean overrideDDMStructures, boolean mergeWithParentFolder,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _journalFolderService.updateFolder(folderId, parentFolderId,
+			name, description, ddmStructureIds, overrideDDMStructures,
+			mergeWithParentFolder, serviceContext);
 	}
 
 	/**

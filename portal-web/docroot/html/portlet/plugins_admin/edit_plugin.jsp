@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -57,13 +57,9 @@ if (pluginType.equals(Plugin.TYPE_PORTLET)) {
 	/>
 
 	<aui:fieldset>
-		<aui:field-wrapper label="module-id">
-			<liferay-ui:input-resource url="<%= moduleId %>" />
-		</aui:field-wrapper>
+		<aui:input name="moduleId" type="resource" value="<%= moduleId %>" />
 
-		<aui:field-wrapper label="plugin-id">
-			<liferay-ui:input-resource url="<%= pluginId %>" />
-		</aui:field-wrapper>
+		<aui:input name="pluginId" type="resource" value="<%= pluginId %>" />
 
 		<aui:input name="active" type="checkbox" value="<%= active %>" />
 

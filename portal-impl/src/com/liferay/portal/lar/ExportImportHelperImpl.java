@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -80,6 +80,7 @@ import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.model.Organization;
 import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.PortletConstants;
+import com.liferay.portal.model.StagedGroupedModel;
 import com.liferay.portal.model.StagedModel;
 import com.liferay.portal.model.SystemEventConstants;
 import com.liferay.portal.model.User;
@@ -90,9 +91,9 @@ import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.LayoutServiceUtil;
 import com.liferay.portal.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.service.PortletLocalServiceUtil;
+import com.liferay.portal.service.SystemEventLocalServiceUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.service.persistence.OrganizationUtil;
-import com.liferay.portal.service.persistence.SystemEventActionableDynamicQuery;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
@@ -220,6 +221,11 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		return PortletConstants.getRootPortletId(portletId);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getExportPortletControlsMap(long, String, Map)}
+	 */
+	@Deprecated
 	@Override
 	public boolean[] getExportPortletControls(
 			long companyId, String portletId,
@@ -230,8 +236,43 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			companyId, portletId, parameterMap, "layout-set");
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getExportPortletControlsMap(long, String, Map, String)}
+	 */
+	@Deprecated
 	@Override
 	public boolean[] getExportPortletControls(
+			long companyId, String portletId,
+			Map<String, String[]> parameterMap, String type)
+		throws Exception {
+
+		Map<String, Boolean> exportPortletControlsMap =
+			getExportPortletControlsMap(
+				companyId, portletId, parameterMap, type);
+
+		return new boolean[] {
+			exportPortletControlsMap.get(
+				PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS),
+			exportPortletControlsMap.get(PortletDataHandlerKeys.PORTLET_DATA),
+			exportPortletControlsMap.get(PortletDataHandlerKeys.PORTLET_SETUP),
+			exportPortletControlsMap.get(
+				PortletDataHandlerKeys.PORTLET_USER_PREFERENCES),
+		};
+	}
+
+	@Override
+	public Map<String, Boolean> getExportPortletControlsMap(
+			long companyId, String portletId,
+			Map<String, String[]> parameterMap)
+		throws Exception {
+
+		return getExportPortletControlsMap(
+			companyId, portletId, parameterMap, "layout-set");
+	}
+
+	@Override
+	public Map<String, Boolean> getExportPortletControlsMap(
 			long companyId, String portletId,
 			Map<String, String[]> parameterMap, String type)
 		throws Exception {
@@ -273,11 +314,14 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 
 		boolean exportCurPortletArchivedSetups = exportPortletConfiguration;
+		boolean exportCurPortletConfiguration = exportPortletConfiguration;
 		boolean exportCurPortletSetup = exportPortletConfiguration;
 		boolean exportCurPortletUserPreferences = exportPortletConfiguration;
 
 		if (exportPortletConfigurationAll ||
 			(exportPortletConfiguration && type.equals("layout-prototype"))) {
+
+			exportCurPortletConfiguration = true;
 
 			exportCurPortletArchivedSetups =
 				MapUtil.getBoolean(
@@ -292,7 +336,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					PortletDataHandlerKeys.PORTLET_USER_PREFERENCES_ALL);
 		}
 		else if (rootPortletId != null) {
-			boolean exportCurPortletConfiguration =
+			exportCurPortletConfiguration =
 				exportPortletConfiguration &&
 				MapUtil.getBoolean(
 					parameterMap,
@@ -319,11 +363,32 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 						StringPool.UNDERLINE + rootPortletId);
 		}
 
-		return new boolean[] {
-			exportCurPortletArchivedSetups, exportCurPortletData,
-			exportCurPortletSetup, exportCurPortletUserPreferences};
+		Map<String, Boolean> exportPortletControlsMap =
+			new HashMap<String, Boolean>();
+
+		exportPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS,
+			exportCurPortletArchivedSetups);
+		exportPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_CONFIGURATION,
+			exportCurPortletConfiguration);
+		exportPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_DATA, exportCurPortletData);
+		exportPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_SETUP, exportCurPortletSetup);
+		exportPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_USER_PREFERENCES,
+			exportCurPortletUserPreferences);
+
+		return exportPortletControlsMap;
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getImportPortletControlsMap(long, String, Map, Element,
+	 *             ManifestSummary)}
+	 */
+	@Deprecated
 	@Override
 	public boolean[] getImportPortletControls(
 			long companyId, String portletId,
@@ -334,8 +399,36 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 			companyId, portletId, parameterMap, portletDataElement, null);
 	}
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #getImportPortletControlsMap(long, String, Map, Element,
+	 *             ManifestSummary)}
+	 */
+	@Deprecated
 	@Override
 	public boolean[] getImportPortletControls(
+			long companyId, String portletId,
+			Map<String, String[]> parameterMap, Element portletDataElement,
+			ManifestSummary manifestSummary)
+		throws Exception {
+
+		Map<String, Boolean> importPortletControlsMap =
+			getImportPortletControlsMap(
+				companyId, portletId, parameterMap, portletDataElement,
+				manifestSummary);
+
+		return new boolean[] {
+			importPortletControlsMap.get(
+				PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS),
+			importPortletControlsMap.get(PortletDataHandlerKeys.PORTLET_DATA),
+			importPortletControlsMap.get(PortletDataHandlerKeys.PORTLET_SETUP),
+			importPortletControlsMap.get(
+				PortletDataHandlerKeys.PORTLET_USER_PREFERENCES),
+		};
+	}
+
+	@Override
+	public Map<String, Boolean> getImportPortletControlsMap(
 			long companyId, String portletId,
 			Map<String, String[]> parameterMap, Element portletDataElement,
 			ManifestSummary manifestSummary)
@@ -377,11 +470,12 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 
 		boolean importCurPortletArchivedSetups = importPortletConfiguration;
+		boolean importCurPortletConfiguration = importPortletConfiguration;
 		boolean importCurPortletSetup = importPortletConfiguration;
 		boolean importCurPortletUserPreferences = importPortletConfiguration;
 
 		if (importPortletConfigurationAll) {
-			boolean importCurPortletConfiguration = true;
+			importCurPortletConfiguration = true;
 
 			if ((manifestSummary != null) &&
 				(manifestSummary.getConfigurationPortletOptions(
@@ -406,7 +500,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 					PortletDataHandlerKeys.PORTLET_USER_PREFERENCES_ALL);
 		}
 		else if (rootPortletId != null) {
-			boolean importCurPortletConfiguration =
+			importCurPortletConfiguration =
 				importPortletConfiguration &&
 				MapUtil.getBoolean(
 					parameterMap,
@@ -433,14 +527,29 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 						StringPool.UNDERLINE + rootPortletId);
 		}
 
-		return new boolean[] {
-			importCurPortletArchivedSetups, importCurPortletData,
-			importCurPortletSetup, importCurPortletUserPreferences};
+		Map<String, Boolean> importPortletControlsMap =
+			new HashMap<String, Boolean>();
+
+		importPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_ARCHIVED_SETUPS,
+			importCurPortletArchivedSetups);
+		importPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_CONFIGURATION,
+			importCurPortletConfiguration);
+		importPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_DATA, importCurPortletData);
+		importPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_SETUP, importCurPortletSetup);
+		importPortletControlsMap.put(
+			PortletDataHandlerKeys.PORTLET_USER_PREFERENCES,
+			importCurPortletUserPreferences);
+
+		return importPortletControlsMap;
 	}
 
 	@Override
 	public Map<Long, Boolean> getLayoutIdMap(PortletRequest portletRequest)
-		throws Exception {
+		throws PortalException {
 
 		Map<Long, Boolean> layoutIdMap = new LinkedHashMap<Long, Boolean>();
 
@@ -527,6 +636,23 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 
 		return getLayoutIds(layouts);
+	}
+
+	@Override
+	public long[] getLayoutIds(PortletRequest portletRequest)
+		throws PortalException, SystemException {
+
+		return getLayoutIds(
+			getLayoutIdMap(portletRequest),
+			GroupConstants.DEFAULT_LIVE_GROUP_ID);
+	}
+
+	@Override
+	public long[] getLayoutIds(
+			PortletRequest portletRequest, long targetGroupId)
+		throws PortalException, SystemException {
+
+		return getLayoutIds(getLayoutIdMap(portletRequest), targetGroupId);
 	}
 
 	@Override
@@ -640,67 +766,18 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		throws PortalException, SystemException {
 
 		ActionableDynamicQuery actionableDynamicQuery =
-			new SystemEventActionableDynamicQuery() {
+			SystemEventLocalServiceUtil.getActionableDynamicQuery();
 
-			protected void addCreateDateProperty(DynamicQuery dynamicQuery) {
-				if (!portletDataContext.hasDateRange()) {
-					return;
+		actionableDynamicQuery.setAddCriteriaMethod(
+			new ActionableDynamicQuery.AddCriteriaMethod() {
+
+				@Override
+				public void addCriteria(DynamicQuery dynamicQuery) {
+					doAddCriteria(
+						portletDataContext, stagedModelType, dynamicQuery);
 				}
 
-				Property createDateProperty = PropertyFactoryUtil.forName(
-					"createDate");
-
-				Date startDate = portletDataContext.getStartDate();
-
-				dynamicQuery.add(createDateProperty.ge(startDate));
-
-				Date endDate = portletDataContext.getEndDate();
-
-				dynamicQuery.add(createDateProperty.le(endDate));
-			}
-
-			@Override
-			protected void addCriteria(DynamicQuery dynamicQuery) {
-				Disjunction disjunction = RestrictionsFactoryUtil.disjunction();
-
-				Property groupIdProperty = PropertyFactoryUtil.forName(
-					"groupId");
-
-				disjunction.add(groupIdProperty.eq(0L));
-				disjunction.add(
-					groupIdProperty.eq(portletDataContext.getScopeGroupId()));
-
-				dynamicQuery.add(disjunction);
-
-				Property classNameIdProperty = PropertyFactoryUtil.forName(
-					"classNameId");
-
-				dynamicQuery.add(
-					classNameIdProperty.eq(stagedModelType.getClassNameId()));
-
-				if (stagedModelType.getReferrerClassNameId() >= 0) {
-					Property referrerClassNameIdProperty =
-						PropertyFactoryUtil.forName("referrerClassNameId");
-
-					dynamicQuery.add(
-						referrerClassNameIdProperty.eq(
-							stagedModelType.getReferrerClassNameId()));
-				}
-
-				Property typeProperty = PropertyFactoryUtil.forName("type");
-
-				dynamicQuery.add(
-					typeProperty.eq(SystemEventConstants.TYPE_DELETE));
-
-				addCreateDateProperty(dynamicQuery);
-			}
-
-			@Override
-			protected void performAction(Object object) {
-			}
-
-		};
-
+			});
 		actionableDynamicQuery.setCompanyId(portletDataContext.getCompanyId());
 
 		return actionableDynamicQuery.performCount();
@@ -720,6 +797,53 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 		return TempFileUtil.getTempFile(
 			groupId, userId, tempFileEntryNames[0], folderName);
+	}
+
+	@Override
+	public boolean isReferenceWithinExportScope(
+		PortletDataContext portletDataContext, StagedModel stagedModel) {
+
+		if (!(stagedModel instanceof StagedGroupedModel)) {
+			return true;
+		}
+
+		StagedGroupedModel stagedGroupedModel = (StagedGroupedModel)stagedModel;
+
+		if (portletDataContext.getGroupId() ==
+				stagedGroupedModel.getGroupId()) {
+
+			return true;
+		}
+
+		Group group = null;
+
+		try {
+			group = GroupLocalServiceUtil.getGroup(
+				stagedGroupedModel.getGroupId());
+		}
+		catch (Exception e) {
+			return false;
+		}
+
+		String className = group.getClassName();
+
+		if (className.equals(Layout.class.getName())) {
+			Layout scopeLayout = null;
+
+			try {
+				scopeLayout = LayoutLocalServiceUtil.getLayout(
+					group.getClassPK());
+			}
+			catch (Exception e) {
+				return false;
+			}
+
+			if (scopeLayout.getGroupId() == portletDataContext.getGroupId()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
@@ -1210,8 +1334,15 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 			String uuid = referenceElement.attributeValue("uuid");
 
+			Map<Long, Long> groupIds =
+				(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+					Group.class);
+
+			long importGroupId = MapUtil.getLong(
+				groupIds, groupId, portletDataContext.getScopeGroupId());
+
 			FileEntry importedFileEntry = FileEntryUtil.fetchByUUID_R(
-				uuid, groupId);
+				uuid, importGroupId);
 
 			if (importedFileEntry == null) {
 				continue;
@@ -1336,7 +1467,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		Matcher matcher = _importLinksToLayoutPattern.matcher(content);
 
 		while (matcher.find()) {
-			long oldGroupId = GetterUtil.getLong(matcher.group(6));
+			long oldGroupId = GetterUtil.getLong(matcher.group(7));
 
 			long newGroupId = oldGroupId;
 
@@ -1348,8 +1479,8 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 			boolean privateLayout = type.startsWith("private");
 
-			String layoutUuid = matcher.group(3);
-			String friendlyURL = matcher.group(4);
+			String layoutUuid = matcher.group(4);
+			String friendlyURL = matcher.group(5);
 
 			try {
 				Layout layout =
@@ -1435,8 +1566,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 	@Override
 	public void updateExportPortletPreferencesClassPKs(
 			PortletDataContext portletDataContext, Portlet portlet,
-			PortletPreferences portletPreferences, String key, String className,
-			Element rootElement)
+			PortletPreferences portletPreferences, String key, String className)
 		throws Exception {
 
 		String[] oldValues = portletPreferences.getValues(key, null);
@@ -1462,8 +1592,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 				long primaryKeyLong = GetterUtil.getLong(primaryKey);
 
 				String uuid = getExportPortletPreferencesUuid(
-					portletDataContext, portlet, className, rootElement,
-					primaryKeyLong);
+					portletDataContext, portlet, className, primaryKeyLong);
 
 				if (Validator.isNull(uuid)) {
 					if (_log.isWarnEnabled()) {
@@ -1482,6 +1611,23 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 
 		portletPreferences.setValues(key, newValues);
+	}
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #updateExportPortletPreferencesClassPKs(PortletDataContext,
+	 *             Portlet, PortletPreferences, String, String)}
+	 */
+	@Deprecated
+	@Override
+	public void updateExportPortletPreferencesClassPKs(
+			PortletDataContext portletDataContext, Portlet portlet,
+			PortletPreferences portletPreferences, String key, String className,
+			Element rootElement)
+		throws Exception {
+
+		updateExportPortletPreferencesClassPKs(
+			portletDataContext, portlet, portletPreferences, key, className);
 	}
 
 	@Override
@@ -1621,6 +1767,24 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 	}
 
+	protected void addCreateDateProperty(
+		PortletDataContext portletDataContext, DynamicQuery dynamicQuery) {
+
+		if (!portletDataContext.hasDateRange()) {
+			return;
+		}
+
+		Property createDateProperty = PropertyFactoryUtil.forName("createDate");
+
+		Date startDate = portletDataContext.getStartDate();
+
+		dynamicQuery.add(createDateProperty.ge(startDate));
+
+		Date endDate = portletDataContext.getEndDate();
+
+		dynamicQuery.add(createDateProperty.le(endDate));
+	}
+
 	protected void deleteTimestampParameters(StringBuilder sb, int beginPos) {
 		beginPos = sb.indexOf(StringPool.CLOSE_BRACKET, beginPos);
 
@@ -1642,6 +1806,42 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		urlParams = HttpUtil.removeParameter(urlParams, "t");
 
 		sb.replace(beginPos + 1, endPos, urlParams);
+	}
+
+	protected void doAddCriteria(
+		PortletDataContext portletDataContext, StagedModelType stagedModelType,
+		DynamicQuery dynamicQuery) {
+
+		Disjunction disjunction = RestrictionsFactoryUtil.disjunction();
+
+		Property groupIdProperty = PropertyFactoryUtil.forName("groupId");
+
+		disjunction.add(groupIdProperty.eq(0L));
+		disjunction.add(
+			groupIdProperty.eq(portletDataContext.getScopeGroupId()));
+
+		dynamicQuery.add(disjunction);
+
+		Property classNameIdProperty = PropertyFactoryUtil.forName(
+			"classNameId");
+
+		dynamicQuery.add(
+			classNameIdProperty.eq(stagedModelType.getClassNameId()));
+
+		if (stagedModelType.getReferrerClassNameId() >= 0) {
+			Property referrerClassNameIdProperty = PropertyFactoryUtil.forName(
+				"referrerClassNameId");
+
+			dynamicQuery.add(
+				referrerClassNameIdProperty.eq(
+					stagedModelType.getReferrerClassNameId()));
+		}
+
+		Property typeProperty = PropertyFactoryUtil.forName("type");
+
+		dynamicQuery.add(typeProperty.eq(SystemEventConstants.TYPE_DELETE));
+
+		addCreateDateProperty(portletDataContext, dynamicQuery);
 	}
 
 	protected Map<String, String[]> getDLReferenceParameters(
@@ -1718,10 +1918,12 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 	protected String getExportPortletPreferencesUuid(
 			PortletDataContext portletDataContext, Portlet portlet,
-			String className, Element rootElement, long primaryKeyLong)
+			String className, long primaryKeyLong)
 		throws Exception {
 
 		String uuid = null;
+
+		Element rootElement = portletDataContext.getExportDataRootElement();
 
 		if (className.equals(AssetCategory.class.getName())) {
 			AssetCategory assetCategory =
@@ -2109,10 +2311,11 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		ExportImportHelperImpl.class);
 
 	private Pattern _exportLinksToLayoutPattern = Pattern.compile(
-		"\\[([\\d]+)@(public|private)(@([\\d]+))?\\]");
+		"\\[([\\d]+)@(private(-group|-user)?|public)(@([\\d]+))?\\]");
 	private Pattern _importLinksToLayoutPattern = Pattern.compile(
-		"\\[([\\d]+)@(public|private)@(\\p{XDigit}{8}\\-(?:\\p{XDigit}{4}\\-)" +
-			"{3}\\p{XDigit}{12})@([a-z0-9./_-]*)(@([\\d]+))?\\]");
+		"\\[([\\d]+)@(private(-group|-user)?|public)@(\\p{XDigit}{8}\\-" +
+			"(?:\\p{XDigit}{4}\\-){3}\\p{XDigit}{12})@([a-z0-9./_-]*)" +
+				"(@([\\d]+))?\\]");
 
 	private class ManifestSummaryElementProcessor implements ElementProcessor {
 

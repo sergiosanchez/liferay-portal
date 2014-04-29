@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -230,6 +230,17 @@ public class AssetCategoryLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService().getAssetCategory(categoryId);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getActionableDynamicQuery();
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getExportActionableDynamicQuery(portletDataContext);
 	}
 
 	public static com.liferay.portal.model.PersistedModel getPersistedModel(
@@ -515,17 +526,18 @@ public class AssetCategoryLocalServiceUtil {
 			.addCategoryResources(category, groupPermissions, guestPermissions);
 	}
 
-	public static void deleteCategory(
+	public static com.liferay.portlet.asset.model.AssetCategory deleteCategory(
 		com.liferay.portlet.asset.model.AssetCategory category)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteCategory(category);
+		return getService().deleteCategory(category);
 	}
 
-	public static void deleteCategory(long categoryId)
+	public static com.liferay.portlet.asset.model.AssetCategory deleteCategory(
+		long categoryId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteCategory(categoryId);
+		return getService().deleteCategory(categoryId);
 	}
 
 	public static void deleteVocabularyCategories(long vocabularyId)
@@ -658,10 +670,11 @@ public class AssetCategoryLocalServiceUtil {
 		return getService().getVocabularyRootCategoriesCount(vocabularyId);
 	}
 
-	public static void mergeCategories(long fromCategoryId, long toCategoryId)
+	public static com.liferay.portlet.asset.model.AssetCategory mergeCategories(
+		long fromCategoryId, long toCategoryId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().mergeCategories(fromCategoryId, toCategoryId);
+		return getService().mergeCategories(fromCategoryId, toCategoryId);
 	}
 
 	public static com.liferay.portlet.asset.model.AssetCategory moveCategory(
@@ -684,6 +697,26 @@ public class AssetCategoryLocalServiceUtil {
 		java.lang.String[] categoryProperties, int start, int end)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getService().search(groupId, name, categoryProperties, start, end);
+	}
+
+	public static com.liferay.portal.kernel.search.BaseModelSearchResult<com.liferay.portlet.asset.model.AssetCategory> searchCategories(
+		long companyId, long groupIds, java.lang.String title,
+		long vocabularyId, int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .searchCategories(companyId, groupIds, title, vocabularyId,
+			start, end);
+	}
+
+	public static com.liferay.portal.kernel.search.BaseModelSearchResult<com.liferay.portlet.asset.model.AssetCategory> searchCategories(
+		long companyId, long[] groupIds, java.lang.String title,
+		long[] vocabularyIds, int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .searchCategories(companyId, groupIds, title, vocabularyIds,
+			start, end);
 	}
 
 	public static com.liferay.portlet.asset.model.AssetCategory updateCategory(

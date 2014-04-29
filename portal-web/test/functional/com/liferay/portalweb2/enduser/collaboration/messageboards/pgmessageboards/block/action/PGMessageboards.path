@@ -30,7 +30,7 @@
 </tr>
 <tr>
 	<td>SUCCESS_MESSAGE_RECYCLE_BIN</td>
-	<td>//form[@id='_19_undoForm']</td>
+	<td>//form[@id='_182_undoForm']</td>
 	<td></td>
 </tr>
 <tr>
@@ -41,6 +41,11 @@
 <tr>
 	<td>ADD_CATEGORY_BUTTON</td>
 	<td>//button[contains(.,'Add Category')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PERMISSIONS_BUTTON</td>
+	<td>//button[contains(.,'Permissions')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -223,6 +228,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>THREAD_TABLE_FLAG</td>
+	<td>//div[contains(@id,'mbThreadsSearchContainer')]//tr[contains(.,'${key_threadSubject}')]/td[2]/a</td>
+	<td></td>
+</tr>
+<tr>
 	<td>THREAD_TABLE_STARTED_BY</td>
 	<td>//div[contains(@id,'mbThreadsSearchContainer')]//tr[contains(.,'${key_threadSubject}')]/td[3]/a</td>
 	<td></td>
@@ -245,6 +255,11 @@
 <tr>
 	<td>THREAD_TABLE_ACTIONS_GENERIC</td>
 	<td>//div[contains(@id,'mbThreadsSearchContainer')]//tr[1]//a[@title='Actions']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>THREAD_TABLE_RSS</td>
+	<td>//div[contains(@id,'mbThreadsSearchContainer')]//tr[contains(.,'${key_threadSubject}')]//a[contains(.,'RSS')]</td>
 	<td></td>
 </tr>
 <tr>

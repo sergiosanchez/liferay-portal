@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -212,6 +212,12 @@ public class ExportImportConfigurationLocalServiceWrapper
 	}
 
 	@Override
+	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _exportImportConfigurationLocalService.getActionableDynamicQuery();
+	}
+
+	@Override
 	public com.liferay.portal.model.PersistedModel getPersistedModel(
 		java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -290,6 +296,19 @@ public class ExportImportConfigurationLocalServiceWrapper
 		long userId, long groupId, java.lang.String name,
 		java.lang.String description, int type,
 		java.util.Map<java.lang.String, java.io.Serializable> settingsMap,
+		int status, com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _exportImportConfigurationLocalService.addExportImportConfiguration(userId,
+			groupId, name, description, type, settingsMap, status,
+			serviceContext);
+	}
+
+	@Override
+	public com.liferay.portal.model.ExportImportConfiguration addExportImportConfiguration(
+		long userId, long groupId, java.lang.String name,
+		java.lang.String description, int type,
+		java.util.Map<java.lang.String, java.io.Serializable> settingsMap,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
@@ -322,6 +341,12 @@ public class ExportImportConfigurationLocalServiceWrapper
 	}
 
 	@Override
+	public int getExportImportConfigurationsCount(long groupId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _exportImportConfigurationLocalService.getExportImportConfigurationsCount(groupId);
+	}
+
+	@Override
 	public int getExportImportConfigurationsCount(long groupId, int type)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _exportImportConfigurationLocalService.getExportImportConfigurationsCount(groupId,
@@ -348,14 +373,15 @@ public class ExportImportConfigurationLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.model.ExportImportConfiguration updateExportImportConfiguration(
-		long exportImportConfigurationId, java.lang.String name,
+		long userId, long exportImportConfigurationId, java.lang.String name,
 		java.lang.String description,
 		java.util.Map<java.lang.String, java.io.Serializable> settingsMap,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		return _exportImportConfigurationLocalService.updateExportImportConfiguration(exportImportConfigurationId,
-			name, description, settingsMap, serviceContext);
+		return _exportImportConfigurationLocalService.updateExportImportConfiguration(userId,
+			exportImportConfigurationId, name, description, settingsMap,
+			serviceContext);
 	}
 
 	@Override

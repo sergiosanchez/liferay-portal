@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -130,20 +130,17 @@ public class Summary {
 		}
 
 		text = SearchUtil.highlight(
-			text, _queryTerms, ESCAPE_SAFE_HIGHLIGHT_1,
-			ESCAPE_SAFE_HIGHLIGHT_2);
+			text, _queryTerms, _ESCAPE_SAFE_HIGHLIGHTS[0],
+			_ESCAPE_SAFE_HIGHLIGHTS[1]);
 
 		text = HtmlUtil.escape(text);
 
 		return StringUtil.replace(
-			text,
-			new String[] {ESCAPE_SAFE_HIGHLIGHT_1, ESCAPE_SAFE_HIGHLIGHT_2},
-			new String[] {SearchUtil.HIGHLIGHT_1, SearchUtil.HIGHLIGHT_2});
+			text, _ESCAPE_SAFE_HIGHLIGHTS, SearchUtil.HIGHLIGHTS);
 	}
 
-	private static final String ESCAPE_SAFE_HIGHLIGHT_1 = "[@HIGHLIGHT1@]";
-
-	private static final String ESCAPE_SAFE_HIGHLIGHT_2 = "[@HIGHLIGHT2@]";
+	private static final String[] _ESCAPE_SAFE_HIGHLIGHTS =
+		{"[@HIGHLIGHT1@]", "[@HIGHLIGHT2@]"};
 
 	private String _content;
 	private boolean _highlight;

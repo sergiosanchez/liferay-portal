@@ -30,7 +30,7 @@
 		<column name="type" type="String" />
 		<column name="size" type="String" />
 	</entity>
-	<entity name="Address" uuid="true" local-service="true" remote-service="true" persistence-class="com.liferay.portal.service.persistence.AddressPersistenceImpl2">
+	<entity name="Address" uuid="true" local-service="true" remote-service="true" persistence-class="com.liferay.portal.service.persistence.impl.AddressPersistenceImpl2">
 
 		<!-- PK fields -->
 
@@ -500,6 +500,10 @@
 			<finder-column name="groupId" />
 			<finder-column name="type" />
 		</finder>
+		<finder name="G_S" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="status" />
+		</finder>
 		<finder name="G_T_S" return-type="Collection">
 			<finder-column name="groupId" />
 			<finder-column name="type" />
@@ -810,6 +814,9 @@
 		<reference package-path="com.liferay.portal" entity="ResourcePermission" />
 		<reference package-path="com.liferay.portal" entity="Subscription" />
 		<reference package-path="com.liferay.portal" entity="User" />
+		<reference package-path="com.liferay.portlet.asset" entity="AssetCategory" />
+		<reference package-path="com.liferay.portlet.asset" entity="AssetEntry" />
+		<reference package-path="com.liferay.portlet.asset" entity="AssetTag" />
 		<reference package-path="com.liferay.portlet.expando" entity="ExpandoRow" />
 		<reference package-path="com.liferay.portlet.journal" entity="JournalArticle" />
 		<reference package-path="com.liferay.portlet.journal" entity="JournalContentSearch" />
@@ -946,7 +953,7 @@
 		<!-- Other fields -->
 
 		<column name="name" type="String" localized="true" />
-		<column name="description" type="String" />
+		<column name="description" type="String" localized="true" />
 		<column name="settings" type="String" />
 		<column name="active" type="boolean" />
 
@@ -1070,6 +1077,7 @@
 		<!-- References -->
 
 		<reference package-path="com.liferay.portal" entity="Image" />
+		<reference package-path="com.liferay.portal" entity="Layout" />
 		<reference package-path="com.liferay.portal" entity="LayoutBranch" />
 		<reference package-path="com.liferay.portal" entity="LayoutSet" />
 		<reference package-path="com.liferay.portal" entity="LayoutSetBranch" />
@@ -1216,7 +1224,7 @@
 		<!-- Other fields -->
 
 		<column name="name" type="String" localized="true" />
-		<column name="description" type="String" />
+		<column name="description" type="String" localized="true" />
 		<column name="settings" type="String" />
 		<column name="active" type="boolean" />
 
@@ -1439,6 +1447,7 @@
 		<reference package-path="com.liferay.portal" entity="PasswordPolicy" />
 		<reference package-path="com.liferay.portal" entity="PasswordPolicyRel" />
 		<reference package-path="com.liferay.portal" entity="Phone" />
+		<reference package-path="com.liferay.portal" entity="Region" />
 		<reference package-path="com.liferay.portal" entity="Resource" />
 		<reference package-path="com.liferay.portal" entity="Role" />
 		<reference package-path="com.liferay.portal" entity="User" />
@@ -2973,6 +2982,7 @@
 
 		<column name="type" type="String" />
 		<column name="timestamp" type="long" />
+		<column name="deliveryType" type="int" />
 		<column name="deliverBy" type="long" />
 		<column name="delivered" type="boolean" />
 		<column name="payload" type="String" />

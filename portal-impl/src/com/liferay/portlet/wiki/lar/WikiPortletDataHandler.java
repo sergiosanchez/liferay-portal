@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -27,9 +27,8 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portlet.wiki.model.WikiNode;
 import com.liferay.portlet.wiki.model.WikiPage;
 import com.liferay.portlet.wiki.service.WikiNodeLocalServiceUtil;
+import com.liferay.portlet.wiki.service.WikiPageLocalServiceUtil;
 import com.liferay.portlet.wiki.service.permission.WikiPermission;
-import com.liferay.portlet.wiki.service.persistence.WikiNodeExportActionableDynamicQuery;
-import com.liferay.portlet.wiki.service.persistence.WikiPageExportActionableDynamicQuery;
 import com.liferay.portlet.wiki.util.WikiCacheThreadLocal;
 import com.liferay.portlet.wiki.util.WikiCacheUtil;
 
@@ -119,12 +118,14 @@ public class WikiPortletDataHandler extends BasePortletDataHandler {
 			"group-id", String.valueOf(portletDataContext.getScopeGroupId()));
 
 		ActionableDynamicQuery nodeActionableDynamicQuery =
-			new WikiNodeExportActionableDynamicQuery(portletDataContext);
+			WikiNodeLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		nodeActionableDynamicQuery.performActions();
 
 		ActionableDynamicQuery pageActionableDynamicQuery =
-			new WikiPageExportActionableDynamicQuery(portletDataContext);
+			WikiPageLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		pageActionableDynamicQuery.performActions();
 
@@ -182,12 +183,14 @@ public class WikiPortletDataHandler extends BasePortletDataHandler {
 		throws Exception {
 
 		ActionableDynamicQuery nodeActionableDynamicQuery =
-			new WikiNodeExportActionableDynamicQuery(portletDataContext);
+			WikiNodeLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		nodeActionableDynamicQuery.performCount();
 
 		ActionableDynamicQuery pageExportActionableDynamicQuery =
-			new WikiPageExportActionableDynamicQuery(portletDataContext);
+			WikiPageLocalServiceUtil.getExportActionableDynamicQuery(
+				portletDataContext);
 
 		pageExportActionableDynamicQuery.performCount();
 	}

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.nio.intraband.welder.Welder;
 import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.process.ProcessException;
 import com.liferay.portal.kernel.process.ProcessExecutor;
+import com.liferay.portal.kernel.process.ProcessExecutor.ProcessContext;
 import com.liferay.portal.kernel.process.log.ProcessOutputStream;
 import com.liferay.portal.kernel.resiliency.mpi.MPIHelperUtil;
 import com.liferay.portal.kernel.resiliency.spi.MockRemoteSPI;
@@ -33,17 +34,17 @@ import com.liferay.portal.kernel.resiliency.spi.agent.SPIAgentFactoryUtil;
 import com.liferay.portal.kernel.resiliency.spi.provider.SPISynchronousQueueUtil;
 import com.liferay.portal.kernel.resiliency.spi.remote.RemoteSPI.RegisterCallback;
 import com.liferay.portal.kernel.resiliency.spi.remote.RemoteSPI.SPIShutdownHook;
+import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ReflectPermission;
@@ -124,15 +125,14 @@ public class RemoteSPITest {
 
 			};
 
-		_setProcessOutputStream(processOutputStream);
+		ReflectionTestUtil.setFieldValue(
+			ProcessContext.class, "_processOutputStream", processOutputStream);
 
 		ConcurrentMap<String, Object> attributes =
 			ProcessExecutor.ProcessContext.getAttributes();
 
-		Method bridgeCallMethod = ReflectionUtil.getBridgeMethod(
-			RemoteSPI.class, "call");
-
-		SPI spi = (SPI)bridgeCallMethod.invoke(_mockRemoteSPI);
+		SPI spi = (SPI)ReflectionTestUtil.invokeBridge(
+			_mockRemoteSPI, "call", new Class<?>[0]);
 
 		Assert.assertSame(spi, UnicastRemoteObject.toStub(_mockRemoteSPI));
 
@@ -236,11 +236,10 @@ public class RemoteSPITest {
 		RegisterCallback registerCallback = new RegisterCallback(
 			uuid, _mockRemoteSPI);
 
-		Method bridgeCallMethod = ReflectionUtil.getBridgeMethod(
-			RegisterCallback.class, "call");
-
 		Assert.assertSame(
-			_mockRemoteSPI, bridgeCallMethod.invoke(registerCallback));
+			_mockRemoteSPI,
+			ReflectionTestUtil.invokeBridge(
+				registerCallback, "call", new Class<?>[0]));
 
 		Assert.assertSame(_mockRemoteSPI, takeSPIFutureTask.get());
 
@@ -414,77 +413,77 @@ public class RemoteSPITest {
 
 		Assert.assertTrue(spiShutdownHook.shutdown(0, null));
 
-		// Unable to stop with log
+		CaptureHandler captureHandler = null;
 
-		List<LogRecord> logRecords = JDKLoggerTestUtil.configureJDKLogger(
-			RemoteSPI.class.getName(), Level.SEVERE);
+		try {
 
-		_mockRemoteSPI.setFailOnStop(true);
+			// Unable to stop with log
 
-		Assert.assertTrue(spiShutdownHook.shutdown(0, null));
+			captureHandler = JDKLoggerTestUtil.configureJDKLogger(
+				RemoteSPI.class.getName(), Level.SEVERE);
 
-		Assert.assertEquals(1, logRecords.size());
+			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-		LogRecord logRecord = logRecords.get(0);
+			_mockRemoteSPI.setFailOnStop(true);
 
-		Assert.assertEquals("Unable to stop SPI", logRecord.getMessage());
+			Assert.assertTrue(spiShutdownHook.shutdown(0, null));
 
-		Throwable throwable = logRecord.getThrown();
+			Assert.assertEquals(1, logRecords.size());
 
-		Assert.assertSame(RemoteException.class, throwable.getClass());
+			LogRecord logRecord = logRecords.get(0);
 
-		// Unable to stop without log
+			Assert.assertEquals("Unable to stop SPI", logRecord.getMessage());
 
-		logRecords = JDKLoggerTestUtil.configureJDKLogger(
-			RemoteSPI.class.getName(), Level.OFF);
+			Throwable throwable = logRecord.getThrown();
 
-		_mockRemoteSPI.setFailOnStop(true);
+			Assert.assertSame(RemoteException.class, throwable.getClass());
 
-		Assert.assertTrue(spiShutdownHook.shutdown(0, null));
+			// Unable to stop without log
 
-		Assert.assertTrue(logRecords.isEmpty());
+			logRecords = captureHandler.resetLogLevel(Level.OFF);
 
-		// Unable to destroy with log
+			_mockRemoteSPI.setFailOnStop(true);
 
-		logRecords = JDKLoggerTestUtil.configureJDKLogger(
-			RemoteSPI.class.getName(), Level.SEVERE);
+			Assert.assertTrue(spiShutdownHook.shutdown(0, null));
 
-		_mockRemoteSPI.setFailOnStop(false);
-		_mockRemoteSPI.setFailOnDestroy(true);
+			Assert.assertTrue(logRecords.isEmpty());
 
-		Assert.assertTrue(spiShutdownHook.shutdown(0, null));
+			// Unable to destroy with log
 
-		Assert.assertEquals(1, logRecords.size());
+			logRecords = captureHandler.resetLogLevel(Level.SEVERE);
 
-		logRecord = logRecords.get(0);
+			_mockRemoteSPI.setFailOnStop(false);
+			_mockRemoteSPI.setFailOnDestroy(true);
 
-		Assert.assertEquals("Unable to destroy SPI", logRecord.getMessage());
+			Assert.assertTrue(spiShutdownHook.shutdown(0, null));
 
-		throwable = logRecord.getThrown();
+			Assert.assertEquals(1, logRecords.size());
 
-		Assert.assertSame(RemoteException.class, throwable.getClass());
+			logRecord = logRecords.get(0);
 
-		// Unable to destroy without log
+			Assert.assertEquals(
+				"Unable to destroy SPI", logRecord.getMessage());
 
-		logRecords = JDKLoggerTestUtil.configureJDKLogger(
-			RemoteSPI.class.getName(), Level.OFF);
+			throwable = logRecord.getThrown();
 
-		_mockRemoteSPI.setFailOnStop(false);
-		_mockRemoteSPI.setFailOnDestroy(true);
+			Assert.assertSame(RemoteException.class, throwable.getClass());
 
-		Assert.assertTrue(spiShutdownHook.shutdown(0, null));
+			// Unable to destroy without log
 
-		Assert.assertTrue(logRecords.isEmpty());
-	}
+			logRecords = captureHandler.resetLogLevel(Level.OFF);
 
-	private void _setProcessOutputStream(
-			ProcessOutputStream processOutputStream)
-		throws Exception {
+			_mockRemoteSPI.setFailOnStop(false);
+			_mockRemoteSPI.setFailOnDestroy(true);
 
-		Field processOutputStreamField = ReflectionUtil.getDeclaredField(
-			ProcessExecutor.ProcessContext.class, "_processOutputStream");
+			Assert.assertTrue(spiShutdownHook.shutdown(0, null));
 
-		processOutputStreamField.set(null, processOutputStream);
+			Assert.assertTrue(logRecords.isEmpty());
+		}
+		finally {
+			if (captureHandler != null) {
+				captureHandler.close();
+			}
+		}
 	}
 
 	private static File _currentDir = new File(".");

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -39,6 +39,7 @@ import com.liferay.portal.model.ModelHintsUtil;
 import com.liferay.portal.model.ServiceComponent;
 import com.liferay.portal.service.base.ServiceComponentLocalServiceBaseImpl;
 import com.liferay.portal.tools.servicebuilder.Entity;
+import com.liferay.portal.util.PropsValues;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -220,15 +221,6 @@ public class ServiceComponentLocalServiceImpl
 		}
 	}
 
-	public static interface PACL {
-
-		public void doUpgradeDB(
-				DoUpgradeDBPrivilegedExceptionAction
-					doUpgradeDBPrivilegedExceptionAction)
-			throws Exception;
-
-	}
-
 	public class DoUpgradeDBPrivilegedExceptionAction
 		implements PrivilegedExceptionAction<Void> {
 
@@ -272,6 +264,15 @@ public class ServiceComponentLocalServiceImpl
 
 	}
 
+	public interface PACL {
+
+		public void doUpgradeDB(
+				DoUpgradeDBPrivilegedExceptionAction
+					doUpgradeDBPrivilegedExceptionAction)
+			throws Exception;
+
+	}
+
 	protected void clearCacheRegistry(ServletContext servletContext)
 		throws DocumentException {
 
@@ -296,8 +297,10 @@ public class ServiceComponentLocalServiceImpl
 
 		CacheRegistryUtil.clear();
 
-		EntityCacheUtil.clearCache();
-		FinderCacheUtil.clearCache();
+		if (PropsValues.CACHE_CLEAR_ON_PLUGIN_UNDEPLOY) {
+			EntityCacheUtil.clearCache();
+			FinderCacheUtil.clearCache();
+		}
 	}
 
 	protected void doUpgradeDB(

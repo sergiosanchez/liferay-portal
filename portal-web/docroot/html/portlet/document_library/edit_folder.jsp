@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -31,7 +31,7 @@ long parentFolderId = BeanParamUtil.getLong(folder, request, "parentFolderId", D
 
 boolean rootFolder = ParamUtil.getBoolean(request, "rootFolder");
 
-boolean workflowEnabled = WorkflowEngineManagerUtil.isDeployed() && (WorkflowHandlerRegistryUtil.getWorkflowHandler(DLFileEntry.class.getName()) != null);
+boolean workflowEnabled = WorkflowEngineManagerUtil.isDeployed() && (WorkflowHandlerRegistryUtil.getWorkflowHandler(DLFileEntry.class.getName()) != null) && DLFolderPermission.contains(permissionChecker, themeDisplay.getScopeGroupId(), folderId, ActionKeys.UPDATE);
 
 List<WorkflowDefinition> workflowDefinitions = null;
 
@@ -70,6 +70,7 @@ if (workflowEnabled) {
 	<liferay-ui:error exception="<%= DuplicateFileException.class %>" message="please-enter-a-unique-folder-name" />
 	<liferay-ui:error exception="<%= DuplicateFolderNameException.class %>" message="please-enter-a-unique-folder-name" />
 	<liferay-ui:error exception="<%= FolderNameException.class %>" message="please-enter-a-valid-name" />
+	<liferay-ui:error exception="<%= RequiredFileEntryTypeException.class %>" message="please-select-a-document-type" />
 
 	<aui:model-context bean="<%= folder %>" model="<%= DLFolder.class %>" />
 
@@ -91,9 +92,7 @@ if (workflowEnabled) {
 			%>
 
 			<c:if test="<%= folder != null %>">
-				<aui:field-wrapper label="parent-folder">
-					<liferay-ui:input-resource url="<%= parentFolderName %>" />
-				</aui:field-wrapper>
+				<aui:input name="parentFolder" type="resource" value="<%= parentFolderName %>" />
 			</c:if>
 
 			<aui:input autoFocus="<%= windowState.equals(WindowState.MAXIMIZED) %>" name="name" />
@@ -125,7 +124,7 @@ if (workflowEnabled) {
 				defaultFileEntryTypeId = dlFolder.getDefaultFileEntryTypeId();
 			}
 
-			List<DLFileEntryType> fileEntryTypes = DLFileEntryTypeLocalServiceUtil.getFolderFileEntryTypes(PortalUtil.getSiteAndCompanyGroupIds(themeDisplay), folderId, false);
+			List<DLFileEntryType> fileEntryTypes = DLFileEntryTypeLocalServiceUtil.getFolderFileEntryTypes(PortalUtil.getCurrentAndAncestorSiteGroupIds(scopeGroupId), folderId, false);
 
 			String headerNames = null;
 
@@ -200,7 +199,7 @@ if (workflowEnabled) {
 
 								<c:if test="<%= workflowEnabled %>">
 									<liferay-ui:search-container-column-text name="workflow">
-										<aui:select label="" name='<%= "workflowDefinition" + dlFileEntryType.getFileEntryTypeId() %>'>
+										<aui:select label="" name='<%= "workflowDefinition" + dlFileEntryType.getFileEntryTypeId() %>' title="workflow-definition">
 
 											<aui:option label="no-workflow" value="" />
 
@@ -284,7 +283,7 @@ if (workflowEnabled) {
 
 <liferay-util:buffer var="workflowDefinitionsBuffer">
 	<c:if test="<%= workflowEnabled %>">
-		<aui:select label="" name="LIFERAY_WORKFLOW_DEFINITION_FILE_ENTRY_TYPE">
+		<aui:select label="" name="LIFERAY_WORKFLOW_DEFINITION_FILE_ENTRY_TYPE" title="workflow-definition">
 			<aui:option label="no-workflow" value="" />
 
 			<%

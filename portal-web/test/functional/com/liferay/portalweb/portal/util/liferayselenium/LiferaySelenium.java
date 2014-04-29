@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -25,9 +25,15 @@ public interface LiferaySelenium extends Selenium {
 
 	public void assertAlert(String pattern) throws Exception;
 
+	public void assertAlertNotPresent() throws Exception;
+
 	public void assertChecked(String pattern) throws Exception;
 
 	public void assertConfirmation(String pattern) throws Exception;
+
+	public void assertConsoleTextNotPresent(String text) throws Exception;
+
+	public void assertConsoleTextPresent(String text) throws Exception;
 
 	public void assertElementNotPresent(String locator) throws Exception;
 
@@ -39,7 +45,8 @@ public interface LiferaySelenium extends Selenium {
 	public void assertEmailSubject(String index, String subject)
 		throws Exception;
 
-	public void assertJavaScriptErrors() throws Exception;
+	public void assertJavaScriptErrors(String ignoreJavaScriptError)
+		throws Exception;
 
 	public void assertLiferayErrors() throws Exception;
 
@@ -83,8 +90,6 @@ public interface LiferaySelenium extends Selenium {
 
 	public void clickAtAndWait(String locator, String coordString);
 
-	public void clickImageElement(String image) throws Exception;
-
 	public void connectToEmailAccount(String emailAddress, String emailPassword)
 		throws Exception;
 
@@ -104,6 +109,8 @@ public interface LiferaySelenium extends Selenium {
 
 	public String getCurrentYear();
 
+	public String getDependenciesDirName();
+
 	public String getEmailBody(String index) throws Exception;
 
 	public String getEmailSubject(String index) throws Exception;
@@ -116,13 +123,13 @@ public interface LiferaySelenium extends Selenium {
 
 	public String getNumberIncrement(String value);
 
-	public String getOutputDir();
+	public String getOutputDirName();
 
 	public String getPrimaryTestSuiteName();
 
-	public String getProjectDir();
+	public String getProjectDirName();
 
-	public String getSikuliImagesDir();
+	public String getSikuliImagesDirName();
 
 	public void goBackAndWait();
 
@@ -162,6 +169,8 @@ public interface LiferaySelenium extends Selenium {
 
 	public void makeVisible(String locator);
 
+	public void mouseRelease();
+
 	public void paste(String locator);
 
 	public void pause(String waitTime) throws Exception;
@@ -172,7 +181,7 @@ public interface LiferaySelenium extends Selenium {
 
 	public void replyToEmail(String to, String body) throws Exception;
 
-	public void saveScreenshot(String fileName) throws Exception;
+	public void saveScreenshot() throws Exception;
 
 	public void saveScreenshotAndSource() throws Exception;
 
@@ -203,13 +212,25 @@ public interface LiferaySelenium extends Selenium {
 
 	public void setTimeoutImplicit(String timeout);
 
+	public void sikuliClick(String image) throws Exception;
+
+	public void sikuliType(String image, String value) throws Exception;
+
+	public void sikuliUploadCommonFile(String image, String value)
+		throws Exception;
+
+	public void sikuliUploadTempFile(String image, String value)
+		throws Exception;
+
 	public void startLogger();
 
 	public void stopLogger();
 
+	public void typeAceEditor(String locator, String value);
+
 	public void typeFrame(String locator, String value);
 
-	public void typeImageElement(String image, String value) throws Exception;
+	public void typeKeys(String locator, String value, boolean typeAceEditor);
 
 	public void uploadCommonFile(String locator, String value);
 

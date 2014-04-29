@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -208,6 +208,15 @@ public interface WikiPageLocalService extends BaseLocalService,
 	public com.liferay.portlet.wiki.model.WikiPage getWikiPage(long pageId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery getActionableDynamicQuery()
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery getExportActionableDynamicQuery(
+		com.liferay.portal.kernel.lar.PortletDataContext portletDataContext)
+		throws com.liferay.portal.kernel.exception.SystemException;
 
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -631,6 +640,12 @@ public interface WikiPageLocalService extends BaseLocalService,
 	public int getPagesCount(java.lang.String format)
 		throws com.liferay.portal.kernel.exception.SystemException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public com.liferay.portlet.wiki.model.WikiPage getPreviousVersionPage(
+		com.liferay.portlet.wiki.model.WikiPage page)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
 	/**
 	* @deprecated As of 6.2.0, replaced by {@link #getRecentChanges(long, long,
 	int, int)}
@@ -671,6 +686,11 @@ public interface WikiPageLocalService extends BaseLocalService,
 	public boolean hasDraftPage(long nodeId, java.lang.String title)
 		throws com.liferay.portal.kernel.exception.SystemException;
 
+	public void moveDependentToTrash(
+		com.liferay.portlet.wiki.model.WikiPage page, long trashEntryId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
 	public void movePage(long userId, long nodeId, java.lang.String title,
 		java.lang.String newTitle, boolean strict,
 		com.liferay.portal.service.ServiceContext serviceContext)
@@ -701,6 +721,11 @@ public interface WikiPageLocalService extends BaseLocalService,
 
 	public com.liferay.portlet.wiki.model.WikiPage movePageToTrash(
 		long userId, com.liferay.portlet.wiki.model.WikiPage page)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public void restoreDependentFromTrash(
+		com.liferay.portlet.wiki.model.WikiPage page, long trashEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
@@ -749,9 +774,21 @@ public interface WikiPageLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
+	/**
+	* @deprecated As of 7.0.0, replaced by {@link #updateStatus(long, WikiPage,
+	int, ServiceContext, Map)}
+	*/
+	@Deprecated
 	public com.liferay.portlet.wiki.model.WikiPage updateStatus(long userId,
 		com.liferay.portlet.wiki.model.WikiPage page, int status,
 		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public com.liferay.portlet.wiki.model.WikiPage updateStatus(long userId,
+		com.liferay.portlet.wiki.model.WikiPage page, int status,
+		com.liferay.portal.service.ServiceContext serviceContext,
+		java.util.Map<java.lang.String, java.io.Serializable> workflowContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 

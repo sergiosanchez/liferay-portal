@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.wiki.asset;
 
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.trash.TrashRenderer;
@@ -29,6 +30,7 @@ import com.liferay.portlet.asset.model.BaseAssetRenderer;
 import com.liferay.portlet.trash.util.TrashUtil;
 import com.liferay.portlet.wiki.model.WikiPage;
 import com.liferay.portlet.wiki.model.WikiPageConstants;
+import com.liferay.portlet.wiki.service.WikiPageLocalServiceUtil;
 import com.liferay.portlet.wiki.service.permission.WikiPagePermission;
 import com.liferay.portlet.wiki.util.WikiUtil;
 
@@ -36,6 +38,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -102,7 +105,9 @@ public class WikiPageAssetRenderer
 	}
 
 	@Override
-	public String getSummary(Locale locale) {
+	public String getSummary(
+		PortletRequest portletRequest, PortletResponse portletResponse) {
+
 		String content = _page.getContent();
 
 		try {
@@ -193,6 +198,35 @@ public class WikiPageAssetRenderer
 	}
 
 	@Override
+	public PortletURL getURLViewDiffs(
+			LiferayPortletRequest liferayPortletRequest,
+			LiferayPortletResponse liferayPortletResponse)
+		throws Exception {
+
+		PortletURL portletURL = liferayPortletResponse.createLiferayPortletURL(
+			getControlPanelPlid(liferayPortletRequest), PortletKeys.WIKI,
+			PortletRequest.RENDER_PHASE);
+
+		WikiPage previousVersionPage =
+			WikiPageLocalServiceUtil.getPreviousVersionPage(_page);
+
+		if (previousVersionPage.getVersion() == _page.getVersion()) {
+			return null;
+		}
+
+		portletURL.setParameter("struts_action", "/wiki/compare_versions");
+		portletURL.setParameter("groupId", String.valueOf(_page.getGroupId()));
+		portletURL.setParameter("nodeId", String.valueOf(_page.getNodeId()));
+		portletURL.setParameter("title", _page.getTitle());
+		portletURL.setParameter(
+			"sourceVersion", String.valueOf(previousVersionPage.getVersion()));
+		portletURL.setParameter(
+			"targetVersion", String.valueOf(_page.getVersion()));
+
+		return portletURL;
+	}
+
+	@Override
 	public String getURLViewInContext(
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
@@ -218,19 +252,25 @@ public class WikiPageAssetRenderer
 		return _page.getUuid();
 	}
 
-	public boolean hasDeletePermission(PermissionChecker permissionChecker) {
+	public boolean hasDeletePermission(PermissionChecker permissionChecker)
+		throws SystemException {
+
 		return WikiPagePermission.contains(
 			permissionChecker, _page, ActionKeys.DELETE);
 	}
 
 	@Override
-	public boolean hasEditPermission(PermissionChecker permissionChecker) {
+	public boolean hasEditPermission(PermissionChecker permissionChecker)
+		throws SystemException {
+
 		return WikiPagePermission.contains(
 			permissionChecker, _page, ActionKeys.UPDATE);
 	}
 
 	@Override
-	public boolean hasViewPermission(PermissionChecker permissionChecker) {
+	public boolean hasViewPermission(PermissionChecker permissionChecker)
+		throws SystemException {
+
 		return WikiPagePermission.contains(
 			permissionChecker, _page, ActionKeys.VIEW);
 	}
