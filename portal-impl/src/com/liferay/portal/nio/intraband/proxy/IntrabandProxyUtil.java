@@ -304,12 +304,24 @@ public class IntrabandProxyUtil {
 			Id id = method.getAnnotation(Id.class);
 
 			if (id != null) {
-				if (Modifier.isStatic(method.getModifiers()) ||
-					(method.getParameterTypes().length > 0) ||
-					(method.getReturnType() != String.class)) {
-
+				if (Modifier.isStatic(method.getModifiers())) {
 					throw new IllegalArgumentException(
-						"Invalid id for method " + method);
+						"The @Id annotated method " + method +
+							" must not be static");
+				}
+
+				Class<?>[] parameterTypes = method.getParameterTypes();
+
+				if (parameterTypes.length > 0) {
+					throw new IllegalArgumentException(
+						"The @Id annotated method " + method +
+							" must not have parameters");
+				}
+
+				if (method.getReturnType() != String.class) {
+					throw new IllegalArgumentException(
+						"The @Id annotated method " + method +
+							" must not return String");
 				}
 
 				idMethods.add(method);

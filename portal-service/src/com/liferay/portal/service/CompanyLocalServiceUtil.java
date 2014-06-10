@@ -188,6 +188,15 @@ public class CompanyLocalServiceUtil {
 		return getService().getActionableDynamicQuery();
 	}
 
+	/**
+	* @throws PortalException
+	*/
+	public static com.liferay.portal.model.PersistedModel deletePersistedModel(
+		com.liferay.portal.model.PersistedModel persistedModel)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().deletePersistedModel(persistedModel);
+	}
+
 	public static com.liferay.portal.model.PersistedModel getPersistedModel(
 		java.io.Serializable primaryKeyObj)
 		throws com.liferay.portal.kernel.exception.PortalException {
@@ -396,6 +405,12 @@ public class CompanyLocalServiceUtil {
 		boolean system)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getService().getCompanies(system);
+	}
+
+	public static java.util.List<com.liferay.portal.model.Company> getCompanies(
+		boolean system, int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getCompanies(system, start, end);
 	}
 
 	/**
