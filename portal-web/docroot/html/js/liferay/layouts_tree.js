@@ -229,6 +229,7 @@ AUI.add(
 
 				var newNode = {
 					alwaysShowHitArea: hasChildren,
+					checkName: '',
 					cssClasses: {
 						pages: A.merge(TREE_CSS_CLASSES, cssIcons)
 					},
