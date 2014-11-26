@@ -14,8 +14,8 @@
 
 package com.liferay.portal.lar;
 
+import com.liferay.portal.kernel.lar.ExportImportHelperUtil;
 import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
-import com.liferay.portal.kernel.test.ExecutionTestListeners;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -33,7 +33,7 @@ import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.test.MainServletTestRule;
 import com.liferay.portal.test.Sync;
-import com.liferay.portal.test.SynchronousDestinationExecutionTestListener;
+import com.liferay.portal.test.SynchronousDestinationTestRule;
 import com.liferay.portal.test.runners.LiferayIntegrationJUnitTestRunner;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
@@ -56,6 +56,7 @@ import com.liferay.portlet.dynamicdatamapping.util.test.DDMStructureTestUtil;
 import com.liferay.portlet.journal.model.JournalArticle;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.portlet.PortletPreferences;
@@ -63,16 +64,13 @@ import javax.portlet.PortletPreferences;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * @author Julio Camarero
  */
-@ExecutionTestListeners(
-	listeners = {
-		SynchronousDestinationExecutionTestListener.class
-	})
 @RunWith(LiferayIntegrationJUnitTestRunner.class)
 @Sync
 public class AssetPublisherExportImportTest
@@ -665,10 +663,18 @@ public class AssetPublisherExportImportTest
 		testSortByAssetVocabulary(true);
 	}
 
+	@Rule
+	public final SynchronousDestinationTestRule synchronousDestinationTestRule =
+		SynchronousDestinationTestRule.INSTANCE;
+
 	@Override
 	protected void exportImportPortlet(String portletId) throws Exception {
+		List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
+			layout.getGroupId(), layout.isPrivateLayout());
+
 		larFile = LayoutLocalServiceUtil.exportLayoutsAsFile(
-			layout.getGroupId(), layout.isPrivateLayout(), null,
+			layout.getGroupId(), layout.isPrivateLayout(),
+			ExportImportHelperUtil.getLayoutIds(layouts),
 			getExportParameterMap(), null, null);
 
 		// Import site LAR
