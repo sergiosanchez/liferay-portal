@@ -6935,22 +6935,18 @@ public class PortalImpl implements Portal {
 			serverInetAddress, request.getServerPort());
 
 		if (secure) {
-			if (StringUtil.equalsIgnoreCase(
-					Http.HTTPS, PropsValues.WEB_SERVER_PROTOCOL)) {
+			if (_securePortalLocalInetSocketAddress.compareAndSet(
+					null, localInetSocketAddress)) {
 
-				if (_securePortalLocalInetSocketAddress.compareAndSet(
-						null, localInetSocketAddress)) {
+				notifyPortalInetSocketAddressEventListeners(
+					localInetSocketAddress, true);
+			}
 
-					notifyPortalInetSocketAddressEventListeners(
-						localInetSocketAddress, true);
-				}
+			if (_securePortalServerInetSocketAddress.compareAndSet(
+					null, serverInetSocketAddress)) {
 
-				if (_securePortalServerInetSocketAddress.compareAndSet(
-						null, serverInetSocketAddress)) {
-
-					notifyPortalInetSocketAddressEventListeners(
-						serverInetSocketAddress, false);
-				}
+				notifyPortalInetSocketAddressEventListeners(
+					serverInetSocketAddress, false);
 			}
 		}
 		else {
