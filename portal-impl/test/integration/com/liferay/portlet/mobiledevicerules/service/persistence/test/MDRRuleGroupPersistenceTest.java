@@ -198,6 +198,11 @@ public class MDRRuleGroupPersistenceTest {
 	}
 
 	@Test
+	public void testCountByGroupIdArrayable() throws Exception {
+		_persistence.countByGroupId(new long[] { RandomTestUtil.nextLong(), 0L });
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		MDRRuleGroup newMDRRuleGroup = addMDRRuleGroup();
 
@@ -206,17 +211,11 @@ public class MDRRuleGroupPersistenceTest {
 		Assert.assertEquals(existingMDRRuleGroup, newMDRRuleGroup);
 	}
 
-	@Test
+	@Test(expected = NoSuchRuleGroupException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchRuleGroupException");
-		}
-		catch (NoSuchRuleGroupException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
