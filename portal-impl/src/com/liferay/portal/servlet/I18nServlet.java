@@ -82,7 +82,7 @@ public class I18nServlet extends HttpServlet {
 		throws IOException, ServletException {
 
 		try {
-			String[] i18nData = getI18nData(request, response);
+			String[] i18nData = getI18nData(request);
 
 			if ((i18nData == null) ||
 				!PortalUtil.isValidResourceId(i18nData[2])) {
@@ -127,10 +127,7 @@ public class I18nServlet extends HttpServlet {
 		}
 	}
 
-	protected String[] getI18nData(
-			HttpServletRequest request, HttpServletResponse response)
-		throws IOException, ServletException {
-
+	protected String[] getI18nData(HttpServletRequest request) {
 		String path = GetterUtil.getString(request.getPathInfo());
 
 		if (Validator.isNull(path)) {
@@ -158,7 +155,7 @@ public class I18nServlet extends HttpServlet {
 		Locale locale = LocaleUtil.fromLanguageId(
 			i18nLanguageId, true, useDefault);
 
-		if (Validator.isNull(locale) && !useDefault) {
+		if (locale == null) {
 			return null;
 		}
 
