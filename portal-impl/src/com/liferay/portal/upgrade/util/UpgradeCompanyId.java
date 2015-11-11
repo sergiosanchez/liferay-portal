@@ -61,6 +61,15 @@ public abstract class UpgradeCompanyId extends UpgradeProcess {
 			String tableName, String foreignTableName,
 			String foreignColumnName) {
 
+			this(tableName, foreignColumnName, foreignTableName,
+				foreignColumnName);
+		}
+
+		public TableUpdater(
+			String tableName, String columnName, String foreignTableName,
+			String foreignColumnName) {
+
+			_columnName = columnName;
 			_tableName = tableName;
 			_foreignTableName = foreignTableName;
 			_foreignColumnName = foreignColumnName;
@@ -92,7 +101,7 @@ public abstract class UpgradeCompanyId extends UpgradeProcess {
 			sb.append(" = ");
 			sb.append(_tableName);
 			sb.append(".");
-			sb.append(getForeignColumnName());
+			sb.append(_columnName);
 			sb.append(")");
 
 			return sb.toString();
@@ -102,6 +111,7 @@ public abstract class UpgradeCompanyId extends UpgradeProcess {
 			runSQL(getUpdateSQL());
 		}
 
+		private final String _columnName;
 		private final String _foreignColumnName;
 		private final String _foreignTableName;
 		private final String _tableName;
